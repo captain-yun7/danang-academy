@@ -1,0 +1,316 @@
+{
+  "site": {
+    "name": "Da Nang K-Talk Lab",
+    "shortName": "DAF",
+    "tagline": "Mang Hàn Quốc đến gần bạn hơn tại Đà Nẵng",
+    "taglineAlt": "다낭에서 한국을 더 가깝게",
+    "address": "Đà Nẵng, Việt Nam (địa chỉ sẽ cập nhật)",
+    "hours": "Thứ 2–6: 09:00–21:00 · Thứ 7: 09:00–18:00",
+    "admin": "Quản trị",
+    "publicSite": "Về trang công khai",
+    "rightsReserved": "Bảo lưu mọi quyền.",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản sử dụng"
+  },
+  "nav": {
+    "primary": {
+      "beginner": "Tiếng Hàn sơ cấp",
+      "intermediate": "Tiếng Hàn trung cấp",
+      "topik": "Luyện thi TOPIK",
+      "conversation": "Khoá giao tiếp"
+    },
+    "secondary": {
+      "home": "Trang chủ",
+      "about": "Giới thiệu",
+      "teachers": "Giáo viên",
+      "news": "Tin tức",
+      "careers": "Tuyển dụng",
+      "contact": "Liên hệ"
+    },
+    "ctaFreeTest": "Kiểm tra phát âm miễn phí",
+    "ctaFreeTestShort": "Kiểm tra phát âm",
+    "menu": "Menu",
+    "language": "Ngôn ngữ"
+  },
+  "hero": {
+    "eyebrow": "Đà Nẵng · K-Talk Lab",
+    "titleLine1": "Học tiếng Hàn chuẩn",
+    "titleHighlight": "ngay tại Đà Nẵng",
+    "description": "AI chấm điểm phát âm · Xếp lớp theo trình độ · Báo cáo học tập hàng tuần. Lộ trình bài bản từ giao tiếp đến TOPIK.",
+    "ctaPrimary": "Kiểm tra phát âm miễn phí",
+    "ctaSecondary": "Bài kiểm tra xếp lớp",
+    "stats": {
+      "students": "Học viên",
+      "studentsValue": "1.000+",
+      "topik": "TOPIK cấp 3+",
+      "topikValue": "90%",
+      "classes": "Lớp mỗi năm",
+      "classesValue": "20+"
+    },
+    "form": {
+      "eyebrow": "Đăng ký tư vấn miễn phí",
+      "title": "Bạn muốn bắt đầu học tiếng Hàn từ đâu?",
+      "subtitle": "Để lại thông tin, chúng tôi sẽ liên hệ trong vòng 24 giờ.",
+      "name": "Họ và tên",
+      "namePlaceholder": "Nhập họ tên của bạn",
+      "phone": "Số điện thoại",
+      "phonePlaceholder": "+84",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "level": "Trình độ tiếng Hàn",
+      "submit": "Gửi yêu cầu tư vấn",
+      "privacy": "Thông tin chỉ dùng cho mục đích tư vấn, không chia sẻ cho bên thứ ba.",
+      "required": "Bắt buộc"
+    }
+  },
+  "levels": {
+    "none": "Chưa học bao giờ",
+    "beginner": "Sơ cấp",
+    "elementary": "Sơ trung cấp",
+    "intermediate": "Trung cấp",
+    "advanced": "Cao cấp"
+  },
+  "courses": {
+    "eyebrow": "Khoá học",
+    "title": "5 khoá học phù hợp với mục tiêu của bạn",
+    "subtitle": "Lộ trình theo trình độ và mục đích, từ nhập môn đến TOPIK cao cấp",
+    "sessions": "{count} buổi",
+    "detail": "Xem chi tiết",
+    "items": {
+      "beginner": {
+        "title": "Tiếng Hàn sơ cấp",
+        "level": "Nhập môn · Sơ cấp",
+        "desc": "Từ bảng chữ Hangul đến giao tiếp cơ bản, dành cho người mới bắt đầu"
+      },
+      "intermediate": {
+        "title": "Tiếng Hàn trung cấp",
+        "level": "Trung cấp",
+        "desc": "Câu tự nhiên, mẫu câu đời sống và ngữ pháp nâng cao"
+      },
+      "topik": {
+        "title": "Luyện thi TOPIK",
+        "level": "Luyện thi",
+        "desc": "Phân tích dạng bài · đề thi thử · chữa viết để đạt cấp mong muốn"
+      },
+      "conversation": {
+        "title": "Khoá giao tiếp",
+        "level": "Giao tiếp",
+        "desc": "Thực hành hội thoại · AI sửa phát âm giúp tự tin khi nói"
+      },
+      "self": {
+        "title": "Tự học có hướng dẫn",
+        "level": "Tự học",
+        "desc": "AI chấm bài và báo cáo tuần giúp bạn duy trì tiến độ ổn định"
+      }
+    }
+  },
+  "about": {
+    "eyebrow": "Về chúng tôi",
+    "title": "DAF tập trung vào từng học viên",
+    "titleHighlight": "từng học viên",
+    "body": "Điều quan trọng nhất khi học tiếng Hàn là nhận phản hồi liên tục. DAF sử dụng AI chấm điểm phát âm và bài viết, cùng báo cáo học tập hàng tuần để giữ nhịp học ổn định. Lộ trình bài bản, đội ngũ giáo viên đáng tin cậy và sự chăm sóc tận tâm.",
+    "more": "Tìm hiểu thêm",
+    "features": {
+      "ai": {
+        "title": "AI chấm điểm phát âm · bài viết",
+        "desc": "Nhận điểm và gợi ý cải thiện trong vòng 10 giây"
+      },
+      "care": {
+        "title": "Đội chăm sóc học viên",
+        "desc": "Tư vấn học tập và quản lý điểm danh sát sao"
+      },
+      "report": {
+        "title": "Báo cáo sau buổi học",
+        "desc": "Tóm tắt nội dung và tỷ lệ hoàn thành bài tập mỗi tuần"
+      },
+      "training": {
+        "title": "Phát triển giáo viên",
+        "desc": "Đào tạo định kỳ và giám sát chất lượng giờ học"
+      }
+    }
+  },
+  "teachers": {
+    "eyebrow": "Giáo viên",
+    "title": "Đội ngũ giáo viên chuyên môn",
+    "subtitle": "Bằng cấp tiếng Hàn trong và ngoài nước · Nhiều năm kinh nghiệm giảng dạy",
+    "viewAll": "Xem tất cả",
+    "roles": {
+      "director": "Giám đốc · Phụ trách Sơ cấp",
+      "intermediate": "Phụ trách Trung cấp",
+      "topik": "Phụ trách TOPIK",
+      "conversation": "Phụ trách Giao tiếp",
+      "writing": "Phụ trách Viết",
+      "junior": "Phụ trách lớp thiếu niên"
+    },
+    "bios": {
+      "ngoc": "Thạc sĩ Giáo dục tiếng Hàn, ĐH Jeonnam",
+      "linh": "Cử nhân Hàn ngữ, ĐH Ewha Womans",
+      "huyen": "Thạc sĩ Giáo dục tiếng Hàn, ĐH Ngoại ngữ Hankuk",
+      "huong": "Khoa tiếng Hàn, ĐH Yeungnam",
+      "nam": "Thạc sĩ Hàn ngữ, ĐH Chung-Ang",
+      "trang": "Cử nhân Giáo dục tiếng Hàn, ĐH Busan"
+    }
+  },
+  "stats": {
+    "students": "Học viên luỹ kế",
+    "studentsValue": "1.000+",
+    "topik": "Tỷ lệ đỗ TOPIK cấp 3+",
+    "topikValue": "90%",
+    "classes": "Lớp mỗi năm",
+    "classesValue": "20+",
+    "partners": "Đối tác doanh nghiệp",
+    "partnersValue": "5+"
+  },
+  "activities": {
+    "eyebrow": "Hoạt động",
+    "title": "Giao lưu và cộng đồng",
+    "subtitle": "Hợp tác với các trường đại học, doanh nghiệp Hàn Quốc và các sự kiện văn hoá",
+    "items": {
+      "yeungnam": { "title": "Giao lưu ĐH Yeungnam", "note": "Hiệp định trao đổi" },
+      "cau": { "title": "Thăm ĐH Chung-Ang", "note": "Hội thảo du học" },
+      "silla": { "title": "Hợp tác ĐH Silla", "note": "Tuyển chọn trao đổi" },
+      "sbs": { "title": "Xuất hiện trên SBS Korea", "note": "Giới thiệu giáo dục tiếng Hàn" },
+      "school": { "title": "Hội thảo trường cấp 3 Đà Nẵng", "note": "Giờ học miễn phí" },
+      "culture": { "title": "Sự kiện giao lưu văn hoá", "note": "Ngày trải nghiệm Hanbok" },
+      "chuseok": { "title": "Lễ hội Chuseok", "note": "Học viên làm Songpyeon" },
+      "hangul": { "title": "Thi viết ngày Hangul", "note": "Cuộc thi sáng tác" },
+      "topik": { "title": "Hỗ trợ dự thi TOPIK", "note": "Đăng ký theo nhóm" },
+      "corp": { "title": "Đào tạo doanh nghiệp", "note": "FPT · Samsung" },
+      "parent": { "title": "Gặp gỡ phụ huynh", "note": "Tổ chức theo quý" },
+      "alumni": { "title": "Hội cựu học viên", "note": "Chia sẻ hướng đi" }
+    }
+  },
+  "reviews": {
+    "eyebrow": "Học viên",
+    "title": "Câu chuyện của học viên",
+    "subtitle": "Cảm nhận thật từ học viên đã học tại DAF",
+    "items": {
+      "r1": { "role": "Trung cấp · 10 tháng", "quote": "Cô giảng rất dễ hiểu. Nhờ báo cáo hàng tuần, em biết ngay điểm yếu của mình." },
+      "r2": { "role": "TOPIK · đạt cấp 6", "quote": "Luyện theo dạng bài và được chữa kỹ nên em đạt cấp mong muốn ngay lần đầu." },
+      "r3": { "role": "Giao tiếp · 8 tháng", "quote": "Nhờ AI chấm phát âm, em luyện lại được những âm còn yếu. Nói trôi chảy hơn hẳn." },
+      "r4": { "role": "Sơ cấp · 3 tháng", "quote": "Lần đầu học Hangul, chỉ 3 tháng em đã giao tiếp cơ bản được. Giáo viên rất nhiệt tình." },
+      "r5": { "role": "Tự học · 4 tháng", "quote": "Vừa làm vừa học khá khó, nhưng báo cáo tuần giúp mình giữ được nhịp học." },
+      "r6": { "role": "Giao tiếp · 5 tháng", "quote": "Cô giáo nói tiếng Việt rất tốt nên em hỏi gì cũng được giải đáp ngay." }
+    }
+  },
+  "news": {
+    "eyebrow": "Tin tức",
+    "title": "Tin tức mới nhất từ DAF",
+    "viewAll": "Xem tất cả",
+    "read": "Đọc bài",
+    "items": {
+      "n1": { "title": "Thông báo khai giảng học kỳ Xuân 2026", "excerpt": "Đồng loạt khai giảng các lớp Sơ cấp · Trung cấp · TOPIK. Giảm 10% khi đăng ký sớm." },
+      "n2": { "title": "Ra mắt Beta dịch vụ AI chấm phát âm", "excerpt": "Mọi người đều có thể kiểm tra phát âm tiếng Hàn miễn phí." },
+      "n3": { "title": "Tuyển đối tác đào tạo cho doanh nghiệp tại Đà Nẵng", "excerpt": "Hỗ trợ cả đào tạo tại công ty và online. Chương trình theo yêu cầu." },
+      "n4": { "title": "Mở đăng ký lớp cấp tốc hè", "excerpt": "Khoá 2 tuần dành cho học sinh THCS/THPT. Số lượng giới hạn." }
+    }
+  },
+  "partners": {
+    "eyebrow": "Đối tác",
+    "title": "Doanh nghiệp · Trường đại học đồng hành"
+  },
+  "finalCta": {
+    "eyebrow": "Sẵn sàng bắt đầu?",
+    "title": "Bắt đầu ngay với bài kiểm tra phát âm",
+    "primary": "Kiểm tra phát âm miễn phí",
+    "secondary": "Liên hệ tư vấn"
+  },
+  "footer": {
+    "courses": "Khoá học",
+    "quickLinks": "Liên kết nhanh",
+    "contact": "Liên hệ",
+    "freeTest": "Kiểm tra phát âm miễn phí",
+    "placementTest": "Kiểm tra xếp lớp"
+  },
+  "placeholder": {
+    "comingSoon": "Đang chuẩn bị · Coming soon",
+    "backHome": "Về trang chủ"
+  },
+  "pages": {
+    "about": {
+      "eyebrow": "Giới thiệu",
+      "title": "Giới thiệu DAF",
+      "desc": "Sứ mệnh, hệ thống chương trình và không gian học tập sẽ được cập nhật tại đây."
+    },
+    "teachers": {
+      "eyebrow": "Giáo viên",
+      "title": "Đội ngũ giáo viên",
+      "desc": "Hồ sơ giáo viên, học vấn và môn phụ trách sẽ được hiển thị tại đây."
+    },
+    "news": {
+      "eyebrow": "Tin tức",
+      "title": "Tin tức DAF",
+      "desc": "Thông báo, lịch khai giảng và câu chuyện của trung tâm."
+    },
+    "careers": {
+      "eyebrow": "Tuyển dụng",
+      "title": "Cơ hội tại DAF",
+      "desc": "Thông tin tuyển giáo viên, quản lý đào tạo và đối tác vận hành."
+    },
+    "contact": {
+      "eyebrow": "Liên hệ",
+      "title": "Tư vấn · Liên hệ",
+      "desc": "Bản đồ, đặt lịch tư vấn, kênh KakaoTalk/Zalo sẽ được đưa vào đây."
+    },
+    "freePronunciation": {
+      "eyebrow": "Kiểm tra phát âm miễn phí",
+      "title": "Kiểm tra phát âm miễn phí",
+      "desc": "Ghi âm một câu, AI sẽ cho bạn điểm và gợi ý cải thiện. Mở vào W1~W2."
+    },
+    "placement": {
+      "eyebrow": "Bài kiểm tra xếp lớp",
+      "title": "Kiểm tra xếp lớp miễn phí",
+      "desc": "5 câu trắc nghiệm + 1 câu phát âm để đề xuất lớp Nhập môn · Sơ cấp · Trung cấp · Cao cấp."
+    },
+    "consult": {
+      "eyebrow": "Tư vấn",
+      "title": "Yêu cầu tư vấn",
+      "desc": "Để lại họ tên · số điện thoại · lớp mong muốn, đội ngũ DAF sẽ liên hệ với bạn."
+    }
+  },
+  "admin": {
+    "groupTitle": "Quản trị",
+    "menu": {
+      "dashboard": { "label": "Dashboard", "desc": "Tóm tắt hôm nay" },
+      "students": { "label": "Học viên", "desc": "Danh sách · đăng ký" },
+      "classes": { "label": "Lớp", "desc": "Lịch · phân lớp" },
+      "attendance": { "label": "Điểm danh", "desc": "Lịch sử QR" },
+      "tests": { "label": "Bài kiểm tra", "desc": "Phát âm · xếp lớp" },
+      "leads": { "label": "Khách tư vấn", "desc": "Pipeline chuyển đổi" },
+      "reports": { "label": "Báo cáo", "desc": "Tuần · tháng" }
+    },
+    "dashboard": {
+      "eyebrow": "Dashboard",
+      "title": "Tóm tắt hôm nay",
+      "subtitle": "{date} · Asia/Ho_Chi_Minh",
+      "recent": "Xem bài kiểm tra gần đây",
+      "leadsTitle": "Yêu cầu tư vấn gần đây",
+      "classesTitle": "Lớp hôm nay",
+      "classesPlaceholder": "Biểu đồ lịch học (đang chuẩn bị)",
+      "sampleNote": "※ Các chỉ số hiện tại là dữ liệu mẫu dùng để xem giao diện. Sẽ được thay bằng dữ liệu thật sau khi kết nối Supabase.",
+      "kpi": {
+        "students": "Tổng học viên",
+        "studentsSub": "+12 trong tháng",
+        "attendance": "Điểm danh hôm nay",
+        "attendanceSub": "24 / 26 có mặt",
+        "tests": "Kiểm tra miễn phí",
+        "testsSub": "Trong tuần",
+        "leads": "Chuyển đổi tư vấn",
+        "leadsSub": "Test → Tư vấn",
+        "score": "Điểm phát âm trung bình",
+        "scoreSub": "100 bài gần nhất",
+        "classes": "Lớp đang mở",
+        "classesSub": "Đang diễn ra"
+      },
+      "viewAll": "Xem tất cả"
+    },
+    "pages": {
+      "students": { "title": "Quản lý học viên", "desc": "Danh sách, đăng ký, cấp mã QR, phân lớp. Kích hoạt sau khi nối Supabase." },
+      "classes": { "title": "Quản lý lớp", "desc": "Mở lớp, lịch học, phân giáo viên, quản lý sĩ số." },
+      "attendance": { "title": "Quản lý điểm danh", "desc": "Xem lịch sử QR ra vào, thống kê đi trễ · vắng." },
+      "tests": { "title": "Kết quả kiểm tra", "desc": "Trạng thái xử lý và phân phối điểm các bài kiểm tra phát âm · xếp lớp." },
+      "leads": { "title": "Khách tư vấn", "desc": "Pipeline tư vấn: tiếp nhận → liên hệ → đăng ký." },
+      "reports": { "title": "Báo cáo học tập", "desc": "Lịch sử tạo và gửi báo cáo tuần · tháng." }
+    }
+  }
+}

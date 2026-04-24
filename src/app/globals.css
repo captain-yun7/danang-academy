@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+:root {
+  /* hikorean 레퍼런스 팔레트 */
+  --color-primary: #fdd561;   /* 브랜드 옐로우 */
+  --color-primary-deep: #faa818; /* 오렌지 액센트 */
+  --color-ink: #1d2224;       /* 본문·타이틀 */
+  --color-soft: #f8f2e6;      /* 크림 서브 배경 */
+  --color-muted: #868686;     /* 보조 텍스트 */
+  --color-line: #e8e8e8;      /* 구분선 */
+
+  --background: #ffffff;
+  --foreground: var(--color-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--color-primary);
+  --color-brand-deep: var(--color-primary-deep);
+  --color-ink: var(--color-ink);
+  --color-soft: var(--color-soft);
+  --color-muted: var(--color-muted);
+  --color-line: var(--color-line);
+  --font-sans: var(--font-montserrat);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-montserrat), "Apple SD Gothic Neo", "Noto Sans KR",
+    system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 공통 섹션 헤더 스타일 (hikorean .heading_s4 대응) */
+.eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-primary-deep);
+}
+
+.section-title {
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-ink);
+}
+
+/* 카드 호버 쉐도우 — hikorean 카드 톤 */
+.card-lift {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(134, 134, 134, 0.22);
+}
