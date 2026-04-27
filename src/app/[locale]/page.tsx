@@ -210,7 +210,7 @@ async function StatsSection() {
       <div className="mx-auto grid max-w-7xl gap-8 px-6 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map((s) => (
           <div key={s.label} className="text-center">
-            <div className="text-4xl font-black text-[var(--color-primary)] sm:text-5xl">
+            <div className="text-4xl font-black text-[var(--color-accent)] sm:text-5xl">
               {s.value}
             </div>
             <div className="mt-2 text-xs uppercase tracking-[0.18em] text-white/70">
@@ -352,20 +352,20 @@ async function PartnersSection() {
 async function FinalCTA() {
   const t = await getTranslations("finalCta");
   return (
-    <section className="bg-[var(--color-primary)]">
+    <section className="brand-gradient">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 px-6 py-14 text-center sm:flex-row sm:justify-between sm:text-left">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-ink)]/70">
+          <p className="text-xs font-bold uppercase tracking-widest text-white/80">
             {t("eyebrow")}
           </p>
-          <h2 className="mt-1 text-2xl font-bold text-[var(--color-ink)] sm:text-3xl">
+          <h2 className="mt-1 text-2xl font-bold text-white sm:text-3xl">
             {t("title")}
           </h2>
         </div>
         <div className="flex flex-wrap gap-3">
           <Link
             href="/free-pronunciation"
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-ink)] px-6 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-ink)] px-6 py-3 text-sm font-bold text-white hover:bg-white hover:text-[var(--color-ink)]"
           >
             {t("primary")} →
           </Link>

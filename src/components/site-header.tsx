@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { primaryNavSlugs, secondaryNavSlugs, contact } from "@/lib/site";
@@ -26,7 +27,7 @@ export function SiteHeader() {
             <LanguageSwitcher />
             <Link
               href="/admin"
-              className="rounded-full bg-white px-3 py-1 font-semibold text-[var(--color-ink)] hover:bg-[var(--color-primary)]"
+              className="rounded-full bg-white px-3 py-1 font-semibold text-[var(--color-ink)] hover:bg-[var(--color-primary)] hover:text-white"
             >
               {tSite("admin")}
             </Link>
@@ -36,13 +37,15 @@ export function SiteHeader() {
 
       {/* Main header */}
       <div className="mx-auto flex h-20 max-w-7xl items-center px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary)] font-black text-[var(--color-ink)]">
-            {tSite("shortName")}
-          </span>
-          <span className="hidden text-sm font-bold uppercase tracking-wider sm:block">
-            {tSite("name")}
-          </span>
+        <Link href="/" className="flex items-center" aria-label={tSite("name")}>
+          <Image
+            src="/logo.png"
+            alt={tSite("name")}
+            width={220}
+            height={56}
+            priority
+            className="h-10 w-auto sm:h-11"
+          />
         </Link>
 
         <nav className="ml-auto hidden items-center gap-1 lg:flex">
@@ -67,7 +70,7 @@ export function SiteHeader() {
           ))}
           <Link
             href="/free-pronunciation"
-            className="ml-3 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2.5 text-sm font-bold text-[var(--color-ink)] hover:bg-[var(--color-primary-deep)] hover:text-white"
+            className="ml-3 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]"
           >
             {tNav("ctaFreeTest")}
           </Link>
@@ -77,7 +80,7 @@ export function SiteHeader() {
           <LanguageSwitcher />
           <Link
             href="/free-pronunciation"
-            className="rounded-full bg-[var(--color-primary)] px-3 py-2 text-xs font-bold text-[var(--color-ink)]"
+            className="rounded-full bg-[var(--color-primary)] px-3 py-2 text-xs font-bold text-white"
           >
             {tNav("ctaFreeTestShort")}
           </Link>

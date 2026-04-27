@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* hikorean 레퍼런스 팔레트 */
-  --color-primary: #fdd561;   /* 브랜드 옐로우 */
-  --color-primary-deep: #faa818; /* 오렌지 액센트 */
-  --color-ink: #1d2224;       /* 본문·타이틀 */
-  --color-soft: #f8f2e6;      /* 크림 서브 배경 */
-  --color-muted: #868686;     /* 보조 텍스트 */
-  --color-line: #e8e8e8;      /* 구분선 */
+  /* KTL 로고 팔레트 (시안 → 퍼플 그라디언트 + 네이비) */
+  --color-primary: #6366f1;       /* 인디고 — 메인 브랜드 */
+  --color-primary-deep: #7c3aed;  /* 퍼플 — 액센트/딥 */
+  --color-accent: #22d3ee;        /* 시안 — 보조 액센트(로고 좌측 톤) */
+  --color-ink: #0b1020;           /* 네이비 잉크 — 본문·타이틀·다크 배경 */
+  --color-soft: #f5f3ff;          /* 라벤더 화이트 — 서브 배경 */
+  --color-muted: #6b7280;         /* 보조 텍스트 */
+  --color-line: #e5e7eb;          /* 구분선 */
+
+  /* 로고 그라디언트 (시안 → 인디고 → 퍼플) */
+  --gradient-brand: linear-gradient(135deg, #22d3ee 0%, #6366f1 50%, #a855f7 100%);
 
   --background: #ffffff;
   --foreground: var(--color-ink);
@@ -18,6 +22,7 @@
   --color-foreground: var(--foreground);
   --color-brand: var(--color-primary);
   --color-brand-deep: var(--color-primary-deep);
+  --color-accent: var(--color-accent);
   --color-ink: var(--color-ink);
   --color-soft: var(--color-soft);
   --color-muted: var(--color-muted);
@@ -48,6 +53,17 @@ body {
   color: var(--color-primary-deep);
 }
 
+/* 로고 톤 그라디언트 텍스트/배경 유틸 */
+.brand-gradient {
+  background: var(--gradient-brand);
+}
+.brand-gradient-text {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .section-title {
   font-size: clamp(1.6rem, 2.4vw, 2.1rem);
   font-weight: 700;
@@ -61,5 +77,5 @@ body {
 }
 .card-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(134, 134, 134, 0.22);
+  box-shadow: 0 10px 28px rgba(99, 102, 241, 0.18);
 }

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { adminMenuKeys } from "@/lib/site";
@@ -15,18 +16,20 @@ export default async function AdminLayout({
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 lg:px-6">
         <aside className="hidden w-60 shrink-0 lg:block">
           <div className="sticky top-28 rounded-xl bg-white p-4 ring-1 ring-black/5">
-            <div className="mb-4 flex items-center gap-2 border-b border-[var(--color-line)] pb-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--color-ink)] text-xs font-black text-[var(--color-primary)]">
-                {tSite("shortName")}
-              </span>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-                  {tA("groupTitle")}
-                </p>
-                <p className="text-sm font-bold">
-                  {tSite("shortName")} Admin
-                </p>
-              </div>
+            <div className="mb-4 border-b border-[var(--color-line)] pb-3">
+              <Link href="/" aria-label={tSite("name")} className="inline-block">
+                <Image
+                  src="/logo.png"
+                  alt={tSite("name")}
+                  width={220}
+                  height={56}
+                  className="h-8 w-auto"
+                />
+              </Link>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
+                {tA("groupTitle")}
+              </p>
+              <p className="text-sm font-bold">{tSite("shortName")} Admin</p>
             </div>
             <nav className="flex flex-col gap-0.5">
               {adminMenuKeys.map((n) => (
@@ -44,7 +47,7 @@ export default async function AdminLayout({
             </nav>
             <Link
               href="/"
-              className="mt-4 block rounded-md border border-[var(--color-line)] px-3 py-2 text-center text-xs font-semibold hover:bg-[var(--color-primary)]"
+              className="mt-4 block rounded-md border border-[var(--color-line)] px-3 py-2 text-center text-xs font-semibold hover:bg-[var(--color-primary)] hover:text-white"
             >
               ← {tSite("publicSite")}
             </Link>

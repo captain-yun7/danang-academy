@@ -9,10 +9,10 @@ export async function Hero() {
   return (
     <section className="relative overflow-hidden bg-[var(--color-soft)]">
       <div
-        className="absolute inset-0 opacity-40"
+        className="absolute inset-0 opacity-60"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 20% 20%, rgba(253,213,97,0.35), transparent 40%), radial-gradient(circle at 80% 80%, rgba(250,168,24,0.15), transparent 45%)",
+            "radial-gradient(circle at 20% 20%, rgba(34,211,238,0.25), transparent 45%), radial-gradient(circle at 80% 80%, rgba(168,85,247,0.22), transparent 50%), radial-gradient(circle at 60% 30%, rgba(99,102,241,0.18), transparent 50%)",
         }}
         aria-hidden
       />
@@ -24,7 +24,7 @@ export async function Hero() {
             {t("titleLine1")} <br />
             <span className="relative inline-block">
               <span
-                className="absolute inset-x-0 bottom-1 h-4 bg-[var(--color-primary)]"
+                className="brand-gradient absolute inset-x-0 bottom-1 h-4 opacity-70"
                 aria-hidden
               />
               <span className="relative">{t("titleHighlight")}</span>
@@ -37,7 +37,7 @@ export async function Hero() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/free-pronunciation"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--color-ink)] px-6 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]"
+              className="brand-gradient inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90"
             >
               {t("ctaPrimary")} <span aria-hidden>→</span>
             </Link>
@@ -127,7 +127,7 @@ export async function Hero() {
 
             <button
               type="submit"
-              className="mt-2 w-full rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-[var(--color-ink)] hover:bg-[var(--color-primary-deep)] hover:text-white"
+              className="mt-2 w-full rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]"
             >
               {t("form.submit")}
             </button>
