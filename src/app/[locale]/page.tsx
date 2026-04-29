@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Hero } from "@/components/hero";
@@ -20,6 +21,7 @@ export default async function Home({
   setRequestLocale(locale);
   return (
     <>
+      <MainBanner />
       <Hero />
       <CoursesSection />
       <IntroSection />
@@ -31,6 +33,28 @@ export default async function Home({
       <PartnersSection />
       <FinalCTA />
     </>
+  );
+}
+
+async function MainBanner() {
+  const t = await getTranslations("hero");
+  return (
+    <Link
+      href="/free-pronunciation"
+      aria-label={t("ctaPrimary")}
+      className="group block bg-[var(--color-ink)]"
+    >
+      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4">
+        <Image
+          src="/main-banner.png"
+          alt={t("ctaPrimary")}
+          width={1980}
+          height={460}
+          priority
+          className="h-auto w-full rounded-lg shadow-md transition group-hover:opacity-90"
+        />
+      </div>
+    </Link>
   );
 }
 
