@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
+import { getR2, r2Bucket } from "@/lib/r2/client";
 
 export const runtime = "nodejs";
 
@@ -38,29 +39,29 @@ export async function POST(req: Request) {
       : contentType.includes("ogg")
         ? "ogg"
         : "bin";
+  const key = `free-pronunciation/${id}.${ext}`;
 
-  let audioUrl: string;
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`free-pronunciation/${id}.${ext}`, arrayBuffer, {
-      access: "public",
-      contentType,
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    });
-    audioUrl = blob.url;
-  } else {
-    // Blob 토큰이 없는 개발 환경 — 가짜 URL로 진행해 후속 플로우 테스트
-    audioUrl = `mock://free-pronunciation/${id}.${ext}`;
+  const useMockUpload = process.env.MOCK_R2_UPLOAD === "true" || !process.env.R2_BUCKET;
+
+  if (!useMockUpload) {
+    await getR2().send(
+      new PutObjectCommand({
+        Bucket: r2Bucket(),
+        Key: key,
+        Body: new Uint8Array(arrayBuffer),
+        ContentType: contentType,
+      })
+    );
   }
 
-  await sql`update free_pronunciation_tests set audio_url = ${audioUrl} where id = ${id}`;
+  // DB에는 R2 객체 키만 저장 (URL은 다운로드 시 presign으로 발급)
+  await sql`update free_pronunciation_tests set audio_url = ${key} where id = ${id}`;
 
-  // Mock AI 워커 — 환경변수로 명시 활성화 시에만
   if (process.env.MOCK_AI_WORKER === "true") {
     queueMockEvaluation(id);
   }
 
-  return NextResponse.json({ ok: true, url: audioUrl });
+  return NextResponse.json({ ok: true, key });
 }
 
 function queueMockEvaluation(id: string) {

@@ -16,7 +16,7 @@
 - **Frontend/BFF**: Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + Turbopack
 - **DB**: Neon (서버리스 Postgres, DB 브랜칭 활용)
 - **Auth**: Auth.js v5 (NextAuth) — Credentials(이메일+비번) + 추후 Zalo/Google
-- **오디오 Storage**: Vercel Blob (signed upload URL → 브라우저 직접 PUT)
+- **오디오 Storage**: Cloudflare R2 (비공개 버킷 + presigned URL, S3 호환)
 - **AI 워커**: Python (맥미니 로컬, 별도 레포/폴더 예정) — STT + 발음 평가 + 배치 작업, Neon Postgres 직접 폴링
 - **배포**: Vercel (웹), 맥미니 (워커)
 - **LLM**: Gemini + OpenAI 병행, 추후 Vercel AI Gateway 도입 검토
@@ -38,7 +38,7 @@
 - **타임존**: 데이터 저장은 `timestamptz` (UTC), 날짜 계산은 `Asia/Ho_Chi_Minh` (VN 기준)
 
 ## 절대 하지 말 것
-- `DATABASE_URL`, `AUTH_SECRET`, `BLOB_READ_WRITE_TOKEN` 등 시크릿을 `NEXT_PUBLIC_*`로 노출
+- `DATABASE_URL`, `AUTH_SECRET`, `R2_*` 등 시크릿을 `NEXT_PUBLIC_*`로 노출
 - 클라이언트에서 직접 레이트리밋만 걸고 끝내기 (서버 액션/API 라우트에서 강제)
 - 익명 사용자 입력을 클라이언트에서 직접 DB로 쏘지 말기 (Neon은 서버 사이드만 — Vercel/서버 액션 경유)
 - Glide 프로토타입과 달라지는 데이터 모델 변경 (이식 단계에서는 그대로 가져오기)
