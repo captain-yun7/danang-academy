@@ -277,6 +277,7 @@
       "attendance": { "label": "출석", "desc": "QR 기록" },
       "tests": { "label": "테스트", "desc": "발음 · 배정 결과" },
       "leads": { "label": "상담 리드", "desc": "전환 파이프라인" },
+      "mcq": { "label": "레벨테스트 문항", "desc": "문항 · 임계값" },
       "reports": { "label": "리포트", "desc": "주간·월간" }
     },
     "dashboard": {

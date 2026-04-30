@@ -277,6 +277,7 @@
       "attendance": { "label": "Điểm danh", "desc": "Lịch sử QR" },
       "tests": { "label": "Bài kiểm tra", "desc": "Phát âm · xếp lớp" },
       "leads": { "label": "Khách tư vấn", "desc": "Pipeline chuyển đổi" },
+      "mcq": { "label": "Câu hỏi xếp lớp", "desc": "Câu hỏi · ngưỡng" },
       "reports": { "label": "Báo cáo", "desc": "Tuần · tháng" }
     },
     "dashboard": {

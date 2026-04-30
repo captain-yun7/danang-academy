@@ -39,14 +39,52 @@ export async function POST(req: Request) {
         ? "ogg"
         : "bin";
 
-  const blob = await put(`free-pronunciation/${id}.${ext}`, arrayBuffer, {
-    access: "public",
-    contentType,
-    addRandomSuffix: false,
-    allowOverwrite: true,
-  });
+  let audioUrl: string;
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`free-pronunciation/${id}.${ext}`, arrayBuffer, {
+      access: "public",
+      contentType,
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    });
+    audioUrl = blob.url;
+  } else {
+    // Blob 토큰이 없는 개발 환경 — 가짜 URL로 진행해 후속 플로우 테스트
+    audioUrl = `mock://free-pronunciation/${id}.${ext}`;
+  }
 
-  await sql`update free_pronunciation_tests set audio_url = ${blob.url} where id = ${id}`;
+  await sql`update free_pronunciation_tests set audio_url = ${audioUrl} where id = ${id}`;
 
-  return NextResponse.json({ ok: true, url: blob.url });
+  // Mock AI 워커 — 환경변수로 명시 활성화 시에만
+  if (process.env.MOCK_AI_WORKER === "true") {
+    queueMockEvaluation(id);
+  }
+
+  return NextResponse.json({ ok: true, url: audioUrl });
+}
+
+function queueMockEvaluation(id: string) {
+  const delayMs = 4000;
+  setTimeout(async () => {
+    try {
+      await sql`update free_pronunciation_tests set status='processing' where id = ${id}`;
+      await new Promise((r) => setTimeout(r, 2000));
+      const score = 70 + Math.floor(Math.random() * 25);
+      const level =
+        score >= 90 ? "advanced" : score >= 80 ? "intermediate" : score >= 70 ? "elementary" : "beginner";
+      await sql`
+        update free_pronunciation_tests
+        set status='completed',
+            transcript = target_sentence,
+            score = ${score},
+            strengths = ${"속도와 억양이 자연스러워요. 또박또박 잘 발음했어요."},
+            improvements = ${"받침 발음을 조금 더 명확히 하면 좋아요. 'ㄴ/ㅁ/ㅇ' 구분을 신경 써보세요."},
+            recommended_class_level = ${level}
+        where id = ${id}
+      `;
+    } catch (e) {
+      console.error("mock evaluation failed:", e);
+      await sql`update free_pronunciation_tests set status='failed' where id = ${id}`.catch(() => {});
+    }
+  }, delayMs);
 }
