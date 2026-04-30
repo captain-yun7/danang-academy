@@ -14,10 +14,13 @@
 
 ## 스택
 - **Frontend/BFF**: Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + Turbopack
-- **데이터**: Supabase (Postgres + Auth + Storage + Realtime)
-- **AI 워커**: Python (맥미니 로컬, 별도 레포/폴더 예정) — STT + 발음 평가 + 배치 작업
+- **DB**: Neon (서버리스 Postgres, DB 브랜칭 활용)
+- **Auth**: Auth.js v5 (NextAuth) — Credentials(이메일+비번) + 추후 Zalo/Google
+- **오디오 Storage**: Vercel Blob (signed upload URL → 브라우저 직접 PUT)
+- **AI 워커**: Python (맥미니 로컬, 별도 레포/폴더 예정) — STT + 발음 평가 + 배치 작업, Neon Postgres 직접 폴링
 - **배포**: Vercel (웹), 맥미니 (워커)
 - **LLM**: Gemini + OpenAI 병행, 추후 Vercel AI Gateway 도입 검토
+- **결정 이력**: 2026-04-30 Supabase → Neon 전환 (DB 브랜칭, Neon MCP 통합, Zalo OAuth 유연성). `_docs/worklogs/2026-04-30.md` 참조
 
 ## 디렉토리
 - `src/app/` — Next.js App Router 페이지
@@ -29,14 +32,15 @@
 ## 개발 규칙
 - **언어**: 한국어로 대화, 코드 주석도 필요할 때만 한국어로
 - **네이밍**: DB는 `snake_case`, TS는 `camelCase`, 파일은 `kebab-case`
-- **DB 변경**: `_docs/runbook/init.sql`을 source of truth로 유지 (Supabase Migrations는 W2 이후 도입 검토)
+- **DB 변경**: `_docs/runbook/init.sql`을 source of truth로 유지. 적용은 Neon MCP의 `prepare_database_migration` → `complete_database_migration` 흐름 사용 (DB 브랜치에 먼저 적용 후 main으로 commit)
 - **서버 액션**: 검증(rate limit, 입력 유효성)은 반드시 서버에서 — 클라이언트만 믿지 않기
 - **에러 처리**: 시스템 경계(외부 API, 사용자 입력)에서만. 내부 호출은 신뢰.
 - **타임존**: 데이터 저장은 `timestamptz` (UTC), 날짜 계산은 `Asia/Ho_Chi_Minh` (VN 기준)
 
 ## 절대 하지 말 것
-- `SUPABASE_SERVICE_ROLE_KEY`를 `NEXT_PUBLIC_*`로 노출
-- 클라이언트에서 직접 레이트리밋만 걸고 끝내기
+- `DATABASE_URL`, `AUTH_SECRET`, `BLOB_READ_WRITE_TOKEN` 등 시크릿을 `NEXT_PUBLIC_*`로 노출
+- 클라이언트에서 직접 레이트리밋만 걸고 끝내기 (서버 액션/API 라우트에서 강제)
+- 익명 사용자 입력을 클라이언트에서 직접 DB로 쏘지 말기 (Neon은 서버 사이드만 — Vercel/서버 액션 경유)
 - Glide 프로토타입과 달라지는 데이터 모델 변경 (이식 단계에서는 그대로 가져오기)
 
 ## Phase별 우선순위

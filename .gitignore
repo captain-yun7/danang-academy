@@ -51,7 +51,11 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 
-# Spec PDFs (원본은 OneDrive에, 레포에는 _docs만)
+# 프로젝트 문서·공유 리소스 (OneDrive 심볼릭, git에 안 올림)
+_docs/
+_shared/
+
+# Spec PDFs (원본은 OneDrive에)
 0414다낭메뉴얼.pdf
 0420*.pdf
 
