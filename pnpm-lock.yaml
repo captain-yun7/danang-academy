@@ -17,6 +17,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.1039.0
         version: 3.1039.0
+      '@google/generative-ai':
+        specifier: ^0.24.1
+        version: 0.24.1
       '@neondatabase/serverless':
         specifier: ^1.1.0
         version: 1.1.0
@@ -32,6 +35,9 @@ importers:
       next-intl:
         specifier: ^4.9.1
         version: 4.9.1(next@16.2.4(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
+      openai:
+        specifier: ^6.37.0
+        version: 6.37.0(zod@4.4.1)
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -396,6 +402,10 @@ packages:
 
   '@formatjs/intl-localematcher@0.8.3':
     resolution: {integrity: sha512-pHUjWb9NuhnMs8+PxQdzBtZRFJHlGhrURGAbm6Ltwl82BFajeuiIR3jblSa7ia3r62rXe/0YtVpUG3xWr5bFCA==}
+
+  '@google/generative-ai@0.24.1':
+    resolution: {integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==}
+    engines: {node: '>=18.0.0'}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -2303,6 +2313,18 @@ packages:
     resolution: {integrity: sha512-gXah6aZrcUxjWg2zR2MwouP2eHlCBzdV4pygudehaKXSGW4v2AsRQUK+lwwXhii6KFZcunEnmSUoYp5CXibxtA==}
     engines: {node: '>= 0.4'}
 
+  openai@6.37.0:
+    resolution: {integrity: sha512-0H5dEGFmmLv6KSd0W1w2nyL8WsLkX6yoLeQpU+dZAOuGcany5qkYQMmj35ZrKgb6yiyYqpUzFOpR8mZQkgqeEQ==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.25 || ^4.0
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -3463,6 +3485,8 @@ snapshots:
   '@formatjs/intl-localematcher@0.8.3':
     dependencies:
       '@formatjs/fast-memoize': 3.1.2
+
+  '@google/generative-ai@0.24.1': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -5492,6 +5516,10 @@ snapshots:
       call-bound: 1.0.4
       define-properties: 1.2.1
       es-object-atoms: 1.1.1
+
+  openai@6.37.0(zod@4.4.1):
+    optionalDependencies:
+      zod: 4.4.1
 
   optionator@0.9.4:
     dependencies:

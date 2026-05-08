@@ -3,8 +3,10 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
 import { getR2, r2Bucket } from "@/lib/r2/client";
+import { evaluatePronunciation, isAIConfigured } from "@/lib/ai/evaluate-pronunciation";
 
 export const runtime = "nodejs";
+export const maxDuration = 120; // STT + LLM 합쳐 30초 내 끝나야 함, 여유
 
 export async function POST(req: Request) {
   const url = new URL(req.url);
@@ -15,13 +17,15 @@ export async function POST(req: Request) {
 
   const fp = await getVisitorFingerprint();
   const owned = (await sql`
-    select id from free_pronunciation_tests
+    select id, target_sentence, korean_level::text as level
+    from free_pronunciation_tests
     where id = ${id} and visitor_fingerprint = ${fp}
     limit 1
-  `) as { id: string }[];
+  `) as { id: string; target_sentence: string; level: string }[];
   if (!owned[0]) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
+  const test = owned[0];
 
   const contentType = req.headers.get("content-type") || "audio/webm";
   const arrayBuffer = await req.arrayBuffer();
@@ -54,21 +58,60 @@ export async function POST(req: Request) {
     );
   }
 
-  // DB에는 R2 객체 키만 저장 (URL은 다운로드 시 presign으로 발급)
+  // DB에 R2 키만 저장 (URL은 다운로드 시 presign으로 발급)
   await sql`update free_pronunciation_tests set audio_url = ${key} where id = ${id}`;
 
-  if (process.env.MOCK_AI_WORKER === "true") {
-    // 응답 후에도 백그라운드에서 실행되도록 after() 사용
-    // Vercel Fluid Compute가 함수 인스턴스 유지해줌
+  // 백그라운드 평가 — Vercel Fluid Compute가 응답 후에도 인스턴스 유지
+  if (process.env.MOCK_AI_WORKER === "true" || !isAIConfigured()) {
     after(() => runMockEvaluation(id));
+  } else {
+    after(() =>
+      runRealEvaluation({
+        id,
+        audioBytes: arrayBuffer,
+        contentType,
+        target: test.target_sentence,
+        declaredLevel: test.level,
+      })
+    );
   }
 
   return NextResponse.json({ ok: true, key });
 }
 
+async function runRealEvaluation(input: {
+  id: string;
+  audioBytes: ArrayBuffer;
+  contentType: string;
+  target: string;
+  declaredLevel: string;
+}) {
+  try {
+    await sql`update free_pronunciation_tests set status='processing' where id = ${input.id}`;
+    const r = await evaluatePronunciation({
+      audioBytes: input.audioBytes,
+      contentType: input.contentType,
+      target: input.target,
+      declaredLevel: input.declaredLevel,
+    });
+    await sql`
+      update free_pronunciation_tests
+      set status='completed',
+          transcript = ${r.transcript},
+          score = ${r.score},
+          strengths = ${r.strengths},
+          improvements = ${r.improvements},
+          recommended_class_level = ${r.recommendedLevel}
+      where id = ${input.id}
+    `;
+  } catch (e) {
+    console.error("real evaluation failed:", e);
+    await sql`update free_pronunciation_tests set status='failed' where id = ${input.id}`.catch(() => {});
+  }
+}
+
 async function runMockEvaluation(id: string) {
   try {
-    // 약간 딜레이로 "AI 분석 중" UX 살리기
     await sql`update free_pronunciation_tests set status='processing' where id = ${id}`;
     await new Promise((r) => setTimeout(r, 3000));
     const score = 70 + Math.floor(Math.random() * 25);
@@ -79,8 +122,8 @@ async function runMockEvaluation(id: string) {
       set status='completed',
           transcript = target_sentence,
           score = ${score},
-          strengths = ${"속도와 억양이 자연스러워요. 또박또박 잘 발음했어요."},
-          improvements = ${"받침 발음을 조금 더 명확히 하면 좋아요. 'ㄴ/ㅁ/ㅇ' 구분을 신경 써보세요."},
+          strengths = ${"속도와 억양이 자연스러워요. 또박또박 잘 발음했어요. (Mock)"},
+          improvements = ${"받침 발음을 조금 더 명확히 하면 좋아요. 'ㄴ/ㅁ/ㅇ' 구분을 신경 써보세요. (Mock)"},
           recommended_class_level = ${level}
       where id = ${id}
     `;
