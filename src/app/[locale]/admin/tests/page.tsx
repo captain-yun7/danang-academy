@@ -1,4 +1,5 @@
 import { sql } from "@/lib/db/client";
+import { AudioCell } from "./audio-cell";
 
 const LEVEL_LABEL: Record<string, string> = {
   beginner: "입문",
@@ -152,6 +153,7 @@ export default async function AdminTestsPage({
                 <th className="px-4 py-3 text-left font-bold">점수</th>
                 <th className="px-4 py-3 text-left font-bold">추천</th>
                 <th className="px-4 py-3 text-left font-bold">상세</th>
+                <th className="px-4 py-3 text-left font-bold">녹음</th>
                 <th className="px-4 py-3 text-left font-bold">일시</th>
               </tr>
             </thead>
@@ -183,6 +185,9 @@ export default async function AdminTestsPage({
                   </td>
                   <td className="max-w-xs truncate px-4 py-3 text-xs text-[var(--color-muted)]">
                     {r.details}
+                  </td>
+                  <td className="px-4 py-3">
+                    <AudioCell testId={r.id} type={r.type} />
                   </td>
                   <td className="px-4 py-3 text-xs text-[var(--color-muted)]">{r.created_at}</td>
                 </tr>
