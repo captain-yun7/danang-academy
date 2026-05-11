@@ -73,6 +73,40 @@ const SCHEMA = {
   required: ["score", "strengths", "improvements", "recommendedLevel"],
 } as const;
 
+const FALLBACK_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-2.5-flash-lite",
+] as const;
+
+async function generateWithRetry(prompt: string): Promise<string> {
+  let lastErr: unknown = null;
+  for (const modelName of FALLBACK_MODELS) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const model = gemini().getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            responseMimeType: "application/json",
+            // @ts-expect-error responseSchema is supported but typings lag
+            responseSchema: SCHEMA,
+            temperature: 0.4,
+          },
+        });
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+      } catch (err) {
+        lastErr = err;
+        const status = (err as { status?: number }).status;
+        // 503/429/500은 일시적 — 다음 시도. 그 외(인증/스키마 등)는 즉시 중단
+        if (status !== 503 && status !== 429 && status !== 500) throw err;
+        await new Promise((r) => setTimeout(r, 500 * Math.pow(2, attempt))); // 0.5s, 1s, 2s
+      }
+    }
+  }
+  throw lastErr;
+}
+
 export async function evaluateWithGemini({
   target,
   transcript,
@@ -82,16 +116,6 @@ export async function evaluateWithGemini({
   transcript: string;
   declaredLevel?: string;
 }): Promise<Omit<EvaluationResult, "transcript">> {
-  const model = gemini().getGenerativeModel({
-    model: "gemini-2.5-flash",
-    generationConfig: {
-      responseMimeType: "application/json",
-      // @ts-expect-error responseSchema is supported but typings lag
-      responseSchema: SCHEMA,
-      temperature: 0.4,
-    },
-  });
-
   const prompt = [
     "당신은 베트남에서 한국어를 가르치는 학원의 발음 평가 전문가입니다.",
     "학생의 발음 녹음을 STT로 받아쓴 결과와 목표 문장을 비교해 평가합니다.",
@@ -115,8 +139,7 @@ export async function evaluateWithGemini({
     .filter(Boolean)
     .join("\n");
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
+  const text = await generateWithRetry(prompt);
   const parsed = JSON.parse(text) as {
     score: number;
     strengths: string;
