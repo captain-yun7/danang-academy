@@ -37,10 +37,20 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-montserrat), "Apple SD Gothic Neo", "Noto Sans KR",
-    system-ui, -apple-system, sans-serif;
+  font-family: var(--font-montserrat), var(--font-noto-kr),
+    "Apple SD Gothic Neo", "Noto Sans KR", system-ui, -apple-system, sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
+  /* 한국어 어절 단위로 줄바꿈 — 단어 가운데서 끊기는 현상 방지.
+     keep-all 은 CJK 에만 영향, 베트남어/영어는 기존대로 공백에서 끊김. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 제목·본문 어디든 한국어 어절 보존 */
+h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, button, a {
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* 공통 섹션 헤더 스타일 (hikorean .heading_s4 대응) */

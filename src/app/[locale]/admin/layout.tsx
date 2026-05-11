@@ -12,10 +12,10 @@ export default async function AdminLayout({
   const tA = await getTranslations("admin");
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-[var(--color-soft)]">
+    <div className="min-h-screen bg-[var(--color-soft)]">
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 lg:px-6">
         <aside className="hidden w-60 shrink-0 lg:block">
-          <div className="sticky top-28 rounded-xl bg-white p-4 ring-1 ring-black/5">
+          <div className="sticky top-6 rounded-xl bg-white p-4 ring-1 ring-black/5">
             <div className="mb-4 border-b border-[var(--color-line)] pb-3">
               <Link href="/" aria-label={tSite("name")} className="inline-block">
                 <Image
