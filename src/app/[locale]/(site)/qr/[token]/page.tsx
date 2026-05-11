@@ -63,20 +63,61 @@ async function processScan(token: string): Promise<ScanResult> {
   }
 
   let action: Action;
+  let logId: string | null = null;
   if (!hasCheckIn) {
-    await sql`
+    const ins = (await sql`
       insert into attendance_logs (student_id, class_id, kind, organization_id)
       values (${student.id}, ${student.class_id ? student.class_id : null}::uuid, 'check_in', ${organizationId})
-    `;
+      returning id::text
+    `) as { id: string }[];
+    logId = ins[0]?.id ?? null;
     action = "checked_in";
   } else if (!hasCheckOut) {
-    await sql`
+    const ins = (await sql`
       insert into attendance_logs (student_id, class_id, kind, organization_id)
       values (${student.id}, ${student.class_id ? student.class_id : null}::uuid, 'check_out', ${organizationId})
-    `;
+      returning id::text
+    `) as { id: string }[];
+    logId = ins[0]?.id ?? null;
     action = "checked_out";
   } else {
     action = "already_out";
+  }
+
+  // 수업 통합 — check_in 시점에 진행 중(±30분)인 그 학생의 수업이 있으면 session_attendance 자동 마킹
+  if (action === "checked_in" && student.class_id) {
+    const matches = (await sql`
+      select id::text,
+             extract(epoch from (now() at time zone 'Asia/Ho_Chi_Minh'
+                                 - (session_date + start_time)))::int as offset_sec
+      from class_sessions
+      where class_id = ${student.class_id}
+        and organization_id = ${organizationId}
+        and session_date = (current_date at time zone 'Asia/Ho_Chi_Minh')::date
+        and (now() at time zone 'Asia/Ho_Chi_Minh') between
+            (session_date + start_time - interval '30 minutes')
+            and (session_date + end_time + interval '30 minutes')
+        and status in ('scheduled', 'in_progress')
+      order by abs(extract(epoch from (now() at time zone 'Asia/Ho_Chi_Minh'
+                                       - (session_date + start_time))))
+      limit 1
+    `) as { id: string; offset_sec: number }[];
+
+    if (matches[0]) {
+      // 늦으면 지각, 아니면 출석
+      const lateThresholdSec = 10 * 60; // 시작 10분 후부터 지각
+      const status = matches[0].offset_sec > lateThresholdSec ? "late" : "present";
+      await sql`
+        insert into session_attendance
+          (session_id, student_id, organization_id, status, marked_at, qr_scan_id)
+        values (${matches[0].id}, ${student.id}, ${organizationId},
+                ${status}::session_attendance_status, now(), ${logId}::uuid)
+        on conflict (session_id, student_id) do update
+        set status = excluded.status,
+            marked_at = excluded.marked_at,
+            qr_scan_id = excluded.qr_scan_id
+      `.catch(() => undefined);
+    }
   }
 
   return {

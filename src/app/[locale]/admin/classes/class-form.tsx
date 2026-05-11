@@ -10,7 +10,23 @@ const LEVELS = [
   { value: "advanced", label: "고급반" },
 ] as const;
 
+const DAYS = [
+  { value: "mon", label: "월" },
+  { value: "tue", label: "화" },
+  { value: "wed", label: "수" },
+  { value: "thu", label: "목" },
+  { value: "fri", label: "금" },
+  { value: "sat", label: "토" },
+  { value: "sun", label: "일" },
+] as const;
+
 type Teacher = { id: string; name: string };
+
+type RecurringPattern = {
+  days?: string[];
+  start_time?: string;
+  end_time?: string;
+};
 
 type Initial = {
   id: string;
@@ -19,6 +35,7 @@ type Initial = {
   teacherId: string | null;
   schedule: string | null;
   capacity: number;
+  recurringPattern?: RecurringPattern | null;
 };
 
 export function ClassForm({
@@ -32,6 +49,9 @@ export function ClassForm({
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  const initialDays = new Set(initial?.recurringPattern?.days ?? []);
+  const [days, setDays] = useState<Set<string>>(initialDays);
 
   return (
     <form
@@ -49,6 +69,11 @@ export function ClassForm({
           teacherId: String(fd.get("teacherId") ?? ""),
           schedule: String(fd.get("schedule") ?? ""),
           capacity: Number(fd.get("capacity") ?? 10),
+          recurringPattern: {
+            days: Array.from(days) as ("sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat")[],
+            start_time: String(fd.get("startTime") ?? ""),
+            end_time: String(fd.get("endTime") ?? ""),
+          },
         };
         startTransition(async () => {
           try {
@@ -111,12 +136,65 @@ export function ClassForm({
         </label>
       </div>
 
+      <fieldset className="rounded-lg border border-[var(--color-line)] p-4">
+        <legend className="px-2 text-xs font-semibold">정기 수업 시간표</legend>
+        <p className="mb-3 text-[11px] text-[var(--color-muted)]">
+          여기를 채우면 그 요일·시간으로 향후 4주 회차가 자동 생성됩니다.
+        </p>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {DAYS.map((d) => {
+            const active = days.has(d.value);
+            return (
+              <button
+                key={d.value}
+                type="button"
+                onClick={() => {
+                  setDays((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(d.value)) next.delete(d.value);
+                    else next.add(d.value);
+                    return next;
+                  });
+                }}
+                className={`h-9 w-9 rounded-full text-sm font-bold transition ${
+                  active
+                    ? "brand-gradient text-white"
+                    : "border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
+                }`}
+              >
+                {d.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold">시작</span>
+            <input
+              name="startTime"
+              type="time"
+              defaultValue={initial?.recurringPattern?.start_time ?? ""}
+              className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm focus:border-[var(--color-primary)]"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold">종료</span>
+            <input
+              name="endTime"
+              type="time"
+              defaultValue={initial?.recurringPattern?.end_time ?? ""}
+              className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm focus:border-[var(--color-primary)]"
+            />
+          </label>
+        </div>
+      </fieldset>
+
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">시간표</span>
+        <span className="mb-1 block text-xs font-semibold">시간표 메모 (자유 텍스트)</span>
         <input
           name="schedule"
           maxLength={120}
-          placeholder="예: 월수금 19:00–21:00"
+          placeholder="예: 월수금 19:00–21:00, 보강은 토요일"
           defaultValue={initial?.schedule ?? ""}
           className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
         />
