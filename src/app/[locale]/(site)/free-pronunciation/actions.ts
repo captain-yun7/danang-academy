@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 
 const DAILY_LIMIT = 5;
 
@@ -26,11 +27,13 @@ export async function startFreePronunciationTest(
   const { visitorName, nativeLanguage, koreanLevel } = parsed.data;
 
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
 
   const limit = (await sql`
     select count(*)::int as cnt
     from free_pronunciation_tests
     where visitor_fingerprint = ${fp}
+      and organization_id = ${organizationId}
       and created_at >= date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh')
       and created_at <  date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day'
   `) as { cnt: number }[];
@@ -38,16 +41,20 @@ export async function startFreePronunciationTest(
     return { ok: false, error: "rate_limited" };
   }
 
+  // 학원 전용 문장이 있으면 우선, 없으면 공통 라이브러리(organization_id is null)
   const sentenceRow = (await sql`
-    select text from sentences where level = ${koreanLevel} order by random() limit 1
+    select text from sentences
+    where level = ${koreanLevel}
+      and (organization_id = ${organizationId} or organization_id is null)
+    order by random() limit 1
   `) as { text: string }[];
   if (!sentenceRow[0]) return { ok: false, error: "no_sentence" };
   const targetSentence = sentenceRow[0].text;
 
   const inserted = (await sql`
     insert into free_pronunciation_tests
-      (visitor_name, visitor_fingerprint, native_language, korean_level, target_sentence, status)
-    values (${visitorName}, ${fp}, ${nativeLanguage}, ${koreanLevel}, ${targetSentence}, 'pending')
+      (visitor_name, visitor_fingerprint, native_language, korean_level, target_sentence, status, organization_id)
+    values (${visitorName}, ${fp}, ${nativeLanguage}, ${koreanLevel}, ${targetSentence}, 'pending', ${organizationId})
     returning id
   `) as { id: string }[];
 
@@ -66,9 +73,10 @@ export async function submitAudioUrl(
   if (!parsed.success) return { ok: false, error: "invalid_input" };
 
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
   const owned = (await sql`
     select id from free_pronunciation_tests
-    where id = ${parsed.data.id} and visitor_fingerprint = ${fp}
+    where id = ${parsed.data.id} and visitor_fingerprint = ${fp} and organization_id = ${organizationId}
     limit 1
   `) as { id: string }[];
   if (!owned[0]) return { ok: false, error: "forbidden" };
@@ -97,11 +105,12 @@ export async function getFreePronunciationResult(
   id: string
 ): Promise<FreePronunciationResult | null> {
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
   const rows = (await sql`
     select id, status, visitor_name, target_sentence, transcript, score,
            strengths, improvements, recommended_class_level
     from free_pronunciation_tests
-    where id = ${id} and visitor_fingerprint = ${fp}
+    where id = ${id} and visitor_fingerprint = ${fp} and organization_id = ${organizationId}
     limit 1
   `) as Array<{
     id: string;

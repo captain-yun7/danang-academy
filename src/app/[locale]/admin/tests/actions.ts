@@ -8,9 +8,11 @@ import { presignGet } from "@/lib/r2/presign";
 async function requireAdmin() {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!role || !["super_admin", "owner", "manager", "teacher"].includes(role)) {
+  const organizationId = (session?.user as { organizationId?: string } | undefined)?.organizationId;
+  if (!role || !organizationId || !["super_admin", "owner", "manager", "teacher"].includes(role)) {
     throw new Error("forbidden");
   }
+  return { role, organizationId };
 }
 
 const schema = z.object({
@@ -25,14 +27,16 @@ export type AudioUrlResult =
 export async function getTestAudioUrl(
   input: z.infer<typeof schema>
 ): Promise<AudioUrlResult> {
-  await requireAdmin();
+  const { organizationId } = await requireAdmin();
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "not_found" };
 
   let key: string | null = null;
   if (parsed.data.type === "free_pron") {
     const rows = (await sql`
-      select audio_url from free_pronunciation_tests where id = ${parsed.data.testId} limit 1
+      select audio_url from free_pronunciation_tests
+      where id = ${parsed.data.testId} and organization_id = ${organizationId}
+      limit 1
     `) as { audio_url: string | null }[];
     if (!rows[0]) return { ok: false, error: "not_found" };
     key = rows[0].audio_url;
@@ -41,7 +45,7 @@ export async function getTestAudioUrl(
       select fpt.audio_url
       from placement_tests pt
       join free_pronunciation_tests fpt on fpt.id = pt.pronunciation_test_id
-      where pt.id = ${parsed.data.testId}
+      where pt.id = ${parsed.data.testId} and pt.organization_id = ${organizationId}
       limit 1
     `) as { audio_url: string | null }[];
     if (!rows[0]) return { ok: false, error: "not_found" };
@@ -49,7 +53,6 @@ export async function getTestAudioUrl(
   }
 
   if (!key) return { ok: false, error: "no_audio" };
-  // Mock 시절 키는 R2에 파일이 없지만 일단 presign — 클라이언트에서 audio 로드 실패로 잡힘
   if (!process.env.R2_BUCKET) return { ok: false, error: "r2_disabled" };
 
   const url = await presignGet(key);

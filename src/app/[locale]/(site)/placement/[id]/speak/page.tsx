@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { SpeakStep } from "./speak-step";
 
 const LEVEL_RANK: Record<string, number> = {
@@ -23,11 +24,12 @@ export default async function SpeakPage({
 }) {
   const { id } = await params;
   const fp = await getVisitorFingerprint();
+  const orgId = await getCurrentOrgId();
 
   const owned = (await sql`
     select id, visitor_name, native_language::text, mcq_score
     from placement_tests
-    where id = ${id} and visitor_fingerprint = ${fp}
+    where id = ${id} and visitor_fingerprint = ${fp} and organization_id = ${orgId}
     limit 1
   `) as {
     id: string;
@@ -39,7 +41,9 @@ export default async function SpeakPage({
   const placement = owned[0];
 
   const settings = (await sql`
-    select value from app_settings where key = 'mcq_level_thresholds' limit 1
+    select value from app_settings
+    where organization_id = ${orgId} and key = 'mcq_level_thresholds'
+    limit 1
   `) as { value: Record<string, [number, number]> }[];
   const thresholds = settings[0]?.value ?? {
     beginner: [0, 1],
@@ -56,7 +60,10 @@ export default async function SpeakPage({
   const sentenceLevel =
     RANK_LEVEL[Math.max(1, (LEVEL_RANK[mcqLevel] ?? 1) - 1)] ?? mcqLevel;
   const row = (await sql`
-    select text from sentences where level = ${sentenceLevel}::korean_level order by random() limit 1
+    select text from sentences
+    where level = ${sentenceLevel}::korean_level
+      and (organization_id = ${orgId} or organization_id is null)
+    order by random() limit 1
   `) as { text: string }[];
   const targetSentence = row[0]?.text ?? "안녕하세요. 반갑습니다.";
 

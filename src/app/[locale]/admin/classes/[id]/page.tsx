@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { ClassForm } from "../class-form";
 
 export default async function ClassDetailPage({
@@ -9,11 +10,14 @@ export default async function ClassDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const orgId = await getCurrentOrgId();
 
   const rows = (await sql`
     select c.id::text, c.name, c.level::text, c.teacher_id::text,
            c.schedule, c.capacity
-    from classes c where c.id = ${id} limit 1
+    from classes c
+    where c.id = ${id} and c.organization_id = ${orgId}
+    limit 1
   `) as Array<{
     id: string;
     name: string;
@@ -27,13 +31,14 @@ export default async function ClassDetailPage({
 
   const teachers = (await sql`
     select id::text, name from users
-    where role in ('teacher','manager','owner','super_admin')
+    where organization_id = ${orgId}
+      and role in ('teacher','manager','owner','super_admin')
     order by name
   `) as { id: string; name: string }[];
 
   const students = (await sql`
     select id::text, name, korean_level::text from students
-    where class_id = ${id}
+    where class_id = ${id} and organization_id = ${orgId}
     order by name
   `) as { id: string; name: string; korean_level: string | null }[];
 

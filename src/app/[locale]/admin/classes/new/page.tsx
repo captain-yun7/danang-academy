@@ -1,10 +1,13 @@
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { ClassForm } from "../class-form";
 
 export default async function NewClassPage() {
+  const orgId = await getCurrentOrgId();
   const teachers = (await sql`
     select id::text, name from users
-    where role in ('teacher','manager','owner','super_admin')
+    where organization_id = ${orgId}
+      and role in ('teacher','manager','owner','super_admin')
     order by name
   `) as { id: string; name: string }[];
 

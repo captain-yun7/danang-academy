@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 
 const LEVEL_LABEL: Record<string, string> = {
   beginner: "입문반",
@@ -9,24 +10,26 @@ const LEVEL_LABEL: Record<string, string> = {
   advanced: "고급반",
 };
 
-async function loadKpis() {
-  // 단일 SQL로 묶어서 라운드트립 최소화
+async function loadKpis(orgId: string) {
   const rows = (await sql`
     select
-      (select count(*)::int from students) as total_students,
-      (select count(*)::int from classes) as total_classes,
+      (select count(*)::int from students where organization_id = ${orgId}) as total_students,
+      (select count(*)::int from classes where organization_id = ${orgId}) as total_classes,
       (select count(*)::int from free_pronunciation_tests
-         where created_at >= now() - interval '7 days') as tests_week,
+         where organization_id = ${orgId}
+           and created_at >= now() - interval '7 days') as tests_week,
       (select coalesce(round(avg(score))::int, 0) from (
          select score from free_pronunciation_tests
-         where status='completed' and score is not null
+         where organization_id = ${orgId} and status='completed' and score is not null
          order by created_at desc limit 100
       ) recent) as avg_score,
-      (select count(*)::int from consult_leads) as total_leads,
+      (select count(*)::int from consult_leads where organization_id = ${orgId}) as total_leads,
       (select count(*)::int from consult_leads
-         where source in ('pronunciation_test','placement_test')) as test_to_lead,
+         where organization_id = ${orgId}
+           and source in ('pronunciation_test','placement_test')) as test_to_lead,
       (select count(distinct student_id)::int from attendance_logs
-         where kind='check_in'
+         where organization_id = ${orgId}
+           and kind='check_in'
            and logged_at >= date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh')
            and logged_at <  date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day'
       ) as today_checkins
@@ -60,13 +63,14 @@ async function loadKpis() {
   };
 }
 
-async function loadRecentLeads() {
+async function loadRecentLeads(orgId: string) {
   return (await sql`
     select id::text, name, phone,
            recommended_level::text as level,
            to_char(created_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as date,
            source, status
     from consult_leads
+    where organization_id = ${orgId}
     order by created_at desc
     limit 5
   `) as Array<{
@@ -80,13 +84,14 @@ async function loadRecentLeads() {
   }>;
 }
 
-async function loadTodayClasses() {
+async function loadTodayClasses(orgId: string) {
   return (await sql`
     select c.id::text, c.name, c.level::text, c.schedule, c.capacity,
            u.name as teacher_name,
            (select count(*)::int from students s where s.class_id = c.id) as student_count
     from classes c
     left join users u on u.id = c.teacher_id
+    where c.organization_id = ${orgId}
     order by c.created_at desc
     limit 5
   `) as Array<{
@@ -104,11 +109,12 @@ const KPI_ORDER = ["students", "attendance", "tests", "leads", "score", "classes
 
 export default async function AdminDashboardPage() {
   const t = await getTranslations("admin.dashboard");
+  const orgId = await getCurrentOrgId();
 
   const [kpis, recentLeads, todayClasses] = await Promise.all([
-    loadKpis(),
-    loadRecentLeads(),
-    loadTodayClasses(),
+    loadKpis(orgId),
+    loadRecentLeads(orgId),
+    loadTodayClasses(orgId),
   ]);
 
   const today = new Date().toLocaleDateString("ko-KR", {

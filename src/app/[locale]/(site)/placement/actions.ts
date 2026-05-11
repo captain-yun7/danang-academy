@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 
 const DAILY_LIMIT = 5;
 
@@ -32,10 +33,13 @@ export async function startPlacementTest(
   const { visitorName, nativeLanguage } = parsed.data;
 
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
+
   const limit = (await sql`
     select count(*)::int as cnt
     from placement_tests
     where visitor_fingerprint = ${fp}
+      and organization_id = ${organizationId}
       and created_at >= date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh')
       and created_at <  date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day'
   `) as { cnt: number }[];
@@ -43,11 +47,13 @@ export async function startPlacementTest(
     return { ok: false, error: "rate_limited" };
   }
 
+  // 학원 전용 문항 우선, 없으면 공통(NULL) 사용
   const questions = (await sql`
     select id, level_target::text as level_target, question_ko, question_vi,
            choices, weight
     from mcq_questions
     where active = true and version = 'v1'
+      and (organization_id = ${organizationId} or organization_id is null)
     order by case level_target
       when 'beginner' then 1
       when 'elementary' then 2
@@ -60,8 +66,8 @@ export async function startPlacementTest(
 
   const inserted = (await sql`
     insert into placement_tests
-      (visitor_name, visitor_fingerprint, native_language, mcq_answers, mcq_score, status)
-    values (${visitorName}, ${fp}, ${nativeLanguage}, '[]'::jsonb, 0, 'pending')
+      (visitor_name, visitor_fingerprint, native_language, mcq_answers, mcq_score, status, organization_id)
+    values (${visitorName}, ${fp}, ${nativeLanguage}, '[]'::jsonb, 0, 'pending', ${organizationId})
     returning id
   `) as { id: string }[];
 
@@ -87,9 +93,10 @@ export async function submitMcq(
   if (!parsed.success) return { ok: false, error: "invalid_input" };
 
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
   const owned = (await sql`
     select id from placement_tests
-    where id = ${parsed.data.id} and visitor_fingerprint = ${fp}
+    where id = ${parsed.data.id} and visitor_fingerprint = ${fp} and organization_id = ${organizationId}
     limit 1
   `) as { id: string }[];
   if (!owned[0]) return { ok: false, error: "forbidden" };
@@ -99,6 +106,7 @@ export async function submitMcq(
     select id::text, answer_index, weight
     from mcq_questions
     where id = any(${ids}::uuid[])
+      and (organization_id = ${organizationId} or organization_id is null)
   `) as { id: string; answer_index: number; weight: number }[];
   const qMap = new Map(questions.map((q) => [q.id, q]));
 
@@ -116,7 +124,9 @@ export async function submitMcq(
   });
 
   const settings = (await sql`
-    select value from app_settings where key = 'mcq_level_thresholds' limit 1
+    select value from app_settings
+    where organization_id = ${organizationId} and key = 'mcq_level_thresholds'
+    limit 1
   `) as { value: Record<string, [number, number]> }[];
   const thresholds = settings[0]?.value ?? {
     beginner: [0, 1],
@@ -154,17 +164,18 @@ export async function startPlacementPronunciation(
   if (!parsed.success) return { ok: false, error: "invalid_input" };
 
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
   const owned = (await sql`
-    select id from placement_tests where id = ${parsed.data.placementId} and visitor_fingerprint = ${fp} limit 1
+    select id from placement_tests where id = ${parsed.data.placementId} and visitor_fingerprint = ${fp} and organization_id = ${organizationId} limit 1
   `) as { id: string }[];
   if (!owned[0]) return { ok: false, error: "forbidden" };
 
   const inserted = (await sql`
     insert into free_pronunciation_tests
-      (visitor_name, visitor_fingerprint, native_language, korean_level, target_sentence, status)
+      (visitor_name, visitor_fingerprint, native_language, korean_level, target_sentence, status, organization_id)
     values (${parsed.data.visitorName}, ${fp}, ${parsed.data.nativeLanguage},
             ${parsed.data.koreanLevel}::korean_level,
-            ${parsed.data.targetSentence}, 'pending')
+            ${parsed.data.targetSentence}, 'pending', ${organizationId})
     returning id
   `) as { id: string }[];
 
@@ -189,8 +200,9 @@ export async function linkPronunciationToPlacement(
   if (!parsed.success) return { ok: false, error: "invalid_input" };
 
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
   const owned = (await sql`
-    select id from placement_tests where id = ${parsed.data.id} and visitor_fingerprint = ${fp} limit 1
+    select id from placement_tests where id = ${parsed.data.id} and visitor_fingerprint = ${fp} and organization_id = ${organizationId} limit 1
   `) as { id: string }[];
   if (!owned[0]) return { ok: false, error: "forbidden" };
 
@@ -235,6 +247,7 @@ const RANK_LEVEL: Record<number, string> = {
 
 export async function getPlacementResult(id: string): Promise<PlacementResult | null> {
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
   const rows = (await sql`
     select pt.id, pt.status::text, pt.visitor_name, pt.mcq_score,
            pt.recommended_level::text as recommended_level,
@@ -244,7 +257,7 @@ export async function getPlacementResult(id: string): Promise<PlacementResult | 
            fpt.recommended_class_level::text as pron_level
     from placement_tests pt
     left join free_pronunciation_tests fpt on fpt.id = pt.pronunciation_test_id
-    where pt.id = ${id} and pt.visitor_fingerprint = ${fp}
+    where pt.id = ${id} and pt.visitor_fingerprint = ${fp} and pt.organization_id = ${organizationId}
     limit 1
   `) as Array<{
     id: string;
@@ -271,7 +284,9 @@ export async function getPlacementResult(id: string): Promise<PlacementResult | 
     r.recommended_level === null
   ) {
     const settings = (await sql`
-      select value from app_settings where key = 'mcq_level_thresholds' limit 1
+      select value from app_settings
+      where organization_id = ${organizationId} and key = 'mcq_level_thresholds'
+      limit 1
     `) as { value: Record<string, [number, number]> }[];
     const thresholds = settings[0]?.value ?? {};
     const mcqLevel =

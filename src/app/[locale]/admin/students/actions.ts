@@ -6,13 +6,16 @@ import { redirect } from "next/navigation";
 import { sql } from "@/lib/db/client";
 import { auth } from "@/auth";
 
-async function requireAdmin() {
+type Session = { user: { role: string; organizationId: string } };
+
+async function requireAdmin(): Promise<Session> {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!role || !["super_admin", "owner", "manager", "teacher"].includes(role)) {
+  const organizationId = (session?.user as { organizationId?: string } | undefined)?.organizationId;
+  if (!role || !organizationId || !["super_admin", "owner", "manager", "teacher"].includes(role)) {
     throw new Error("forbidden");
   }
-  return session!;
+  return { user: { role, organizationId } };
 }
 
 const createSchema = z.object({
@@ -29,14 +32,14 @@ const createSchema = z.object({
 });
 
 export async function createStudent(input: z.infer<typeof createSchema>) {
-  await requireAdmin();
+  const { user } = await requireAdmin();
   const parsed = createSchema.safeParse(input);
   if (!parsed.success) throw new Error("invalid_input");
   const d = parsed.data;
 
   const inserted = (await sql`
     insert into students
-      (name, phone, native_language, korean_level, class_id, parent_contact, enrolled_at)
+      (name, phone, native_language, korean_level, class_id, parent_contact, enrolled_at, organization_id)
     values
       (${d.name},
        ${d.phone || null},
@@ -44,7 +47,8 @@ export async function createStudent(input: z.infer<typeof createSchema>) {
        ${d.koreanLevel ? d.koreanLevel : null}::korean_level,
        ${d.classId ? d.classId : null}::uuid,
        ${d.parentContact || null},
-       ${d.enrolledAt ? d.enrolledAt : null}::date)
+       ${d.enrolledAt ? d.enrolledAt : null}::date,
+       ${user.organizationId})
     returning id::text
   `) as { id: string }[];
 
@@ -58,7 +62,7 @@ const updateSchema = createSchema.extend({
 });
 
 export async function updateStudent(input: z.infer<typeof updateSchema>) {
-  await requireAdmin();
+  const { user } = await requireAdmin();
   const parsed = updateSchema.safeParse(input);
   if (!parsed.success) throw new Error("invalid_input");
   const d = parsed.data;
@@ -72,7 +76,7 @@ export async function updateStudent(input: z.infer<typeof updateSchema>) {
       class_id = ${d.classId ? d.classId : null}::uuid,
       parent_contact = ${d.parentContact || null},
       enrolled_at = ${d.enrolledAt ? d.enrolledAt : null}::date
-    where id = ${d.id}
+    where id = ${d.id} and organization_id = ${user.organizationId}
   `;
 
   revalidatePath("/admin/students");
@@ -80,8 +84,8 @@ export async function updateStudent(input: z.infer<typeof updateSchema>) {
 }
 
 export async function deleteStudent(id: string) {
-  await requireAdmin();
-  await sql`delete from students where id = ${id}`;
+  const { user } = await requireAdmin();
+  await sql`delete from students where id = ${id} and organization_id = ${user.organizationId}`;
   revalidatePath("/admin/students");
   revalidatePath("/admin");
   redirect("/admin/students");

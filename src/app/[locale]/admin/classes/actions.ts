@@ -9,10 +9,11 @@ import { auth } from "@/auth";
 async function requireAdmin() {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!role || !["super_admin", "owner", "manager"].includes(role)) {
+  const organizationId = (session?.user as { organizationId?: string } | undefined)?.organizationId;
+  if (!role || !organizationId || !["super_admin", "owner", "manager"].includes(role)) {
     throw new Error("forbidden");
   }
-  return session!;
+  return { role, organizationId };
 }
 
 const schema = z.object({
@@ -24,16 +25,17 @@ const schema = z.object({
 });
 
 export async function createClass(input: z.infer<typeof schema>) {
-  await requireAdmin();
+  const { organizationId } = await requireAdmin();
   const parsed = schema.safeParse(input);
   if (!parsed.success) throw new Error("invalid_input");
   const d = parsed.data;
   const inserted = (await sql`
-    insert into classes (name, level, teacher_id, schedule, capacity)
+    insert into classes (name, level, teacher_id, schedule, capacity, organization_id)
     values (${d.name}, ${d.level}::korean_level,
             ${d.teacherId ? d.teacherId : null}::uuid,
             ${d.schedule || null},
-            ${d.capacity})
+            ${d.capacity},
+            ${organizationId})
     returning id::text
   `) as { id: string }[];
   revalidatePath("/admin/classes");
@@ -43,7 +45,7 @@ export async function createClass(input: z.infer<typeof schema>) {
 
 const updateSchema = schema.extend({ id: z.string().uuid() });
 export async function updateClass(input: z.infer<typeof updateSchema>) {
-  await requireAdmin();
+  const { organizationId } = await requireAdmin();
   const parsed = updateSchema.safeParse(input);
   if (!parsed.success) throw new Error("invalid_input");
   const d = parsed.data;
@@ -54,15 +56,15 @@ export async function updateClass(input: z.infer<typeof updateSchema>) {
       teacher_id = ${d.teacherId ? d.teacherId : null}::uuid,
       schedule = ${d.schedule || null},
       capacity = ${d.capacity}
-    where id = ${d.id}
+    where id = ${d.id} and organization_id = ${organizationId}
   `;
   revalidatePath("/admin/classes");
   revalidatePath(`/admin/classes/${d.id}`);
 }
 
 export async function deleteClass(id: string) {
-  await requireAdmin();
-  await sql`delete from classes where id = ${id}`;
+  const { organizationId } = await requireAdmin();
+  await sql`delete from classes where id = ${id} and organization_id = ${organizationId}`;
   revalidatePath("/admin/classes");
   revalidatePath("/admin");
   redirect("/admin/classes");

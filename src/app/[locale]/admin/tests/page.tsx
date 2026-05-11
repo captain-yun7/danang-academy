@@ -1,4 +1,5 @@
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { AudioCell } from "./audio-cell";
 
 const LEVEL_LABEL: Record<string, string> = {
@@ -42,6 +43,7 @@ export default async function AdminTestsPage({
 }) {
   const sp = await searchParams;
   const filter = sp.type === "free_pron" || sp.type === "placement" ? sp.type : null;
+  const orgId = await getCurrentOrgId();
 
   const fpts = (await sql`
     select id::text, visitor_name, status::text, score,
@@ -49,6 +51,7 @@ export default async function AdminTestsPage({
            target_sentence,
            to_char(created_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD HH24:MI') as created_at
     from free_pronunciation_tests
+    where organization_id = ${orgId}
     order by created_at desc
     limit 200
   `) as Array<{
@@ -66,6 +69,7 @@ export default async function AdminTestsPage({
            recommended_level::text as level,
            to_char(created_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD HH24:MI') as created_at
     from placement_tests
+    where organization_id = ${orgId}
     order by created_at desc
     limit 200
   `) as Array<{

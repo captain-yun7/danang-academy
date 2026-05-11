@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 
 const DEDUP_SECONDS = 30;
 
@@ -17,12 +18,13 @@ type ScanResult =
 
 async function processScan(token: string): Promise<ScanResult> {
   if (!token || token.length < 10) return { ok: false, reason: "not_found" };
+  const organizationId = await getCurrentOrgId();
 
   const students = (await sql`
     select s.id::text, s.name, s.class_id::text, c.name as class_name
     from students s
     left join classes c on c.id = s.class_id
-    where s.qr_token = ${token}
+    where s.qr_token = ${token} and s.organization_id = ${organizationId}
     limit 1
   `) as Array<{
     id: string;
@@ -39,6 +41,7 @@ async function processScan(token: string): Promise<ScanResult> {
            extract(epoch from (now() - logged_at))::int as seconds_ago
     from attendance_logs
     where student_id = ${student.id}
+      and organization_id = ${organizationId}
       and logged_at >= date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh')
       and logged_at <  date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day'
     order by logged_at desc
@@ -62,14 +65,14 @@ async function processScan(token: string): Promise<ScanResult> {
   let action: Action;
   if (!hasCheckIn) {
     await sql`
-      insert into attendance_logs (student_id, class_id, kind)
-      values (${student.id}, ${student.class_id ? student.class_id : null}::uuid, 'check_in')
+      insert into attendance_logs (student_id, class_id, kind, organization_id)
+      values (${student.id}, ${student.class_id ? student.class_id : null}::uuid, 'check_in', ${organizationId})
     `;
     action = "checked_in";
   } else if (!hasCheckOut) {
     await sql`
-      insert into attendance_logs (student_id, class_id, kind)
-      values (${student.id}, ${student.class_id ? student.class_id : null}::uuid, 'check_out')
+      insert into attendance_logs (student_id, class_id, kind, organization_id)
+      values (${student.id}, ${student.class_id ? student.class_id : null}::uuid, 'check_out', ${organizationId})
     `;
     action = "checked_out";
   } else {

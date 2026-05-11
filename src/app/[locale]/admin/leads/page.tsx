@@ -1,4 +1,5 @@
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { LeadRow } from "./lead-row";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -23,6 +24,7 @@ export default async function AdminLeadsPage({
   const filter = sp.status && ["new", "contacted", "enrolled", "dropped"].includes(sp.status)
     ? sp.status
     : null;
+  const orgId = await getCurrentOrgId();
 
   const leads = (await sql`
     select id::text, name, phone, email,
@@ -31,7 +33,8 @@ export default async function AdminLeadsPage({
            status, note,
            to_char(created_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD HH24:MI') as created_at
     from consult_leads
-    ${filter ? sql`where status = ${filter}` : sql``}
+    where organization_id = ${orgId}
+      ${filter ? sql`and status = ${filter}` : sql``}
     order by case status
       when 'new' then 1
       when 'contacted' then 2
@@ -54,6 +57,7 @@ export default async function AdminLeadsPage({
   const counts = (await sql`
     select status, count(*)::int as cnt
     from consult_leads
+    where organization_id = ${orgId}
     group by status
   `) as { status: string; cnt: number }[];
   const countMap = Object.fromEntries(counts.map((c) => [c.status, c.cnt]));

@@ -1,9 +1,13 @@
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { StudentForm } from "../student-form";
 
 export default async function NewStudentPage() {
+  const orgId = await getCurrentOrgId();
   const classes = (await sql`
-    select id::text, name, level::text from classes order by name
+    select id::text, name, level::text from classes
+    where organization_id = ${orgId}
+    order by name
   `) as { id: string; name: string; level: string }[];
 
   return (

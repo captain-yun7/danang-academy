@@ -2,6 +2,7 @@ import { NextResponse, after } from "next/server";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { getR2, r2Bucket } from "@/lib/r2/client";
 import { evaluatePronunciation, isAIConfigured } from "@/lib/ai/evaluate-pronunciation";
 
@@ -16,10 +17,11 @@ export async function POST(req: Request) {
   }
 
   const fp = await getVisitorFingerprint();
+  const organizationId = await getCurrentOrgId();
   const owned = (await sql`
     select id, target_sentence, korean_level::text as level
     from free_pronunciation_tests
-    where id = ${id} and visitor_fingerprint = ${fp}
+    where id = ${id} and visitor_fingerprint = ${fp} and organization_id = ${organizationId}
     limit 1
   `) as { id: string; target_sentence: string; level: string }[];
   if (!owned[0]) {

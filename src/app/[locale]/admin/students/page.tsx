@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 
 const LEVEL_LABEL: Record<string, string> = {
   beginner: "입문",
@@ -26,6 +27,7 @@ type Row = {
 };
 
 export default async function AdminStudentsPage() {
+  const orgId = await getCurrentOrgId();
   const students = (await sql`
     select s.id::text, s.name, s.phone,
            s.native_language::text,
@@ -36,6 +38,7 @@ export default async function AdminStudentsPage() {
            to_char(s.created_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as created_at
     from students s
     left join classes c on c.id = s.class_id
+    where s.organization_id = ${orgId}
     order by s.created_at desc
   `) as Row[];
 

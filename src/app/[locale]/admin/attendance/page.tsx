@@ -1,12 +1,15 @@
 import { Link } from "@/i18n/navigation";
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 
 export default async function AdminAttendancePage() {
+  const orgId = await getCurrentOrgId();
   // 오늘 입실/퇴실 카운트 (Asia/Ho_Chi_Minh 기준일)
   const today = (await sql`
     select kind::text, count(*)::int as cnt
     from attendance_logs
-    where logged_at >= date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh')
+    where organization_id = ${orgId}
+      and logged_at >= date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh')
       and logged_at <  date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day'
     group by kind
   `) as { kind: string; cnt: number }[];
@@ -20,8 +23,10 @@ export default async function AdminAttendancePage() {
     from classes c
     left join attendance_logs al on al.class_id = c.id
       and al.kind = 'check_in'
+      and al.organization_id = ${orgId}
       and al.logged_at >= date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh')
       and al.logged_at <  date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day'
+    where c.organization_id = ${orgId}
     group by c.id, c.name, c.level, c.capacity
     order by c.name
   `) as { class_name: string; level: string; checked_in: number; capacity: number }[];
@@ -35,6 +40,7 @@ export default async function AdminAttendancePage() {
     from attendance_logs al
     join students s on s.id = al.student_id
     left join classes c on c.id = al.class_id
+    where al.organization_id = ${orgId}
     order by al.logged_at desc
     limit 30
   `) as Array<{

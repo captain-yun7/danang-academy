@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { headers } from "next/headers";
 import QRCode from "qrcode";
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { StudentForm } from "../student-form";
 
 const LEVEL_LABEL: Record<string, string> = {
@@ -18,6 +19,7 @@ export default async function StudentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const orgId = await getCurrentOrgId();
 
   const rows = (await sql`
     select s.id::text, s.name, s.phone,
@@ -30,7 +32,7 @@ export default async function StudentDetailPage({
            c.name as class_name
     from students s
     left join classes c on c.id = s.class_id
-    where s.id = ${id}
+    where s.id = ${id} and s.organization_id = ${orgId}
     limit 1
   `) as Array<{
     id: string;
@@ -48,13 +50,15 @@ export default async function StudentDetailPage({
   const s = rows[0];
 
   const classes = (await sql`
-    select id::text, name, level::text from classes order by name
+    select id::text, name, level::text from classes
+    where organization_id = ${orgId}
+    order by name
   `) as { id: string; name: string; level: string }[];
 
   const recentLogs = (await sql`
     select kind::text, to_char(logged_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD HH24:MI') as ts
     from attendance_logs
-    where student_id = ${id}
+    where student_id = ${id} and organization_id = ${orgId}
     order by logged_at desc
     limit 20
   `) as { kind: string; ts: string }[];

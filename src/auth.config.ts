@@ -15,13 +15,20 @@ export const authConfig = {
       if (user) {
         token.role = (user as { role?: string }).role;
         token.id = user.id;
+        token.organizationId = (user as { organizationId?: string }).organizationId;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { id?: string }).id = token.id as string;
-        (session.user as { role?: string }).role = token.role as string;
+        const u = session.user as {
+          id?: string;
+          role?: string;
+          organizationId?: string;
+        };
+        u.id = token.id as string;
+        u.role = token.role as string;
+        u.organizationId = token.organizationId as string;
       }
       return session;
     },

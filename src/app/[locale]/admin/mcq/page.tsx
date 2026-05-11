@@ -1,4 +1,5 @@
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { ToggleActive } from "./toggle-active";
 import { ThresholdEditor } from "./threshold-editor";
 
@@ -21,10 +22,13 @@ const LEVEL_LABEL: Record<string, string> = {
 };
 
 export default async function AdminMcqPage() {
+  const orgId = await getCurrentOrgId();
+  // 학원 전용 문항 + 공통 문항 (organization_id is null)
   const questions = (await sql`
     select id::text, level_target::text, question_ko, question_vi, choices,
            answer_index, weight, active
     from mcq_questions
+    where organization_id = ${orgId} or organization_id is null
     order by case level_target
       when 'beginner' then 1
       when 'elementary' then 2
@@ -38,7 +42,9 @@ export default async function AdminMcqPage() {
     [number, number]
   >;
   const settings = (await sql`
-    select value from app_settings where key = 'mcq_level_thresholds' limit 1
+    select value from app_settings
+    where organization_id = ${orgId} and key = 'mcq_level_thresholds'
+    limit 1
   `) as { value: Thresholds }[];
   const thresholds: Thresholds = settings[0]?.value ?? {
     beginner: [0, 1],

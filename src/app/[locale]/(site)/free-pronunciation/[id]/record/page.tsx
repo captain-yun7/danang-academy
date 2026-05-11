@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { Recorder } from "./recorder";
 
 export default async function RecordPage({
@@ -10,11 +11,12 @@ export default async function RecordPage({
 }) {
   const { id } = await params;
   const fp = await getVisitorFingerprint();
+  const orgId = await getCurrentOrgId();
 
   const rows = (await sql`
     select id, target_sentence, status, visitor_name
     from free_pronunciation_tests
-    where id = ${id} and visitor_fingerprint = ${fp}
+    where id = ${id} and visitor_fingerprint = ${fp} and organization_id = ${orgId}
     limit 1
   `) as Array<{
     id: string;

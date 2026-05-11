@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 import { McqQuiz } from "./mcq-quiz";
 import type { McqQuestion } from "../../actions";
 
@@ -11,11 +12,12 @@ export default async function McqPage({
 }) {
   const { id } = await params;
   const fp = await getVisitorFingerprint();
+  const orgId = await getCurrentOrgId();
 
   const owned = (await sql`
     select id, visitor_name, mcq_score
     from placement_tests
-    where id = ${id} and visitor_fingerprint = ${fp}
+    where id = ${id} and visitor_fingerprint = ${fp} and organization_id = ${orgId}
     limit 1
   `) as { id: string; visitor_name: string; mcq_score: number }[];
   if (!owned[0]) notFound();
@@ -25,6 +27,7 @@ export default async function McqPage({
            choices, weight
     from mcq_questions
     where active = true and version = 'v1'
+      and (organization_id = ${orgId} or organization_id is null)
     order by case level_target
       when 'beginner' then 1
       when 'elementary' then 2

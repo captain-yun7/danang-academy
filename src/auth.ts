@@ -17,12 +17,13 @@ type DbUser = {
   name: string;
   role: string;
   image: string | null;
+  organization_id: string;
 };
 
 async function getUserByEmail(email: string): Promise<DbUser | null> {
   const pool = getPool();
   const { rows } = await pool.query<DbUser>(
-    "select id, email, password_hash, name, role, image from users where email = $1 limit 1",
+    "select id, email, password_hash, name, role, image, organization_id from users where email = $1 limit 1",
     [email]
   );
   return rows[0] ?? null;
@@ -49,6 +50,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           image: user.image ?? undefined,
           role: user.role,
+          organizationId: user.organization_id,
         };
       },
     }),

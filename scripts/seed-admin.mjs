@@ -12,6 +12,7 @@ const email = process.env.ADMIN_SEED_EMAIL;
 const password = process.env.ADMIN_SEED_PASSWORD;
 const name = process.env.ADMIN_SEED_NAME ?? "Admin";
 const role = process.env.ADMIN_SEED_ROLE ?? "owner";
+const orgSlug = process.env.ADMIN_SEED_ORG ?? "danang";
 
 if (!email || !password) {
   console.error(
@@ -27,21 +28,29 @@ if (password.length < 8) {
 const sql = neon(url);
 const hash = await bcrypt.hash(password, 10);
 
+const orgRows = await sql`select id::text from organizations where slug = ${orgSlug} limit 1`;
+if (orgRows.length === 0) {
+  console.error(`organization slug '${orgSlug}' not found`);
+  process.exit(1);
+}
+const organizationId = orgRows[0].id;
+
 const existing = await sql`select id from users where email = ${email} limit 1`;
 
 if (existing.length > 0) {
   await sql`
     update users
     set password_hash = ${hash}, name = ${name}, role = ${role}::user_role,
+        organization_id = ${organizationId},
         email_verified = coalesce(email_verified, now())
     where email = ${email}
   `;
-  console.log(`updated existing user: ${email} (role=${role})`);
+  console.log(`updated existing user: ${email} (role=${role}, org=${orgSlug})`);
 } else {
   const inserted = await sql`
-    insert into users (email, password_hash, name, role, email_verified)
-    values (${email}, ${hash}, ${name}, ${role}::user_role, now())
+    insert into users (email, password_hash, name, role, organization_id, email_verified)
+    values (${email}, ${hash}, ${name}, ${role}::user_role, ${organizationId}, now())
     returning id
   `;
-  console.log(`seeded admin: ${email} → ${inserted[0].id} (role=${role})`);
+  console.log(`seeded admin: ${email} → ${inserted[0].id} (role=${role}, org=${orgSlug})`);
 }

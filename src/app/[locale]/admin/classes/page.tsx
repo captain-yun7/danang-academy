@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { sql } from "@/lib/db/client";
+import { getCurrentOrgId } from "@/lib/auth/scope";
 
 const LEVEL_LABEL: Record<string, string> = {
   beginner: "입문",
@@ -19,12 +20,14 @@ type Row = {
 };
 
 export default async function AdminClassesPage() {
+  const orgId = await getCurrentOrgId();
   const classes = (await sql`
     select c.id::text, c.name, c.level::text, c.schedule, c.capacity,
            u.name as teacher_name,
            (select count(*)::int from students s where s.class_id = c.id) as student_count
     from classes c
     left join users u on u.id = c.teacher_id
+    where c.organization_id = ${orgId}
     order by case c.level
       when 'beginner' then 1
       when 'elementary' then 2
