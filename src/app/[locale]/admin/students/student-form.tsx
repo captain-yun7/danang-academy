@@ -17,6 +17,13 @@ const LANGS = [
   { value: "other", label: "기타" },
 ] as const;
 
+const STATUSES = [
+  { value: "active", label: "수강중" },
+  { value: "paused", label: "휴학" },
+  { value: "graduated", label: "수료" },
+  { value: "dropped", label: "이탈" },
+] as const;
+
 type Klass = { id: string; name: string; level: string };
 
 type Initial = {
@@ -28,6 +35,7 @@ type Initial = {
   classId: string | null;
   parentContact: string | null;
   enrolledAt: string | null;
+  status: string;
 };
 
 export function StudentForm({
@@ -61,6 +69,8 @@ export function StudentForm({
           classId: String(fd.get("classId") ?? ""),
           parentContact: String(fd.get("parentContact") ?? ""),
           enrolledAt: String(fd.get("enrolledAt") ?? ""),
+          status: (fd.get("status") as string) as
+            | "active" | "paused" | "graduated" | "dropped",
         };
         startTransition(async () => {
           try {
@@ -159,15 +169,31 @@ export function StudentForm({
         />
       </label>
 
-      <label className="block">
-        <span className="mb-1 block text-xs font-semibold">등록일</span>
-        <input
-          name="enrolledAt"
-          type="date"
-          defaultValue={initial?.enrolledAt ?? ""}
-          className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
-        />
-      </label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold">등록일</span>
+          <input
+            name="enrolledAt"
+            type="date"
+            defaultValue={initial?.enrolledAt ?? ""}
+            className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold">상태</span>
+          <select
+            name="status"
+            defaultValue={initial?.status ?? "active"}
+            className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm focus:border-[var(--color-primary)]"
+          >
+            {STATUSES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       {error && (
         <p className="rounded-md bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">

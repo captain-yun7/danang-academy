@@ -29,6 +29,7 @@ const createSchema = z.object({
   classId: z.string().uuid().optional().or(z.literal("")),
   parentContact: z.string().trim().max(120).optional().or(z.literal("")),
   enrolledAt: z.string().optional().or(z.literal("")),
+  status: z.enum(["active", "paused", "graduated", "dropped"]).default("active"),
 });
 
 export async function createStudent(input: z.infer<typeof createSchema>) {
@@ -39,7 +40,7 @@ export async function createStudent(input: z.infer<typeof createSchema>) {
 
   const inserted = (await sql`
     insert into students
-      (name, phone, native_language, korean_level, class_id, parent_contact, enrolled_at, organization_id)
+      (name, phone, native_language, korean_level, class_id, parent_contact, enrolled_at, status, organization_id)
     values
       (${d.name},
        ${d.phone || null},
@@ -48,6 +49,7 @@ export async function createStudent(input: z.infer<typeof createSchema>) {
        ${d.classId ? d.classId : null}::uuid,
        ${d.parentContact || null},
        ${d.enrolledAt ? d.enrolledAt : null}::date,
+       ${d.status}::student_status,
        ${user.organizationId})
     returning id::text
   `) as { id: string }[];
@@ -75,7 +77,8 @@ export async function updateStudent(input: z.infer<typeof updateSchema>) {
       korean_level = ${d.koreanLevel ? d.koreanLevel : null}::korean_level,
       class_id = ${d.classId ? d.classId : null}::uuid,
       parent_contact = ${d.parentContact || null},
-      enrolled_at = ${d.enrolledAt ? d.enrolledAt : null}::date
+      enrolled_at = ${d.enrolledAt ? d.enrolledAt : null}::date,
+      status = ${d.status}::student_status
     where id = ${d.id} and organization_id = ${user.organizationId}
   `;
 

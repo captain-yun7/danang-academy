@@ -29,6 +29,7 @@ export default async function StudentDetailPage({
            s.parent_contact,
            to_char(s.enrolled_at, 'YYYY-MM-DD') as enrolled_at,
            s.qr_token,
+           s.status::text,
            c.name as class_name
     from students s
     left join classes c on c.id = s.class_id
@@ -44,6 +45,7 @@ export default async function StudentDetailPage({
     parent_contact: string | null;
     enrolled_at: string | null;
     qr_token: string;
+    status: string;
     class_name: string | null;
   }>;
   if (!rows[0]) notFound();
@@ -103,6 +105,7 @@ export default async function StudentDetailPage({
               classId: s.class_id,
               parentContact: s.parent_contact,
               enrolledAt: s.enrolled_at,
+              status: s.status,
             }}
           />
         </section>

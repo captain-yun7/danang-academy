@@ -274,6 +274,7 @@
       "dashboard": { "label": "대시보드", "desc": "오늘의 요약" },
       "students": { "label": "학생", "desc": "명단 · 등록" },
       "classes": { "label": "반", "desc": "시간표 · 배정" },
+      "teachers": { "label": "강사·직원", "desc": "계정 관리" },
       "attendance": { "label": "출석", "desc": "QR 기록" },
       "tests": { "label": "테스트", "desc": "발음 · 배정 결과" },
       "leads": { "label": "상담 리드", "desc": "전환 파이프라인" },

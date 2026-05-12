@@ -274,6 +274,7 @@
       "dashboard": { "label": "Dashboard", "desc": "Tóm tắt hôm nay" },
       "students": { "label": "Học viên", "desc": "Danh sách · đăng ký" },
       "classes": { "label": "Lớp", "desc": "Lịch · phân lớp" },
+      "teachers": { "label": "Giáo viên · NV", "desc": "Quản lý tài khoản" },
       "attendance": { "label": "Điểm danh", "desc": "Lịch sử QR" },
       "tests": { "label": "Bài kiểm tra", "desc": "Phát âm · xếp lớp" },
       "leads": { "label": "Khách tư vấn", "desc": "Pipeline chuyển đổi" },
