@@ -279,7 +279,8 @@
       "tests": { "label": "Bài kiểm tra", "desc": "Phát âm · xếp lớp" },
       "leads": { "label": "Khách tư vấn", "desc": "Pipeline chuyển đổi" },
       "mcq": { "label": "Câu hỏi xếp lớp", "desc": "Câu hỏi · ngưỡng" },
-      "reports": { "label": "Báo cáo", "desc": "Tuần · tháng" }
+      "reports": { "label": "Báo cáo", "desc": "Tuần · tháng" },
+      "settings": { "label": "Cài đặt học viện", "desc": "Vị trí · bán kính QR" }
     },
     "common": {
       "save": "Lưu",
@@ -656,6 +657,35 @@
     },
     "pages": {
       "reports": { "title": "Báo cáo học tập", "desc": "Lịch sử tạo và gửi báo cáo tuần · tháng." }
+    },
+    "settings": {
+      "subtitle": "Settings · Cài đặt học viện",
+      "title": "Cài đặt học viện",
+      "intro": "Thiết lập vị trí và bán kính nơi học viên có thể điểm danh bằng QR. Quét QR ngoài phạm vi này sẽ bị từ chối.",
+      "locationTitle": "Vị trí học viện · Bán kính điểm danh",
+      "locationDesc": "Chỉ những lần quét trong bán kính GPS quanh vị trí học viện mới được tính.",
+      "lat": "Vĩ độ (latitude)",
+      "lng": "Kinh độ (longitude)",
+      "radius": "Bán kính điểm danh",
+      "radiusUnit": "m",
+      "radiusHint": "Từ 10 đến 5000m. Để giới hạn trong khuôn viên, dùng 50~100m. Nếu cửa học viện ngay mặt đường, 150~200m cũng ổn.",
+      "useCurrentLocation": "Lấy vị trí hiện tại",
+      "useCurrentLocationHint": "Mở trang này khi bạn đang ở học viện rồi nhấn nút này để tự điền tọa độ GPS.",
+      "locating": "Đang xác định vị trí...",
+      "previewTitle": "Xem trước trên bản đồ",
+      "previewEmpty": "Nhập tọa độ để xem trước.",
+      "previewHint": "Xem trước dựa trên OpenStreetMap.",
+      "helpTitle": "Cách lấy tọa độ",
+      "helpStep1": "Tìm học viện trên Google Maps.",
+      "helpStep2": "Nhấn giữ (hoặc chuột phải) vào vị trí trên bản đồ để hiện tọa độ.",
+      "helpStep3": "Sao chép hai số (vĩ độ, kinh độ) rồi dán vào ô bên trên.",
+      "err": {
+        "invalidCoords": "Tọa độ không hợp lệ.",
+        "invalidRadius": "Bán kính phải từ 10 đến 5000m.",
+        "geoUnavailable": "Trình duyệt này không hỗ trợ định vị.",
+        "geoFailed": "Không lấy được vị trí. Vui lòng kiểm tra quyền truy cập vị trí.",
+        "forbidden": "Bạn không có quyền thay đổi cài đặt này."
+      }
     }
   },
   "fpt": {

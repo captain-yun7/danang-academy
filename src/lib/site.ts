@@ -101,4 +101,5 @@ export const adminMenuKeys = [
   { key: "mcq", href: "/admin/mcq" },
   { key: "leads", href: "/admin/leads" },
   { key: "reports", href: "/admin/reports" },
+  { key: "settings", href: "/admin/settings" },
 ] as const;
