@@ -3,8 +3,10 @@ import { Link } from "@/i18n/navigation";
 import { headers } from "next/headers";
 import QRCode from "qrcode";
 import { sql } from "@/lib/db/client";
+import { auth } from "@/auth";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 import { StudentForm } from "../student-form";
+import { NotesSection, type StudentNote } from "../notes/notes-section";
 
 const LEVEL_LABEL: Record<string, string> = {
   beginner: "입문",
@@ -64,6 +66,21 @@ export default async function StudentDetailPage({
     order by logged_at desc
     limit 20
   `) as { kind: string; ts: string }[];
+
+  const notes = (await sql`
+    select n.id::text, n.content, n.category, n.author_id::text,
+           u.name as author_name,
+           to_char(n.created_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD HH24:MI') as created_at
+    from student_notes n
+    left join users u on u.id = n.author_id
+    where n.student_id = ${id} and n.organization_id = ${orgId}
+    order by n.created_at desc
+    limit 50
+  `) as StudentNote[];
+
+  const session = await auth();
+  const currentUserId = (session?.user as { id?: string } | undefined)?.id ?? "";
+  const currentRole = (session?.user as { role?: string } | undefined)?.role ?? "teacher";
 
   // 사이트 호스트 추출 (QR URL용)
   const h = await headers();
@@ -155,6 +172,15 @@ export default async function StudentDetailPage({
             )}
           </div>
         </section>
+      </div>
+
+      <div className="mt-8">
+        <NotesSection
+          studentId={s.id}
+          notes={notes}
+          currentUserId={currentUserId}
+          currentRole={currentRole}
+        />
       </div>
     </div>
   );
