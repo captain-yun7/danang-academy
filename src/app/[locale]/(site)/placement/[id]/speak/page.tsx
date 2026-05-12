@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
 import { getCurrentOrgId } from "@/lib/auth/scope";
@@ -67,11 +68,13 @@ export default async function SpeakPage({
   `) as { text: string }[];
   const targetSentence = row[0]?.text ?? "안녕하세요. 반갑습니다.";
 
+  const t = await getTranslations("pt.speak");
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 lg:py-16">
-      <p className="eyebrow">Step 3 / 4</p>
+      <p className="eyebrow">{t("step")}</p>
       <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
-        {placement.visitor_name}님, 한 문장만 따라 읽어볼까요?
+        {t("title", { name: placement.visitor_name })}
       </h1>
 
       <div className="mt-6 rounded-2xl border-2 border-[var(--color-primary)]/30 bg-[var(--color-soft)] p-8 text-center">
@@ -91,7 +94,7 @@ export default async function SpeakPage({
       </div>
 
       <p className="mt-6 text-xs text-[var(--color-muted)]">
-        💡 조용한 환경에서 또박또박 읽어주세요. 녹음은 최대 30초입니다.
+        {t("hint")}
       </p>
     </div>
   );

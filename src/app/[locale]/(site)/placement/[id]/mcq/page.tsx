@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
 import { getCurrentOrgId } from "@/lib/auth/scope";
@@ -37,15 +38,15 @@ export default async function McqPage({
     limit 5
   `) as McqQuestion[];
 
+  const t = await getTranslations("pt.mcq");
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 lg:py-16">
-      <p className="eyebrow">Step 2 / 4</p>
+      <p className="eyebrow">{t("step")}</p>
       <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
-        {owned[0].visitor_name}님, 객관식 5문항입니다
+        {t("title", { name: owned[0].visitor_name })}
       </h1>
-      <p className="mt-2 text-sm text-[var(--color-muted)]">
-        직감대로 빠르게 풀어주세요. 모르면 추측해도 괜찮아요.
-      </p>
+      <p className="mt-2 text-sm text-[var(--color-muted)]">{t("hint")}</p>
       <div className="mt-8">
         <McqQuiz placementId={id} questions={questions} />
       </div>

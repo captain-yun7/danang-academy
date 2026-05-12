@@ -1,15 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { submitConsult } from "./actions";
 
-const LEVELS = [
-  { value: "", label: "선택 안 함" },
-  { value: "beginner", label: "입문반" },
-  { value: "elementary", label: "초급반" },
-  { value: "intermediate", label: "중급반" },
-  { value: "advanced", label: "고급반" },
-] as const;
+const LEVEL_KEYS = ["beginner", "elementary", "intermediate", "advanced"] as const;
 
 export function ConsultForm({
   source,
@@ -20,6 +15,8 @@ export function ConsultForm({
   sourceTestId?: string;
   recommendedLevel?: string;
 }) {
+  const t = useTranslations("consultPage.form");
+  const tLevels = useTranslations("levelLabels");
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,13 +24,11 @@ export function ConsultForm({
   if (done) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
-        <p className="text-2xl">🎉</p>
+        <p className="text-2xl">{t("successEmoji")}</p>
         <p className="mt-2 text-base font-bold text-emerald-700">
-          신청이 접수되었습니다!
+          {t("successTitle")}
         </p>
-        <p className="mt-1 text-sm text-emerald-700/80">
-          24시간 내 다프 담당자가 연락드릴게요.
-        </p>
+        <p className="mt-1 text-sm text-emerald-700/80">{t("successBody")}</p>
       </div>
     );
   }
@@ -57,7 +52,7 @@ export function ConsultForm({
             sourceTestId: sourceTestId,
             note: String(fd.get("note") ?? ""),
           });
-          if (!res.ok) setError("입력이 올바르지 않습니다.");
+          if (!res.ok) setError(t("errorInvalid"));
           else setDone(true);
         });
       }}
@@ -65,7 +60,7 @@ export function ConsultForm({
     >
       <label className="block">
         <span className="mb-1 block text-xs font-semibold">
-          이름 <span className="text-red-500">*</span>
+          {t("name")} <span className="text-red-500">*</span>
         </span>
         <input
           name="name"
@@ -78,18 +73,18 @@ export function ConsultForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1 block text-xs font-semibold">
-            전화번호 <span className="text-red-500">*</span>
+            {t("phone")} <span className="text-red-500">*</span>
           </span>
           <input
             name="phone"
             required
             type="tel"
-            placeholder="+84 ..."
+            placeholder={t("phonePlaceholder")}
             className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-semibold">이메일 (선택)</span>
+          <span className="mb-1 block text-xs font-semibold">{t("email")}</span>
           <input
             name="email"
             type="email"
@@ -99,27 +94,28 @@ export function ConsultForm({
       </div>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">희망 반</span>
+        <span className="mb-1 block text-xs font-semibold">{t("desiredClass")}</span>
         <select
           name="level"
           defaultValue={recommendedLevel ?? ""}
           className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
         >
-          {LEVELS.map((l) => (
-            <option key={l.value} value={l.value}>
-              {l.label}
+          <option value="">{t("classNone")}</option>
+          {LEVEL_KEYS.map((k) => (
+            <option key={k} value={k}>
+              {tLevels(k)}
             </option>
           ))}
         </select>
         {recommendedLevel && (
           <p className="mt-1 text-[11px] text-[var(--color-muted)]">
-            테스트 결과로 추천된 반이 자동으로 선택되었어요. 변경 가능합니다.
+            {t("prefillHint")}
           </p>
         )}
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">메모 (선택)</span>
+        <span className="mb-1 block text-xs font-semibold">{t("note")}</span>
         <textarea
           name="note"
           rows={3}
@@ -139,7 +135,7 @@ export function ConsultForm({
         disabled={pending}
         className="brand-gradient mt-2 w-full rounded-full px-5 py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90 disabled:opacity-60"
       >
-        {pending ? "보내는 중..." : "상담 신청 →"}
+        {pending ? t("submitting") : t("submit")}
       </button>
     </form>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { signInWithCredentials } from "./actions";
 
 export function LoginForm({
@@ -8,6 +9,7 @@ export function LoginForm({
 }: {
   searchParamsPromise: Promise<{ callbackUrl?: string; error?: string }>;
 }) {
+  const t = useTranslations("loginPage.form");
   const sp = use(searchParamsPromise);
   const [error, setError] = useState<string | null>(sp.error ?? null);
   const [pending, startTransition] = useTransition();
@@ -24,13 +26,13 @@ export function LoginForm({
             password: String(fd.get("password") ?? ""),
             callbackUrl: sp.callbackUrl,
           });
-          if (res?.error) setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+          if (res?.error) setError(t("error"));
         });
       }}
       className="grid gap-4"
     >
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">이메일</span>
+        <span className="mb-1 block text-xs font-semibold">{t("email")}</span>
         <input
           name="email"
           type="email"
@@ -41,7 +43,7 @@ export function LoginForm({
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">비밀번호</span>
+        <span className="mb-1 block text-xs font-semibold">{t("password")}</span>
         <input
           name="password"
           type="password"
@@ -62,7 +64,7 @@ export function LoginForm({
         disabled={pending}
         className="brand-gradient mt-2 w-full rounded-full px-5 py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90 disabled:opacity-60"
       >
-        {pending ? "로그인 중..." : "로그인 →"}
+        {pending ? t("submitting") : t("submit")}
       </button>
     </form>
   );

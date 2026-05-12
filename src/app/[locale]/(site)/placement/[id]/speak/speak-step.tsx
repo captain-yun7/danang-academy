@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   startPlacementPronunciation,
   linkPronunciationToPlacement,
@@ -24,6 +25,7 @@ export function SpeakStep({
   koreanLevel: string;
   targetSentence: string;
 }) {
+  const t = useTranslations("fpt.record");
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("idle");
   const [elapsed, setElapsed] = useState(0);
@@ -83,10 +85,7 @@ export function SpeakStep({
         if (mr.state === "recording") mr.stop();
       }, MAX_DURATION_SEC * 1000);
     } catch (e) {
-      setError(
-        "마이크 권한이 필요합니다. " +
-          (e instanceof Error ? `(${e.message})` : "")
-      );
+      setError(t("errorMic") + (e instanceof Error ? ` (${e.message})` : ""));
     }
   }
 
@@ -147,7 +146,7 @@ export function SpeakStep({
       if (!linked.ok) throw new Error(linked.error || "link failed");
       router.push(`/placement/${placementId}/wait`);
     } catch (e) {
-      setError(`업로드 실패: ${e instanceof Error ? e.message : "unknown"}`);
+      setError(`${t("errorUpload")}: ${e instanceof Error ? e.message : "unknown"}`);
       setPhase("review");
     }
   }
@@ -161,7 +160,7 @@ export function SpeakStep({
             onClick={start}
             className="brand-gradient inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white shadow-md hover:opacity-90"
           >
-            🎙️ 녹음 시작
+            {t("start")}
           </button>
         </div>
       )}
@@ -174,7 +173,7 @@ export function SpeakStep({
               <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
             </span>
             <span className="text-sm font-semibold">
-              녹음 중... {elapsed}s / {MAX_DURATION_SEC}s
+              {t("recording")} {elapsed}s / {MAX_DURATION_SEC}s
             </span>
           </div>
           <button
@@ -182,7 +181,7 @@ export function SpeakStep({
             onClick={stop}
             className="rounded-full bg-[var(--color-ink)] px-6 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]"
           >
-            ⏹️ 녹음 정지
+            {t("stop")}
           </button>
         </div>
       )}
@@ -196,14 +195,14 @@ export function SpeakStep({
               onClick={reset}
               className="rounded-full border-2 border-[var(--color-line)] px-5 py-2.5 text-sm font-bold hover:border-[var(--color-ink)]"
             >
-              다시 녹음
+              {t("retry")}
             </button>
             <button
               type="button"
               onClick={submit}
               className="brand-gradient inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-white shadow-md hover:opacity-90"
             >
-              제출하고 결과 보기 →
+              {t("submit")}
             </button>
           </div>
         </div>
@@ -211,7 +210,7 @@ export function SpeakStep({
 
       {phase === "uploading" && (
         <p className="text-center text-sm font-semibold text-[var(--color-muted)]">
-          업로드 중...
+          {t("uploading")}
         </p>
       )}
 

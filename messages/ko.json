@@ -314,5 +314,198 @@
       "leads": { "title": "상담 리드", "desc": "테스트 전환 리드 · 상담 상태(접수→연락→등록) 파이프라인." },
       "reports": { "title": "학습 리포트", "desc": "주간 · 월간 학생 리포트 생성 및 발송 이력." }
     }
+  },
+  "fpt": {
+    "eyebrow": "Free Pronunciation Test",
+    "title": "무료 발음 테스트",
+    "intro": "이름과 한국어 수준을 선택하면 한 문장을 보여드립니다. 따라 읽고 녹음하면 AI가 점수와 개선점을 알려드려요. (하루 5회 제한)",
+    "form": {
+      "name": "이름/닉네임",
+      "namePlaceholder": "홍길동",
+      "nativeLanguage": "모국어",
+      "koreanLevel": "한국어 수준",
+      "submit": "테스트 시작 →",
+      "submitting": "준비 중...",
+      "errorRate": "오늘 5회 테스트를 모두 사용하셨습니다. 내일 다시 시도해 주세요.",
+      "errorNoSentence": "해당 레벨의 문장이 아직 준비되지 않았어요.",
+      "errorInvalid": "입력이 올바르지 않습니다."
+    },
+    "levels": {
+      "beginner": "입문 (한글을 막 배웠어요)",
+      "elementary": "초급 (자기소개 정도)",
+      "intermediate": "중급 (일상 대화 가능)",
+      "advanced": "고급 (뉴스/책을 읽어요)"
+    },
+    "languages": { "vi": "Tiếng Việt (베트남어)", "en": "English", "other": "기타" },
+    "record": {
+      "step": "Step 2 / 3",
+      "title": "{name}님, 아래 문장을 따라 읽어보세요",
+      "start": "🎙️ 녹음 시작",
+      "recording": "녹음 중...",
+      "stop": "⏹️ 녹음 정지",
+      "retry": "다시 녹음",
+      "submit": "제출하고 결과 보기 →",
+      "uploading": "업로드 중...",
+      "errorMic": "마이크 권한이 필요합니다. 브라우저 설정에서 허용해 주세요.",
+      "errorUpload": "업로드 실패",
+      "hint": "💡 조용한 환경에서 또박또박 읽어주세요. 녹음은 최대 30초입니다."
+    },
+    "result": {
+      "step": "Step 3 / 3",
+      "title": "발음 평가 결과",
+      "loading": "불러오는 중...",
+      "loadError": "결과를 불러오는 중 오류가 발생했어요.",
+      "analyzing": "AI가 발음을 분석하고 있어요...",
+      "analyzingHint": "보통 10~30초 걸립니다.",
+      "failed": "죄송해요, 채점에 실패했습니다. 다시 시도해 주세요.",
+      "restart": "다시 테스트 시작 →",
+      "scoreLabel": "{name}님의 발음 점수",
+      "recommendedClass": "추천 반",
+      "strengths": "👍 좋은 점",
+      "improvements": "🎯 개선점",
+      "transcript": "📝 인식된 발음",
+      "transcriptTarget": "목표",
+      "transcriptHeard": "인식",
+      "ctaConsult": "이 반으로 상담 신청 →",
+      "ctaRetry": "다시 테스트"
+    }
+  },
+  "pt": {
+    "eyebrow": "Placement Test",
+    "title": "무료 레벨 테스트",
+    "intro": "객관식 5문항 + 발음 1문장으로 입문/초급/중급/고급 추천 반을 알려드려요. 총 5분이면 끝나요. (하루 5회 제한)",
+    "steps": {
+      "s1": "이름·모국어 입력",
+      "s2": "객관식 5문항 — 약 2분",
+      "s3": "한국어 한 문장 따라 읽기 — 30초",
+      "s4": "AI 채점 → 추천 반 안내"
+    },
+    "form": {
+      "name": "이름/닉네임",
+      "namePlaceholder": "홍길동",
+      "nativeLanguage": "모국어",
+      "submit": "테스트 시작 →",
+      "submitting": "준비 중...",
+      "errorRate": "오늘 5회를 모두 사용하셨습니다. 내일 다시 시도해 주세요.",
+      "errorNoQuestions": "문제가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.",
+      "errorInvalid": "입력이 올바르지 않습니다."
+    },
+    "mcq": {
+      "step": "Step 2 / 4",
+      "title": "{name}님, 객관식 5문항입니다",
+      "hint": "직감대로 빠르게 풀어주세요. 모르면 추측해도 괜찮아요.",
+      "progress": "문항 {current} / {total}",
+      "prev": "← 이전",
+      "next": "다음 →",
+      "submit": "제출 → 발음 단계로",
+      "scoring": "채점 중...",
+      "errorAll": "모든 문항에 답해주세요.",
+      "errorScore": "채점 중 오류가 발생했어요."
+    },
+    "speak": {
+      "step": "Step 3 / 4",
+      "title": "{name}님, 한 문장만 따라 읽어볼까요?",
+      "hint": "💡 조용한 환경에서 또박또박 읽어주세요. 녹음은 최대 30초입니다."
+    },
+    "wait": {
+      "step": "Step 4 / 4",
+      "title": "AI가 채점 중이에요",
+      "hint": "보통 10~30초 걸립니다. 새로고침하지 말고 잠시만 기다려주세요.",
+      "failed": "채점에 실패했어요. 다시 시도해주세요."
+    },
+    "result": {
+      "eyebrow": "Result",
+      "title": "레벨 테스트 결과",
+      "loading": "불러오는 중...",
+      "loadError": "결과를 불러오는 중 오류가 발생했어요.",
+      "stillProcessing": "아직 채점 중이에요. 대기 화면으로 →",
+      "recommendedFor": "{name}님의 추천 반",
+      "scoreMcq": "객관식",
+      "scorePron": "발음",
+      "strengths": "👍 좋은 점",
+      "improvements": "🎯 개선점",
+      "ctaConsult": "이 반으로 상담 신청 →",
+      "ctaCopy": "🔗 링크 복사",
+      "ctaCopied": "✅ 복사됨!",
+      "ctaRetry": "다시 테스트",
+      "levelDesc": {
+        "beginner": "한글과 기본 인사부터 차근차근 시작합니다.",
+        "elementary": "자기소개와 일상 문장 중심으로 배워요.",
+        "intermediate": "다양한 주제로 자유롭게 대화 연습합니다.",
+        "advanced": "뉴스·문화·TOPIK 대비까지 심화 학습합니다."
+      }
+    }
+  },
+  "levelLabels": {
+    "beginner": "입문반",
+    "elementary": "초급반",
+    "intermediate": "중급반",
+    "advanced": "고급반"
+  },
+  "consultPage": {
+    "eyebrow": "Consult",
+    "title": "상담 신청",
+    "intro": "이름·전화번호·원하는 반을 남겨주시면 다프 담당자가 24시간 내 연락드려요.",
+    "form": {
+      "name": "이름",
+      "phone": "전화번호",
+      "phonePlaceholder": "+84 ...",
+      "email": "이메일 (선택)",
+      "desiredClass": "희망 반",
+      "classNone": "선택 안 함",
+      "note": "메모 (선택)",
+      "submit": "상담 신청 →",
+      "submitting": "보내는 중...",
+      "prefillHint": "테스트 결과로 추천된 반이 자동으로 선택되었어요. 변경 가능합니다.",
+      "errorInvalid": "입력이 올바르지 않습니다.",
+      "successEmoji": "🎉",
+      "successTitle": "신청이 접수되었습니다!",
+      "successBody": "24시간 내 다프 담당자가 연락드릴게요."
+    }
+  },
+  "loginPage": {
+    "eyebrow": "Admin Login",
+    "title": "관리자 로그인",
+    "intro": "다프 운영진 전용 페이지입니다. 학생/방문자는 로그인 없이 무료 테스트를 이용할 수 있어요.",
+    "form": {
+      "email": "이메일",
+      "password": "비밀번호",
+      "submit": "로그인 →",
+      "submitting": "로그인 중...",
+      "error": "이메일 또는 비밀번호가 올바르지 않습니다."
+    }
+  },
+  "qr": {
+    "notFound": {
+      "title": "QR을 인식하지 못했어요",
+      "desc": "QR이 유효하지 않거나 만료되었습니다. 학원 직원에게 문의해주세요.",
+      "home": "홈으로"
+    },
+    "labels": {
+      "class": "반",
+      "time": "시각",
+      "unassigned": "미배정",
+      "showStaff": "이 화면을 직원에게 보여주세요. 화면을 닫으면 처리 완료입니다."
+    },
+    "checkedIn": {
+      "tag": "INPUT · 입실",
+      "title": "{name}님, 어서 오세요!",
+      "subtitle": "오늘 입실이 기록되었어요. 좋은 수업 되세요."
+    },
+    "checkedOut": {
+      "tag": "OUTPUT · 퇴실",
+      "title": "{name}님, 수고하셨어요!",
+      "subtitle": "오늘 퇴실이 기록되었어요. 다음에 또 만나요."
+    },
+    "alreadyOut": {
+      "tag": "DONE · 완료",
+      "title": "{name}님, 오늘은 이미 끝!",
+      "subtitle": "오늘은 이미 입실·퇴실 모두 기록되었어요."
+    },
+    "duplicate": {
+      "tag": "RECENT · 직전 기록",
+      "title": "{name}님, 잠시만요",
+      "subtitle": "방금 전에 스캔되었어요. 30초 후에 다시 시도해주세요."
+    }
   }
 }

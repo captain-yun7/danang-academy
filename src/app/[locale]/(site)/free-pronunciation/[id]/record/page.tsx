@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getVisitorFingerprint } from "@/lib/fingerprint";
 import { getCurrentOrgId } from "@/lib/auth/scope";
@@ -12,6 +13,7 @@ export default async function RecordPage({
   const { id } = await params;
   const fp = await getVisitorFingerprint();
   const orgId = await getCurrentOrgId();
+  const t = await getTranslations("fpt.record");
 
   const rows = (await sql`
     select id, target_sentence, status, visitor_name
@@ -29,9 +31,9 @@ export default async function RecordPage({
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 lg:py-16">
-      <p className="eyebrow">Step 2 / 3</p>
+      <p className="eyebrow">{t("step")}</p>
       <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
-        {test.visitor_name}님, 아래 문장을 따라 읽어보세요
+        {t("title", { name: test.visitor_name })}
       </h1>
 
       <div className="mt-6 rounded-2xl border-2 border-[var(--color-primary)]/30 bg-[var(--color-soft)] p-8 text-center">
@@ -44,9 +46,7 @@ export default async function RecordPage({
         <Recorder testId={test.id} />
       </div>
 
-      <p className="mt-6 text-xs text-[var(--color-muted)]">
-        💡 조용한 환경에서 또박또박 읽어주세요. 녹음은 최대 30초입니다.
-      </p>
+      <p className="mt-6 text-xs text-[var(--color-muted)]">{t("hint")}</p>
     </div>
   );
 }

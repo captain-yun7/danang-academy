@@ -314,5 +314,198 @@
       "leads": { "title": "Khách tư vấn", "desc": "Pipeline tư vấn: tiếp nhận → liên hệ → đăng ký." },
       "reports": { "title": "Báo cáo học tập", "desc": "Lịch sử tạo và gửi báo cáo tuần · tháng." }
     }
+  },
+  "fpt": {
+    "eyebrow": "Free Pronunciation Test",
+    "title": "Kiểm tra phát âm miễn phí",
+    "intro": "Nhập tên và chọn trình độ tiếng Hàn, hệ thống sẽ hiển thị một câu. Bạn đọc và ghi âm, AI sẽ chấm điểm và góp ý. (Tối đa 5 lượt/ngày)",
+    "form": {
+      "name": "Tên / Biệt danh",
+      "namePlaceholder": "Nguyễn Văn A",
+      "nativeLanguage": "Tiếng mẹ đẻ",
+      "koreanLevel": "Trình độ tiếng Hàn",
+      "submit": "Bắt đầu →",
+      "submitting": "Đang chuẩn bị...",
+      "errorRate": "Bạn đã dùng hết 5 lượt hôm nay. Vui lòng thử lại vào ngày mai.",
+      "errorNoSentence": "Câu cho trình độ này chưa sẵn sàng.",
+      "errorInvalid": "Thông tin không hợp lệ."
+    },
+    "levels": {
+      "beginner": "Vỡ lòng (mới học Hangul)",
+      "elementary": "Sơ cấp (tự giới thiệu được)",
+      "intermediate": "Trung cấp (giao tiếp hằng ngày)",
+      "advanced": "Cao cấp (đọc tin tức/sách)"
+    },
+    "languages": { "vi": "Tiếng Việt", "en": "English", "other": "Khác" },
+    "record": {
+      "step": "Bước 2 / 3",
+      "title": "{name}, hãy đọc theo câu bên dưới",
+      "start": "🎙️ Bắt đầu ghi âm",
+      "recording": "Đang ghi âm...",
+      "stop": "⏹️ Dừng",
+      "retry": "Ghi lại",
+      "submit": "Gửi và xem kết quả →",
+      "uploading": "Đang tải lên...",
+      "errorMic": "Cần quyền truy cập micro. Vui lòng cho phép trong cài đặt trình duyệt.",
+      "errorUpload": "Tải lên thất bại",
+      "hint": "💡 Hãy đọc rõ ràng trong môi trường yên tĩnh. Ghi âm tối đa 30 giây."
+    },
+    "result": {
+      "step": "Bước 3 / 3",
+      "title": "Kết quả đánh giá phát âm",
+      "loading": "Đang tải...",
+      "loadError": "Có lỗi khi tải kết quả.",
+      "analyzing": "AI đang phân tích phát âm...",
+      "analyzingHint": "Thường mất 10~30 giây.",
+      "failed": "Xin lỗi, chấm điểm thất bại. Vui lòng thử lại.",
+      "restart": "Bắt đầu lại →",
+      "scoreLabel": "Điểm phát âm của {name}",
+      "recommendedClass": "Lớp đề xuất",
+      "strengths": "👍 Điểm tốt",
+      "improvements": "🎯 Cần cải thiện",
+      "transcript": "📝 Nội dung được nhận diện",
+      "transcriptTarget": "Mục tiêu",
+      "transcriptHeard": "Nhận diện",
+      "ctaConsult": "Đăng ký tư vấn lớp này →",
+      "ctaRetry": "Làm lại"
+    }
+  },
+  "pt": {
+    "eyebrow": "Placement Test",
+    "title": "Kiểm tra xếp lớp miễn phí",
+    "intro": "5 câu trắc nghiệm + 1 câu phát âm để gợi ý lớp Vỡ lòng/Sơ cấp/Trung cấp/Cao cấp. Tổng cộng khoảng 5 phút. (Tối đa 5 lượt/ngày)",
+    "steps": {
+      "s1": "Nhập tên · tiếng mẹ đẻ",
+      "s2": "5 câu trắc nghiệm — khoảng 2 phút",
+      "s3": "Đọc theo 1 câu tiếng Hàn — 30 giây",
+      "s4": "AI chấm điểm → gợi ý lớp"
+    },
+    "form": {
+      "name": "Tên / Biệt danh",
+      "namePlaceholder": "Nguyễn Văn A",
+      "nativeLanguage": "Tiếng mẹ đẻ",
+      "submit": "Bắt đầu →",
+      "submitting": "Đang chuẩn bị...",
+      "errorRate": "Bạn đã dùng hết 5 lượt hôm nay. Vui lòng thử lại vào ngày mai.",
+      "errorNoQuestions": "Câu hỏi chưa sẵn sàng. Vui lòng thử lại sau.",
+      "errorInvalid": "Thông tin không hợp lệ."
+    },
+    "mcq": {
+      "step": "Bước 2 / 4",
+      "title": "{name}, đây là 5 câu trắc nghiệm",
+      "hint": "Trả lời nhanh theo trực giác. Không biết cứ đoán cũng được.",
+      "progress": "Câu {current} / {total}",
+      "prev": "← Trước",
+      "next": "Tiếp theo →",
+      "submit": "Gửi → chuyển sang phát âm",
+      "scoring": "Đang chấm...",
+      "errorAll": "Vui lòng trả lời tất cả câu hỏi.",
+      "errorScore": "Có lỗi khi chấm điểm."
+    },
+    "speak": {
+      "step": "Bước 3 / 4",
+      "title": "{name}, hãy thử đọc 1 câu nhé",
+      "hint": "💡 Hãy đọc rõ ràng trong môi trường yên tĩnh. Ghi âm tối đa 30 giây."
+    },
+    "wait": {
+      "step": "Bước 4 / 4",
+      "title": "AI đang chấm điểm",
+      "hint": "Thường mất 10~30 giây. Đừng tải lại trang, vui lòng chờ một chút.",
+      "failed": "Chấm điểm thất bại. Vui lòng thử lại."
+    },
+    "result": {
+      "eyebrow": "Result",
+      "title": "Kết quả xếp lớp",
+      "loading": "Đang tải...",
+      "loadError": "Có lỗi khi tải kết quả.",
+      "stillProcessing": "Vẫn đang chấm điểm. Quay lại màn hình chờ →",
+      "recommendedFor": "Lớp đề xuất cho {name}",
+      "scoreMcq": "Trắc nghiệm",
+      "scorePron": "Phát âm",
+      "strengths": "👍 Điểm tốt",
+      "improvements": "🎯 Cần cải thiện",
+      "ctaConsult": "Đăng ký tư vấn lớp này →",
+      "ctaCopy": "🔗 Sao chép link",
+      "ctaCopied": "✅ Đã sao chép!",
+      "ctaRetry": "Làm lại",
+      "levelDesc": {
+        "beginner": "Bắt đầu từ Hangul và lời chào cơ bản.",
+        "elementary": "Học giới thiệu bản thân và câu nói hằng ngày.",
+        "intermediate": "Luyện hội thoại tự do về nhiều chủ đề.",
+        "advanced": "Học chuyên sâu, gồm tin tức · văn hóa · ôn TOPIK."
+      }
+    }
+  },
+  "levelLabels": {
+    "beginner": "Lớp Vỡ lòng",
+    "elementary": "Lớp Sơ cấp",
+    "intermediate": "Lớp Trung cấp",
+    "advanced": "Lớp Cao cấp"
+  },
+  "consultPage": {
+    "eyebrow": "Tư vấn",
+    "title": "Đăng ký tư vấn",
+    "intro": "Hãy để lại tên · số điện thoại · lớp mong muốn, nhân viên Da Phòng sẽ liên hệ trong 24 giờ.",
+    "form": {
+      "name": "Tên",
+      "phone": "Số điện thoại",
+      "phonePlaceholder": "+84 ...",
+      "email": "Email (tùy chọn)",
+      "desiredClass": "Lớp mong muốn",
+      "classNone": "Chưa chọn",
+      "note": "Ghi chú (tùy chọn)",
+      "submit": "Đăng ký →",
+      "submitting": "Đang gửi...",
+      "prefillHint": "Lớp đề xuất từ kết quả kiểm tra đã được chọn sẵn. Bạn có thể thay đổi.",
+      "errorInvalid": "Thông tin không hợp lệ.",
+      "successEmoji": "🎉",
+      "successTitle": "Đã nhận yêu cầu!",
+      "successBody": "Nhân viên Da Phòng sẽ liên hệ trong vòng 24 giờ."
+    }
+  },
+  "loginPage": {
+    "eyebrow": "Đăng nhập Quản trị",
+    "title": "Đăng nhập Quản trị viên",
+    "intro": "Trang dành riêng cho ban điều hành Da Phòng. Học viên/khách có thể sử dụng các bài kiểm tra miễn phí mà không cần đăng nhập.",
+    "form": {
+      "email": "Email",
+      "password": "Mật khẩu",
+      "submit": "Đăng nhập →",
+      "submitting": "Đang đăng nhập...",
+      "error": "Email hoặc mật khẩu không đúng."
+    }
+  },
+  "qr": {
+    "notFound": {
+      "title": "Không nhận diện được mã QR",
+      "desc": "Mã QR không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ nhân viên học viện.",
+      "home": "Về trang chủ"
+    },
+    "labels": {
+      "class": "Lớp",
+      "time": "Giờ",
+      "unassigned": "Chưa phân lớp",
+      "showStaff": "Hãy cho nhân viên xem màn hình này. Đóng màn hình là hoàn tất."
+    },
+    "checkedIn": {
+      "tag": "INPUT · Vào lớp",
+      "title": "{name}, chào mừng bạn!",
+      "subtitle": "Đã ghi nhận vào lớp hôm nay. Chúc buổi học vui vẻ."
+    },
+    "checkedOut": {
+      "tag": "OUTPUT · Tan học",
+      "title": "{name}, cảm ơn bạn đã học chăm chỉ!",
+      "subtitle": "Đã ghi nhận tan học hôm nay. Hẹn gặp lại nhé."
+    },
+    "alreadyOut": {
+      "tag": "DONE · Hoàn tất",
+      "title": "{name}, hôm nay xong rồi!",
+      "subtitle": "Hôm nay đã ghi nhận đủ cả vào lớp và tan học."
+    },
+    "duplicate": {
+      "tag": "RECENT · Vừa quét",
+      "title": "{name}, chờ một chút nhé",
+      "subtitle": "Vừa quét xong. Vui lòng thử lại sau 30 giây."
+    }
   }
 }

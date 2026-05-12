@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 
@@ -145,20 +146,19 @@ export default async function QRPage({
 }) {
   const { token } = await params;
   const result = await processScan(token);
+  const t = await getTranslations("qr");
 
   if (!result.ok) {
     return (
       <main className="mx-auto flex min-h-[80vh] max-w-md flex-col items-center justify-center px-6 py-10 text-center">
         <div className="text-6xl">❓</div>
-        <h1 className="mt-4 text-2xl font-bold">QR을 인식하지 못했어요</h1>
-        <p className="mt-2 text-sm text-[var(--color-muted)]">
-          QR이 유효하지 않거나 만료되었습니다. 학원 직원에게 문의해주세요.
-        </p>
+        <h1 className="mt-4 text-2xl font-bold">{t("notFound.title")}</h1>
+        <p className="mt-2 text-sm text-[var(--color-muted)]">{t("notFound.desc")}</p>
         <Link
           href="/"
           className="mt-8 inline-block rounded-full border-2 border-[var(--color-line)] px-5 py-2 text-sm font-bold"
         >
-          홈으로
+          {t("notFound.home")}
         </Link>
       </main>
     );
@@ -172,28 +172,34 @@ export default async function QRPage({
         {ui.emoji}
       </div>
       <p className={`mt-6 text-xs font-bold uppercase tracking-widest ${ui.accent}`}>
-        {ui.tag}
+        {t(`${ui.key}.tag`)}
       </p>
-      <h1 className="mt-2 text-3xl font-black">{ui.title(result.studentName)}</h1>
-      <p className="mt-3 text-sm text-[var(--color-muted)]">{ui.subtitle}</p>
+      <h1 className="mt-2 text-3xl font-black">
+        {t(`${ui.key}.title`, { name: result.studentName })}
+      </h1>
+      <p className="mt-3 text-sm text-[var(--color-muted)]">
+        {t(`${ui.key}.subtitle`)}
+      </p>
 
       <div className="mt-8 grid w-full grid-cols-2 gap-3 text-left">
         <div className="rounded-xl border border-[var(--color-line)] bg-white p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-            반
+            {t("labels.class")}
           </p>
-          <p className="mt-1 text-sm font-bold">{result.className ?? "미배정"}</p>
+          <p className="mt-1 text-sm font-bold">
+            {result.className ?? t("labels.unassigned")}
+          </p>
         </div>
         <div className="rounded-xl border border-[var(--color-line)] bg-white p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-            시각
+            {t("labels.time")}
           </p>
           <p className="mt-1 text-sm font-bold">{result.time}</p>
         </div>
       </div>
 
       <p className="mt-8 text-[11px] text-[var(--color-muted)]">
-        이 화면을 직원에게 보여주세요. 화면을 닫으면 처리 완료입니다.
+        {t("labels.showStaff")}
       </p>
     </main>
   );
@@ -206,36 +212,28 @@ function stateUI(action: Action) {
         emoji: "👋",
         bg: "bg-emerald-50",
         accent: "text-emerald-600",
-        tag: "INPUT · 입실",
-        title: (name: string) => `${name}님, 어서 오세요!`,
-        subtitle: "오늘 입실이 기록되었어요. 좋은 수업 되세요.",
+        key: "checkedIn" as const,
       };
     case "checked_out":
       return {
         emoji: "👍",
         bg: "bg-amber-50",
         accent: "text-amber-600",
-        tag: "OUTPUT · 퇴실",
-        title: (name: string) => `${name}님, 수고하셨어요!`,
-        subtitle: "오늘 퇴실이 기록되었어요. 다음에 또 만나요.",
+        key: "checkedOut" as const,
       };
     case "already_out":
       return {
         emoji: "✅",
         bg: "bg-gray-100",
         accent: "text-gray-600",
-        tag: "DONE · 완료",
-        title: (name: string) => `${name}님, 오늘은 이미 끝!`,
-        subtitle: "오늘은 이미 입실·퇴실 모두 기록되었어요.",
+        key: "alreadyOut" as const,
       };
     case "duplicate":
       return {
         emoji: "⏱️",
         bg: "bg-blue-50",
         accent: "text-blue-600",
-        tag: "RECENT · 직전 기록",
-        title: (name: string) => `${name}님, 잠시만요`,
-        subtitle: "방금 전에 스캔되었어요. 30초 후에 다시 시도해주세요.",
+        key: "duplicate" as const,
       };
   }
 }

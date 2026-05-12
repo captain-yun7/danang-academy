@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { submitMcq, type McqQuestion } from "../../actions";
 
 export function McqQuiz({
@@ -11,6 +12,7 @@ export function McqQuiz({
   placementId: string;
   questions: McqQuestion[];
 }) {
+  const t = useTranslations("pt.mcq");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -41,13 +43,13 @@ export function McqQuiz({
       .filter((q) => answers[q.id] !== undefined)
       .map((q) => ({ questionId: q.id, choiceIndex: answers[q.id] }));
     if (payload.length !== total) {
-      setError("모든 문항에 답해주세요.");
+      setError(t("errorAll"));
       return;
     }
     startTransition(async () => {
       const res = await submitMcq({ id: placementId, answers: payload });
       if (!res.ok) {
-        setError("채점 중 오류가 발생했어요.");
+        setError(t("errorScore"));
         return;
       }
       router.push(`/placement/${placementId}/speak`);
@@ -60,7 +62,7 @@ export function McqQuiz({
     <div className="space-y-6">
       <div>
         <div className="mb-2 flex items-center justify-between text-xs font-semibold text-[var(--color-muted)]">
-          <span>문항 {idx + 1} / {total}</span>
+          <span>{t("progress", { current: idx + 1, total })}</span>
           <span>{progress}%</span>
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-line)]">
@@ -129,7 +131,7 @@ export function McqQuiz({
           disabled={idx === 0}
           className="rounded-full border-2 border-[var(--color-line)] px-5 py-2.5 text-sm font-bold disabled:opacity-40"
         >
-          ← 이전
+          {t("prev")}
         </button>
         <button
           type="button"
@@ -139,9 +141,9 @@ export function McqQuiz({
         >
           {idx === total - 1
             ? pending
-              ? "채점 중..."
-              : "제출 → 발음 단계로"
-            : "다음 →"}
+              ? t("scoring")
+              : t("submit")
+            : t("next")}
         </button>
       </div>
     </div>
