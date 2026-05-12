@@ -461,7 +461,12 @@
         "generating": "생성 중...",
         "generateResult": "✓ {generated}건 생성 (중복 {skipped} skip)",
         "presentRatio": "출석 {present}/{total}",
-        "markAttendance": "출석 체크 →"
+        "markAttendance": "출석 체크 →",
+        "qrTitle": "교실 출석 QR",
+        "qrDesc": "이 QR을 인쇄해서 교실 문 옆에 붙여주세요. 학생이 자기 폰으로 스캔하면 출석이 기록됩니다.",
+        "qrDownload": "PNG 다운로드",
+        "qrUrl": "URL 복사",
+        "qrCopied": "복사됨"
       }
     },
     "teachers": {
@@ -819,6 +824,11 @@
       "desc": "QR이 유효하지 않거나 만료되었습니다. 학원 직원에게 문의해주세요.",
       "home": "홈으로"
     },
+    "deprecated": {
+      "title": "이 QR은 더 이상 사용되지 않아요",
+      "desc": "출석 방식이 바뀌었어요. 이제는 교실 문 옆에 붙어 있는 QR을 본인 폰으로 스캔해주세요.",
+      "home": "홈으로"
+    },
     "labels": {
       "class": "반",
       "time": "시각",
@@ -844,6 +854,47 @@
       "tag": "RECENT · 직전 기록",
       "title": "{name}님, 잠시만요",
       "subtitle": "방금 전에 스캔되었어요. 30초 후에 다시 시도해주세요."
+    }
+  },
+  "classAttend": {
+    "eyebrow": "출석",
+    "gpsAsking": "위치를 확인하고 있어요...",
+    "searchLabel": "본인 이름",
+    "searchPlaceholder": "이름 두 글자 이상 입력",
+    "searchHint": "그 반에 등록된 본인 이름을 입력하면 카드가 나타나요.",
+    "searching": "검색 중...",
+    "noMatch": "일치하는 학생이 없어요. 매니저에게 알려주세요.",
+    "enrolledAt": "등록일 {date}",
+    "submitting": "출석 처리 중...",
+    "retry": "다시 시도",
+    "back": "다시",
+    "ok": {
+      "presentTag": "출석 완료",
+      "lateTag": "지각 처리",
+      "title": "{name}님",
+      "presentDesc": "오늘 수업도 화이팅!",
+      "lateDesc": "다음 수업엔 조금 더 일찍 와주세요."
+    },
+    "err": {
+      "notFoundTitle": "잘못된 QR입니다",
+      "notFoundDesc": "이 QR은 더 이상 유효하지 않아요. 매니저에게 알려주세요.",
+      "noSessionTitle": "지금은 수업 시간이 아니에요",
+      "noSessionDesc": "이 반의 오늘 수업이 끝났거나 아직 시작 전입니다.",
+      "noSessionWithNext": "다음 수업: {time}",
+      "gpsDeniedTitle": "위치 권한이 필요해요",
+      "gpsDeniedDesc": "브라우저 설정에서 위치 권한을 허용한 후 다시 스캔해주세요. 권한을 줄 수 없다면 매니저에게 알려주세요.",
+      "gpsUnavailTitle": "위치 정보를 가져올 수 없어요",
+      "gpsUnavailDesc": "위치 서비스를 켜고 다시 시도해주세요. 안 되면 매니저에게 알려주세요.",
+      "gpsTimeoutTitle": "위치 확인이 너무 오래 걸려요",
+      "gpsTimeoutDesc": "잠시 후 다시 시도해주세요.",
+      "gpsOutTitle": "학원 밖이에요",
+      "gpsOutDesc": "학원에 도착한 후 다시 스캔해주세요.",
+      "notInClassTitle": "이 반의 학생이 아닙니다",
+      "notInClassDesc": "본인 반의 QR을 다시 확인해주세요. 매니저에게 알려주셔도 됩니다.",
+      "fpDupTitle": "이미 다른 학생이 이 폰으로 출석했어요",
+      "fpDupDesc": "한 폰으로 한 명만 출석할 수 있어요. 본인 폰으로 다시 시도해주세요.",
+      "alreadyTitle": "이미 출석 처리됐어요",
+      "alreadyDesc": "{time}에 출석이 기록되어 있어요."
     }
   }
 }

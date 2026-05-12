@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
-import { headers } from "next/headers";
-import QRCode from "qrcode";
 import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { auth } from "@/auth";
@@ -26,7 +24,6 @@ export default async function StudentDetailPage({
            s.class_id::text,
            s.parent_contact,
            to_char(s.enrolled_at, 'YYYY-MM-DD') as enrolled_at,
-           s.qr_token,
            s.status::text,
            c.name as class_name
     from students s
@@ -42,7 +39,6 @@ export default async function StudentDetailPage({
     class_id: string | null;
     parent_contact: string | null;
     enrolled_at: string | null;
-    qr_token: string;
     status: string;
     class_name: string | null;
   }>;
@@ -82,17 +78,6 @@ export default async function StudentDetailPage({
   const tList = await getTranslations("admin.students");
   const tLevel = await getTranslations("admin.students.level");
 
-  // 사이트 호스트 추출 (QR URL용)
-  const h = await headers();
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  const host = h.get("host") ?? "localhost:3000";
-  const qrUrl = `${proto}://${host}/qr/${s.qr_token}`;
-  const qrPng = await QRCode.toDataURL(qrUrl, {
-    margin: 1,
-    width: 220,
-    color: { dark: "#0b1020", light: "#ffffff" },
-  });
-
   return (
     <div>
       <Link
@@ -128,24 +113,6 @@ export default async function StudentDetailPage({
         </section>
 
         <section className="space-y-4">
-          <div className="rounded-xl border border-[var(--color-line)] bg-white p-5 text-center">
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
-              {t("qrTitle")}
-            </p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrPng} alt="QR" className="mx-auto mt-3 h-44 w-44" />
-            <p className="mt-3 break-all text-[10px] text-[var(--color-muted)]">
-              {qrUrl}
-            </p>
-            <a
-              href={qrPng}
-              download={`qr-${s.name}.png`}
-              className="mt-3 inline-block text-xs font-bold text-[var(--color-primary-deep)]"
-            >
-              {t("qrDownload")}
-            </a>
-          </div>
-
           <div className="rounded-xl border border-[var(--color-line)] bg-white p-5">
             <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
               {t("recentAttendance", { count: recentLogs.length })}

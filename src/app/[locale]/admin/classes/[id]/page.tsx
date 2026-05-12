@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import QRCode from "qrcode";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 import { ClassForm } from "../class-form";
 import { GenerateSessionsButton } from "./generate-button";
+import { ClassQrCard } from "./class-qr-card";
 
 type SessionStatus = "scheduled" | "in_progress" | "completed" | "cancelled" | "rescheduled";
 
@@ -26,8 +29,10 @@ export default async function ClassDetailPage({
 
   const rows = (await sql`
     select c.id::text, c.name, c.level::text, c.teacher_id::text,
-           c.schedule, c.capacity, c.recurring_pattern
+           c.schedule, c.capacity, c.recurring_pattern, c.qr_token,
+           o.default_locale
     from classes c
+    join organizations o on o.id = c.organization_id
     where c.id = ${id} and c.organization_id = ${orgId}
     limit 1
   `) as Array<{
@@ -38,9 +43,22 @@ export default async function ClassDetailPage({
     schedule: string | null;
     capacity: number;
     recurring_pattern: { days?: string[]; start_time?: string; end_time?: string };
+    qr_token: string;
+    default_locale: string;
   }>;
   if (!rows[0]) notFound();
   const c = rows[0];
+
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const host = h.get("host") ?? "localhost:3000";
+  const localePrefix = c.default_locale && c.default_locale !== "ko" ? `/${c.default_locale}` : "";
+  const qrUrl = `${proto}://${host}${localePrefix}/class/${c.qr_token}`;
+  const qrPng = await QRCode.toDataURL(qrUrl, {
+    margin: 1,
+    width: 240,
+    color: { dark: "#0b1020", light: "#ffffff" },
+  });
 
   const teachers = (await sql`
     select id::text, name from users
@@ -121,27 +139,31 @@ export default async function ClassDetailPage({
           />
         </section>
 
-        <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
-            {tDetail("rosterTitle", { count: students.length, capacity: c.capacity })}
-          </p>
-          {students.length === 0 ? (
-            <p className="mt-3 text-xs text-[var(--color-muted)]">{tDetail("rosterEmpty")}</p>
-          ) : (
-            <ul className="mt-3 space-y-1.5 text-sm">
-              {students.map((s) => (
-                <li key={s.id}>
-                  <Link
-                    href={`/admin/students/${s.id}`}
-                    className="hover:text-[var(--color-primary-deep)]"
-                  >
-                    {s.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <div className="space-y-6">
+          <ClassQrCard qrPng={qrPng} qrUrl={qrUrl} className={c.name} />
+
+          <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
+              {tDetail("rosterTitle", { count: students.length, capacity: c.capacity })}
+            </p>
+            {students.length === 0 ? (
+              <p className="mt-3 text-xs text-[var(--color-muted)]">{tDetail("rosterEmpty")}</p>
+            ) : (
+              <ul className="mt-3 space-y-1.5 text-sm">
+                {students.map((s) => (
+                  <li key={s.id}>
+                    <Link
+                      href={`/admin/students/${s.id}`}
+                      className="hover:text-[var(--color-primary-deep)]"
+                    >
+                      {s.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
       </div>
 
       <section className="mt-8 rounded-xl border border-[var(--color-line)] bg-white p-6">

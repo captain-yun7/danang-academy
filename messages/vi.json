@@ -461,7 +461,12 @@
         "generating": "Đang tạo...",
         "generateResult": "✓ Đã tạo {generated} buổi (bỏ qua {skipped} buổi trùng)",
         "presentRatio": "Điểm danh {present}/{total}",
-        "markAttendance": "Điểm danh →"
+        "markAttendance": "Điểm danh →",
+        "qrTitle": "Mã QR điểm danh lớp",
+        "qrDesc": "Hãy in mã QR này và dán cạnh cửa phòng học. Học viên dùng điện thoại của mình để quét và điểm danh.",
+        "qrDownload": "Tải PNG",
+        "qrUrl": "Sao chép URL",
+        "qrCopied": "Đã sao chép"
       }
     },
     "teachers": {
@@ -819,6 +824,11 @@
       "desc": "Mã QR không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ nhân viên học viện.",
       "home": "Về trang chủ"
     },
+    "deprecated": {
+      "title": "Mã QR này không còn được dùng",
+      "desc": "Cách điểm danh đã thay đổi. Vui lòng quét mã QR dán cạnh cửa phòng học bằng điện thoại của bạn.",
+      "home": "Về trang chủ"
+    },
     "labels": {
       "class": "Lớp",
       "time": "Giờ",
@@ -844,6 +854,47 @@
       "tag": "RECENT · Vừa quét",
       "title": "{name}, chờ một chút nhé",
       "subtitle": "Vừa quét xong. Vui lòng thử lại sau 30 giây."
+    }
+  },
+  "classAttend": {
+    "eyebrow": "Điểm danh",
+    "gpsAsking": "Đang xác định vị trí...",
+    "searchLabel": "Tên của bạn",
+    "searchPlaceholder": "Nhập ít nhất 2 ký tự",
+    "searchHint": "Nhập tên của bạn trong lớp này để hiện thẻ.",
+    "searching": "Đang tìm...",
+    "noMatch": "Không tìm thấy học viên. Vui lòng liên hệ quản lý.",
+    "enrolledAt": "Ngày nhập học {date}",
+    "submitting": "Đang ghi nhận điểm danh...",
+    "retry": "Thử lại",
+    "back": "Quay lại",
+    "ok": {
+      "presentTag": "Đã điểm danh",
+      "lateTag": "Đi muộn",
+      "title": "Bạn {name}",
+      "presentDesc": "Chúc buổi học hôm nay vui vẻ!",
+      "lateDesc": "Lần sau hãy đến sớm hơn một chút nhé."
+    },
+    "err": {
+      "notFoundTitle": "Mã QR không hợp lệ",
+      "notFoundDesc": "Mã QR này không còn hiệu lực. Vui lòng liên hệ quản lý.",
+      "noSessionTitle": "Hiện không phải giờ học",
+      "noSessionDesc": "Lớp hôm nay đã kết thúc hoặc chưa bắt đầu.",
+      "noSessionWithNext": "Buổi tiếp theo: {time}",
+      "gpsDeniedTitle": "Cần cấp quyền vị trí",
+      "gpsDeniedDesc": "Vui lòng cho phép truy cập vị trí trong cài đặt trình duyệt rồi quét lại. Nếu không được, hãy liên hệ quản lý.",
+      "gpsUnavailTitle": "Không thể lấy vị trí",
+      "gpsUnavailDesc": "Vui lòng bật dịch vụ vị trí và thử lại. Nếu vẫn không được, liên hệ quản lý.",
+      "gpsTimeoutTitle": "Xác định vị trí mất quá lâu",
+      "gpsTimeoutDesc": "Vui lòng thử lại sau giây lát.",
+      "gpsOutTitle": "Bạn đang ở ngoài học viện",
+      "gpsOutDesc": "Vui lòng quét lại sau khi đến học viện.",
+      "notInClassTitle": "Bạn không thuộc lớp này",
+      "notInClassDesc": "Hãy kiểm tra lại mã QR của lớp bạn. Nếu cần, liên hệ quản lý.",
+      "fpDupTitle": "Thiết bị này đã điểm danh học viên khác",
+      "fpDupDesc": "Mỗi điện thoại chỉ điểm danh được một người. Vui lòng dùng điện thoại của bạn.",
+      "alreadyTitle": "Bạn đã điểm danh rồi",
+      "alreadyDesc": "Đã ghi nhận điểm danh lúc {time}."
     }
   }
 }
