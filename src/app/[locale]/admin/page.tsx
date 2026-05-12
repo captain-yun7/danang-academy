@@ -1,14 +1,7 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
-
-const LEVEL_LABEL: Record<string, string> = {
-  beginner: "입문반",
-  elementary: "초급반",
-  intermediate: "중급반",
-  advanced: "고급반",
-};
 
 async function loadKpis(orgId: string) {
   const rows = (await sql`
@@ -109,7 +102,9 @@ const KPI_ORDER = ["students", "attendance", "tests", "leads", "score", "classes
 
 export default async function AdminDashboardPage() {
   const t = await getTranslations("admin.dashboard");
+  const tLevels = await getTranslations("admin.mcq.levelClass");
   const orgId = await getCurrentOrgId();
+  const locale = await getLocale();
 
   const [kpis, recentLeads, todayClasses] = await Promise.all([
     loadKpis(orgId),
@@ -117,7 +112,7 @@ export default async function AdminDashboardPage() {
     loadTodayClasses(orgId),
   ]);
 
-  const today = new Date().toLocaleDateString("ko-KR", {
+  const today = new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "ko-KR", {
     timeZone: "Asia/Ho_Chi_Minh",
   });
 
@@ -150,7 +145,12 @@ export default async function AdminDashboardPage() {
             </p>
             <p className="mt-2 text-3xl font-black">{kpis[k]}</p>
             <p className="mt-1 text-xs text-[var(--color-primary-deep)]">
-              {kpiSub(k, kpis)}
+              {k === "students" && t("kpiSub.students")}
+              {k === "attendance" && t("kpiSub.attendance", { n: kpis.todayCheckins })}
+              {k === "tests" && t("kpiSub.tests")}
+              {k === "leads" && t("kpiSub.leads", { n: kpis.totalLeads })}
+              {k === "score" && t("kpiSub.score")}
+              {k === "classes" && t("kpiSub.classes")}
             </p>
           </div>
         ))}
@@ -169,7 +169,7 @@ export default async function AdminDashboardPage() {
           </div>
           {recentLeads.length === 0 ? (
             <p className="py-6 text-center text-sm text-[var(--color-muted)]">
-              아직 상담 신청이 없어요.
+              {t("leadsEmpty")}
             </p>
           ) : (
             <ul className="divide-y divide-[var(--color-line)] text-sm">
@@ -182,7 +182,7 @@ export default async function AdminDashboardPage() {
                   <div className="text-right">
                     {l.level && (
                       <span className="rounded-full bg-[var(--color-primary)]/40 px-2.5 py-0.5 text-xs font-semibold">
-                        {LEVEL_LABEL[l.level] ?? l.level}
+                        {tLevels(l.level as "beginner" | "elementary" | "intermediate" | "advanced")}
                       </span>
                     )}
                     <p className="mt-1 text-xs text-[var(--color-muted)]">{l.date}</p>
@@ -205,7 +205,7 @@ export default async function AdminDashboardPage() {
           </div>
           {todayClasses.length === 0 ? (
             <div className="flex h-40 items-center justify-center rounded-md bg-[var(--color-soft)] text-sm text-[var(--color-muted)]">
-              아직 개설된 반이 없어요.
+              {t("classesEmpty")}
             </div>
           ) : (
             <ul className="divide-y divide-[var(--color-line)] text-sm">
@@ -214,7 +214,7 @@ export default async function AdminDashboardPage() {
                   <div>
                     <p className="font-semibold">{c.name}</p>
                     <p className="text-xs text-[var(--color-muted)]">
-                      {LEVEL_LABEL[c.level] ?? c.level}
+                      {tLevels(c.level as "beginner" | "elementary" | "intermediate" | "advanced")}
                       {c.schedule ? ` · ${c.schedule}` : ""}
                       {c.teacher_name ? ` · ${c.teacher_name}` : ""}
                     </p>
@@ -223,7 +223,7 @@ export default async function AdminDashboardPage() {
                     <p className="font-bold">
                       {c.student_count} / {c.capacity}
                     </p>
-                    <p className="text-[var(--color-muted)]">학생</p>
+                    <p className="text-[var(--color-muted)]">{t("studentSuffix")}</p>
                   </div>
                 </li>
               ))}
@@ -235,22 +235,3 @@ export default async function AdminDashboardPage() {
   );
 }
 
-function kpiSub(
-  k: (typeof KPI_ORDER)[number],
-  kpis: { todayCheckins: number; totalLeads: number }
-) {
-  switch (k) {
-    case "students":
-      return "전체 등록";
-    case "attendance":
-      return `오늘 ${kpis.todayCheckins}명 입실`;
-    case "tests":
-      return "최근 7일";
-    case "leads":
-      return `누적 ${kpis.totalLeads}건`;
-    case "score":
-      return "최근 100건";
-    case "classes":
-      return "운영 중";
-  }
-}

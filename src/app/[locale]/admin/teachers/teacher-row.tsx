@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { resetTeacherPassword, updateTeacherRole, deleteTeacher } from "./actions";
 
 type User = {
@@ -39,6 +40,8 @@ export function TeacherRow({
   roleLabel: Record<string, string>;
   roleTone: Record<string, string>;
 }) {
+  const t = useTranslations("admin.teachers.row");
+  const tList = useTranslations("admin.teachers");
   const [pending, startTransition] = useTransition();
   const [resetShown, setResetShown] = useState<string | null>(null);
   const [role, setRole] = useState(user.role);
@@ -55,7 +58,7 @@ export function TeacherRow({
         setResetShown(pw);
         setTimeout(() => setResetShown(null), 60_000);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "오류");
+        setError(err instanceof Error ? err.message : "error");
       }
     });
   }
@@ -71,19 +74,19 @@ export function TeacherRow({
           role: next as "teacher" | "manager" | "owner",
         });
       } catch (err) {
-        setRole(user.role); // revert
-        setError(err instanceof Error ? err.message : "오류");
+        setRole(user.role);
+        setError(err instanceof Error ? err.message : "error");
       }
     });
   }
 
   function doDelete() {
-    if (!confirm(`${user.name} 직원을 삭제할까요? 담당하던 반의 강사는 미배정으로 바뀝니다.`)) return;
+    if (!confirm(t("deleteConfirm", { name: user.name }))) return;
     startTransition(async () => {
       try {
         await deleteTeacher(user.id);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "오류");
+        setError(err instanceof Error ? err.message : "error");
       }
     });
   }
@@ -93,7 +96,7 @@ export function TeacherRow({
       <tr className="hover:bg-[var(--color-soft)]/40">
         <td className="px-4 py-3 font-semibold">
           {user.name}
-          {isSelf && <span className="ml-2 text-[10px] text-[var(--color-muted)]">(나)</span>}
+          {isSelf && <span className="ml-2 text-[10px] text-[var(--color-muted)]">{t("self")}</span>}
         </td>
         <td className="px-4 py-3">
           {canRoleEdit && !isSelf && !isSuper ? (
@@ -117,7 +120,10 @@ export function TeacherRow({
         </td>
         <td className="px-4 py-3 text-xs text-[var(--color-muted)]">{user.email}</td>
         <td className="px-4 py-3 text-xs text-[var(--color-muted)]">{user.phone ?? "—"}</td>
-        <td className="px-4 py-3 text-xs">{user.class_count}개</td>
+        <td className="px-4 py-3 text-xs">
+          {user.class_count}
+          {tList("classCountSuffix")}
+        </td>
         <td className="px-4 py-3 text-xs text-[var(--color-muted)]">{user.joined}</td>
         <td className="px-4 py-3 text-right">
           {canManage && !isSelf && !isSuper && (
@@ -128,7 +134,7 @@ export function TeacherRow({
                 onClick={doReset}
                 className="rounded-full border border-[var(--color-line)] px-2.5 py-1 text-[10px] font-bold hover:border-[var(--color-ink)]"
               >
-                🔑 비번 재설정
+                {t("reset")}
               </button>
               {canRoleEdit && (
                 <button
@@ -137,7 +143,7 @@ export function TeacherRow({
                   onClick={doDelete}
                   className="rounded-full border border-red-300 px-2.5 py-1 text-[10px] font-bold text-red-700 hover:bg-red-50"
                 >
-                  삭제
+                  {t("delete")}
                 </button>
               )}
             </div>
@@ -147,16 +153,9 @@ export function TeacherRow({
       {resetShown && (
         <tr>
           <td colSpan={7} className="bg-emerald-50 px-4 py-2 text-xs text-emerald-700">
-            ✓ 새 비밀번호:{" "}
+            {t("resetHeader")}{" "}
             <code className="rounded bg-white px-2 py-0.5 font-mono">{resetShown}</code>
-            <button
-              type="button"
-              className="ml-2 underline"
-              onClick={() => navigator.clipboard.writeText(resetShown)}
-            >
-              복사
-            </button>
-            <span className="ml-3 text-[10px]">1분 후 사라집니다 — 안전한 채널로 전달하세요.</span>
+            <span className="ml-3 text-[10px]">{t("resetExpiry")}</span>
           </td>
         </tr>
       )}

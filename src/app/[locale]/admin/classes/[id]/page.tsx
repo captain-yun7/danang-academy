@@ -1,19 +1,14 @@
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 import { ClassForm } from "../class-form";
 import { GenerateSessionsButton } from "./generate-button";
 
-const STATUS_LABEL: Record<string, string> = {
-  scheduled: "예정",
-  in_progress: "진행 중",
-  completed: "완료",
-  cancelled: "휴강",
-  rescheduled: "보강 예정",
-};
+type SessionStatus = "scheduled" | "in_progress" | "completed" | "cancelled" | "rescheduled";
 
-const STATUS_TONE: Record<string, string> = {
+const STATUS_TONE: Record<SessionStatus, string> = {
   scheduled: "bg-blue-100 text-blue-700",
   in_progress: "bg-amber-100 text-amber-700",
   completed: "bg-emerald-100 text-emerald-700",
@@ -94,19 +89,23 @@ export default async function ClassDetailPage({
     !!c.recurring_pattern?.start_time &&
     !!c.recurring_pattern?.end_time;
 
+  const t = await getTranslations("admin.classes");
+  const tDetail = await getTranslations("admin.classes.detail");
+  const tStatus = await getTranslations("admin.sessions.statusLabel");
+
   return (
     <div>
       <Link
         href="/admin/classes"
         className="text-xs font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)]"
       >
-        ← 반 목록
+        {t("backToList")}
       </Link>
       <h1 className="mt-2 text-2xl font-bold">{c.name}</h1>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
         <section className="rounded-xl border border-[var(--color-line)] bg-white p-6">
-          <h2 className="mb-4 text-base font-bold">반 정보 수정</h2>
+          <h2 className="mb-4 text-base font-bold">{tDetail("editTitle")}</h2>
           <ClassForm
             mode="edit"
             teachers={teachers}
@@ -124,12 +123,10 @@ export default async function ClassDetailPage({
 
         <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
           <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
-            배정 학생 ({students.length} / {c.capacity})
+            {tDetail("rosterTitle", { count: students.length, capacity: c.capacity })}
           </p>
           {students.length === 0 ? (
-            <p className="mt-3 text-xs text-[var(--color-muted)]">
-              아직 배정된 학생이 없어요.
-            </p>
+            <p className="mt-3 text-xs text-[var(--color-muted)]">{tDetail("rosterEmpty")}</p>
           ) : (
             <ul className="mt-3 space-y-1.5 text-sm">
               {students.map((s) => (
@@ -150,9 +147,9 @@ export default async function ClassDetailPage({
       <section className="mt-8 rounded-xl border border-[var(--color-line)] bg-white p-6">
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-base font-bold">수업 회차</h2>
+            <h2 className="text-base font-bold">{tDetail("sessionsTitle")}</h2>
             <p className="mt-1 text-xs text-[var(--color-muted)]">
-              지난 7일부터 향후 일정까지 (최대 30개)
+              {tDetail("sessionsDesc")}
             </p>
           </div>
           {hasPattern && <GenerateSessionsButton classId={c.id} />}
@@ -160,12 +157,10 @@ export default async function ClassDetailPage({
 
         {!hasPattern ? (
           <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            정기 수업 시간표(요일·시간)를 먼저 설정하면 회차가 자동 생성됩니다.
+            {tDetail("needPattern")}
           </p>
         ) : sessions.length === 0 ? (
-          <p className="text-sm text-[var(--color-muted)]">
-            아직 회차가 없어요. 우측 위 <strong>회차 생성</strong> 버튼을 눌러주세요.
-          </p>
+          <p className="text-sm text-[var(--color-muted)]">{tDetail("sessionsEmpty")}</p>
         ) : (
           <ul className="divide-y divide-[var(--color-line)] text-sm">
             {sessions.map((s) => (
@@ -173,9 +168,9 @@ export default async function ClassDetailPage({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
-                      className={`rounded px-1.5 py-0.5 text-xs font-bold ${STATUS_TONE[s.status]}`}
+                      className={`rounded px-1.5 py-0.5 text-xs font-bold ${STATUS_TONE[s.status as SessionStatus]}`}
                     >
-                      {STATUS_LABEL[s.status] ?? s.status}
+                      {tStatus(s.status as SessionStatus)}
                     </span>
                     <span className="font-semibold">
                       {s.date} ({s.dow}) {s.start_time}–{s.end_time}
@@ -192,13 +187,13 @@ export default async function ClassDetailPage({
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-[var(--color-muted)]">
-                    출석 {s.present_count}/{students.length}
+                    {tDetail("presentRatio", { present: s.present_count, total: students.length })}
                   </span>
                   <Link
                     href={`/admin/sessions/${s.id}`}
                     className="text-xs font-bold text-[var(--color-primary-deep)] hover:underline"
                   >
-                    출석 체크 →
+                    {tDetail("markAttendance")}
                   </Link>
                 </div>
               </li>

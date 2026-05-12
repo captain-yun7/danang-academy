@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toggleMcqActive } from "./actions";
 
 export function ToggleActive({ id, active }: { id: string; active: boolean }) {
+  const t = useTranslations("admin.mcq");
   const [isActive, setIsActive] = useState(active);
   const [pending, startTransition] = useTransition();
 
@@ -28,7 +30,7 @@ export function ToggleActive({ id, active }: { id: string; active: boolean }) {
           : "bg-gray-200 text-gray-500"
       }`}
     >
-      {isActive ? "활성" : "비활성"}
+      {isActive ? t("active") : t("inactive")}
     </button>
   );
 }

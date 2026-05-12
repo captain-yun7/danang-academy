@@ -281,6 +281,22 @@
       "mcq": { "label": "레벨테스트 문항", "desc": "문항 · 임계값" },
       "reports": { "label": "리포트", "desc": "주간·월간" }
     },
+    "common": {
+      "save": "저장",
+      "saving": "저장 중...",
+      "saved": "저장됨 ✓",
+      "delete": "삭제",
+      "cancel": "취소",
+      "loading": "불러오는 중...",
+      "error": "오류",
+      "search": "검색",
+      "all": "전체",
+      "none": "없음",
+      "unassigned": "미배정",
+      "copy": "복사",
+      "copied": "복사됨 ✓",
+      "back": "뒤로"
+    },
     "dashboard": {
       "eyebrow": "Dashboard",
       "title": "오늘의 요약",
@@ -288,30 +304,352 @@
       "recent": "최근 테스트 보기",
       "leadsTitle": "최근 상담 신청",
       "classesTitle": "오늘의 수업",
-      "classesPlaceholder": "시간표 차트 (준비 중)",
-      "sampleNote": "※ 현재 표시되는 수치는 UI 확인용 샘플입니다. Supabase 연결 후 실제 데이터로 대체됩니다.",
+      "leadsEmpty": "아직 상담 신청이 없어요.",
+      "classesEmpty": "아직 개설된 반이 없어요.",
+      "studentSuffix": "학생",
       "kpi": {
         "students": "총 학생 수",
-        "studentsSub": "+12 이번 달",
         "attendance": "오늘 출석률",
-        "attendanceSub": "24 / 26 출석",
         "tests": "무료 테스트",
-        "testsSub": "이번 주",
         "leads": "상담 전환",
-        "leadsSub": "테스트 → 상담",
         "score": "평균 발음 점수",
-        "scoreSub": "최근 100건",
-        "classes": "개설 반",
-        "classesSub": "진행 중"
+        "classes": "개설 반"
+      },
+      "kpiSub": {
+        "students": "전체 등록",
+        "attendance": "오늘 {n}명 입실",
+        "tests": "최근 7일",
+        "leads": "누적 {n}건",
+        "score": "최근 100건",
+        "classes": "운영 중"
       },
       "viewAll": "전체 보기"
     },
+    "students": {
+      "subtitle": "Students",
+      "title": "학생 관리",
+      "totalSummary": "전체 {total}명 · 수강중 {active} / 휴학 {paused} / 수료 {graduated} / 이탈 {dropped}",
+      "newButton": "+ 새 학생 등록",
+      "newTitle": "새 학생 등록",
+      "newDesc": "등록하면 QR 토큰이 자동으로 발급됩니다.",
+      "backToList": "← 학생 목록",
+      "resultCount": "결과: {count}명",
+      "noResults": "조건에 맞는 학생이 없어요. 필터를 조정해보세요.",
+      "emptyState": "아직 등록된 학생이 없어요.",
+      "emptyAction": "첫 학생 등록하기 →",
+      "columns": {
+        "name": "이름",
+        "status": "상태",
+        "phone": "연락처",
+        "level": "레벨",
+        "class": "반",
+        "language": "모국어",
+        "enrolledDate": "등록일"
+      },
+      "filters": {
+        "search": "🔍 이름 또는 연락처로 검색...",
+        "allStatus": "전체 상태",
+        "allLevel": "전체 레벨",
+        "allClass": "전체 반",
+        "unassigned": "미배정",
+        "reset": "✕ 초기화"
+      },
+      "status": {
+        "active": "수강중",
+        "paused": "휴학",
+        "graduated": "수료",
+        "dropped": "이탈"
+      },
+      "level": {
+        "beginner": "입문",
+        "elementary": "초급",
+        "intermediate": "중급",
+        "advanced": "고급"
+      },
+      "form": {
+        "name": "이름",
+        "phone": "전화번호",
+        "phonePlaceholder": "+84 ...",
+        "nativeLanguage": "모국어",
+        "koreanLevel": "한국어 레벨",
+        "class": "반",
+        "parentContact": "부모 연락처",
+        "parentPlaceholder": "(선택)",
+        "enrolledAt": "등록일",
+        "status": "상태",
+        "save": "저장",
+        "saving": "저장 중...",
+        "createBtn": "등록 →",
+        "creating": "등록 중...",
+        "deleteBtn": "삭제",
+        "deleteConfirm": "{name} 학생을 삭제할까요? 출석 이력도 함께 사라집니다."
+      },
+      "detail": {
+        "levelUndefined": "레벨 미정",
+        "editTitle": "기본 정보 수정",
+        "qrTitle": "QR 출석 토큰",
+        "qrDownload": "다운로드",
+        "recentAttendance": "최근 출석 ({count})",
+        "noLogs": "아직 기록 없음",
+        "checkIn": "입실",
+        "checkOut": "퇴실"
+      },
+      "notes": {
+        "title": "강사 메모 ({count})",
+        "placeholder": "예: 받침 발음 약함, 받침 ㄴ/ㅁ/ㅇ 보충 필요",
+        "add": "+ 메모 추가",
+        "adding": "저장 중...",
+        "empty": "아직 메모가 없어요. 발음 약점, 결석 사유, 진도 등 강사가 알아야 할 것을 남겨주세요.",
+        "deleteConfirm": "이 메모를 삭제할까요?",
+        "deletedAuthor": "(삭제됨)",
+        "deleteBtn": "삭제",
+        "categories": {
+          "general": "일반",
+          "pronunciation": "발음",
+          "attendance": "출결",
+          "progress": "진도",
+          "behavior": "태도"
+        }
+      },
+      "languages": { "vi": "🇻🇳 vi", "en": "🇺🇸 en", "other": "기타" }
+    },
+    "classes": {
+      "subtitle": "Classes",
+      "title": "반 관리",
+      "total": "총 {n}개 반",
+      "newButton": "+ 새 반 개설",
+      "newTitle": "새 반 개설",
+      "backToList": "← 반 목록",
+      "emptyState": "아직 개설된 반이 없어요.",
+      "emptyAction": "첫 반 만들기 →",
+      "studentSuffix": "학생",
+      "form": {
+        "name": "반 이름",
+        "namePlaceholder": "예: 중급반 A",
+        "level": "레벨",
+        "teacher": "담당 강사",
+        "teacherNone": "미배정",
+        "schedule": "시간표 메모 (자유 텍스트)",
+        "schedulePlaceholder": "예: 월수금 19:00–21:00, 보강은 토요일",
+        "capacity": "정원",
+        "recurringTitle": "정기 수업 시간표",
+        "recurringDesc": "여기를 채우면 그 요일·시간으로 향후 4주 회차가 자동 생성됩니다.",
+        "startTime": "시작",
+        "endTime": "종료",
+        "createBtn": "개설 →",
+        "saveBtn": "저장",
+        "saving": "저장 중...",
+        "deleteBtn": "삭제",
+        "deleteConfirm": "{name} 반을 삭제할까요? 이 반에 배정된 학생은 미배정으로 바뀝니다."
+      },
+      "level": {
+        "beginner": "입문",
+        "elementary": "초급",
+        "intermediate": "중급",
+        "advanced": "고급"
+      },
+      "days": { "mon": "월", "tue": "화", "wed": "수", "thu": "목", "fri": "금", "sat": "토", "sun": "일" },
+      "detail": {
+        "editTitle": "반 정보 수정",
+        "rosterTitle": "배정 학생 ({count} / {capacity})",
+        "rosterEmpty": "아직 배정된 학생이 없어요. 학생 페이지에서 이 반으로 배정하세요.",
+        "sessionsTitle": "수업 회차",
+        "sessionsDesc": "지난 7일부터 향후 일정까지 (최대 30개)",
+        "needPattern": "정기 수업 시간표(요일·시간)를 먼저 설정하면 회차가 자동 생성됩니다.",
+        "sessionsEmpty": "아직 회차가 없어요. 우측 위 회차 생성 버튼을 눌러주세요.",
+        "generate": "📅 4주 회차 생성",
+        "generating": "생성 중...",
+        "generateResult": "✓ {generated}건 생성 (중복 {skipped} skip)",
+        "presentRatio": "출석 {present}/{total}",
+        "markAttendance": "출석 체크 →"
+      }
+    },
+    "teachers": {
+      "subtitle": "Teachers · Staff",
+      "title": "강사·직원 관리",
+      "intro": "총 {n}명. 강사가 본인 폰으로 출석 체크하려면 여기서 계정을 만들어주세요.",
+      "addTitle": "새 직원 추가",
+      "listTitle": "직원 목록",
+      "columns": {
+        "name": "이름",
+        "role": "역할",
+        "email": "이메일",
+        "phone": "연락처",
+        "classes": "담당 반",
+        "joined": "가입일",
+        "actions": "관리"
+      },
+      "classCountSuffix": "개",
+      "form": {
+        "name": "이름",
+        "role": "역할",
+        "email": "이메일",
+        "phone": "연락처",
+        "password": "초기 비밀번호 (8자 이상)",
+        "passwordHint": "강사가 로그인 후 자기 비번으로 바꾸도록 안내하세요.",
+        "passwordRandom": "🎲 랜덤",
+        "errorMinLength": "비밀번호는 8자 이상이어야 합니다.",
+        "errorEmailTaken": "이미 사용 중인 이메일입니다.",
+        "errorForbidden": "이 역할을 등록할 권한이 없습니다.",
+        "errorPrefix": "등록 실패:",
+        "createBtn": "+ 등록",
+        "creating": "등록 중...",
+        "successTitle": "✓ 등록 완료!",
+        "successInitialPw": "초기 비밀번호:",
+        "copy": "복사",
+        "copied": "복사됨 ✓",
+        "warningOnce": "⚠️ 이 비밀번호는 한 번만 표시됩니다. 강사에게 안전한 채널로 전달하세요."
+      },
+      "row": {
+        "self": "(나)",
+        "reset": "🔑 비번 재설정",
+        "delete": "삭제",
+        "deleteConfirm": "{name} 직원을 삭제할까요? 담당하던 반의 강사는 미배정으로 바뀝니다.",
+        "resetHeader": "✓ 새 비밀번호:",
+        "resetExpiry": "1분 후 사라집니다 — 안전한 채널로 전달하세요."
+      },
+      "roles": {
+        "super_admin": "슈퍼관리자",
+        "owner": "원장",
+        "manager": "매니저",
+        "teacher": "강사"
+      }
+    },
+    "attendance": {
+      "subtitle": "Attendance",
+      "title": "출석 관리",
+      "intro": "오늘 출석 현황 + 최근 QR 스캔 기록 (Asia/Ho_Chi_Minh 기준)",
+      "kpi": {
+        "checkIn": "오늘 입실",
+        "checkOut": "오늘 퇴실",
+        "current": "현재 학원 안",
+        "currentHint": "입실 - 퇴실"
+      },
+      "byClassTitle": "반별 오늘 출석",
+      "byClassEmpty": "아직 개설된 반이 없어요.",
+      "recentTitle": "최근 QR 스캔 ({count})",
+      "recentEmpty": "아직 스캔 기록이 없어요. 학생용 QR로 입실하면 여기 쌓여요.",
+      "checkInLabel": "입실",
+      "checkOutLabel": "퇴실"
+    },
+    "tests": {
+      "subtitle": "Tests",
+      "title": "테스트 이력",
+      "intro": "무료 발음 / 레벨 테스트 응시자와 결과를 한곳에서 봐요.",
+      "tabs": { "all": "전체", "free_pron": "발음", "placement": "레벨" },
+      "empty": "아직 응시 이력이 없어요.",
+      "columns": {
+        "type": "유형",
+        "name": "이름",
+        "status": "상태",
+        "score": "점수",
+        "recommended": "추천",
+        "details": "상세",
+        "audio": "녹음",
+        "time": "일시"
+      },
+      "type": { "free_pron": "발음", "placement": "레벨" },
+      "status": { "pending": "대기", "processing": "채점 중", "completed": "완료", "failed": "실패" },
+      "audio": {
+        "play": "🔊 듣기",
+        "noAudio": "녹음 없음",
+        "r2Disabled": "R2 미설정",
+        "forbidden": "권한 없음",
+        "error": "오류",
+        "playError": "재생 실패 — Mock 시절 파일이거나 만료"
+      },
+      "level": {
+        "beginner": "입문",
+        "elementary": "초급",
+        "intermediate": "중급",
+        "advanced": "고급"
+      }
+    },
+    "leads": {
+      "subtitle": "Leads",
+      "title": "상담 리드 파이프라인",
+      "intro": "상담 신청 → 연락 → 등록까지 전환 상태를 관리하세요.",
+      "tabs": { "all": "전체", "new": "신규", "contacted": "연락 완료", "enrolled": "등록 완료", "dropped": "이탈" },
+      "empty": "아직 상담 신청이 없어요.",
+      "emptyFiltered": "'{label}' 상태의 리드가 없어요.",
+      "status": {
+        "new": "신규",
+        "contacted": "연락 완료",
+        "enrolled": "등록 완료",
+        "dropped": "이탈"
+      },
+      "source": { "landing": "랜딩", "pronunciation_test": "발음 테스트", "placement_test": "레벨 테스트" },
+      "level": {
+        "beginner": "입문",
+        "elementary": "초급",
+        "intermediate": "중급",
+        "advanced": "고급"
+      },
+      "note": {
+        "empty": "📝 메모 없음 — 추가하기",
+        "placeholder": "메모 (1000자 이내)",
+        "save": "저장",
+        "cancel": "취소"
+      }
+    },
+    "mcq": {
+      "subtitle": "Placement / MCQ",
+      "title": "레벨테스트 문항 관리",
+      "intro": "객관식 문항 활성/비활성 토글 + 점수→레벨 임계값 조정.",
+      "thresholdTitle": "점수 임계값",
+      "thresholdHint": "가중치 합 점수가 [최소, 최대] 구간에 들면 그 반으로 추천됩니다.",
+      "minCol": "최소",
+      "maxCol": "최대",
+      "questionsTitle": "문항 목록 ({count})",
+      "weight": "가중치 {n}",
+      "correctTag": "✓ 정답",
+      "active": "활성",
+      "inactive": "비활성",
+      "level": {
+        "beginner": "입문",
+        "elementary": "초급",
+        "intermediate": "중급",
+        "advanced": "고급"
+      },
+      "levelClass": {
+        "beginner": "입문반",
+        "elementary": "초급반",
+        "intermediate": "중급반",
+        "advanced": "고급반"
+      }
+    },
+    "sessions": {
+      "statusLabel": {
+        "scheduled": "예정",
+        "in_progress": "진행 중",
+        "completed": "완료",
+        "cancelled": "휴강",
+        "rescheduled": "보강 예정"
+      },
+      "kpi": {
+        "present": "출석",
+        "late": "지각",
+        "absent": "결석",
+        "excused": "사유"
+      },
+      "unmarkedWarn": "⚠️ 아직 체크 안 한 학생 {count}명 — 모두 체크해야 수업 완료 처리 권장",
+      "currentStatus": "현재 상태",
+      "boardTitle": "출석 체크",
+      "rosterEmpty": "이 반에 배정된 학생이 없어요.",
+      "qrAutoTag": "📱 QR 자동 기록",
+      "statusButtons": { "present": "출석", "late": "지각", "absent": "결석", "excused": "사유" },
+      "notePlaceholder": "메모 (선택)",
+      "noteSave": "저장",
+      "metaTitle": "수업 상태 · 메모",
+      "topicLabel": "수업 주제",
+      "topicPlaceholder": "예: 받침 발음 단원 3",
+      "statusFieldLabel": "상태",
+      "notesLabel": "메모 (휴강 사유 등)",
+      "saveBtn": "상태·메모 저장",
+      "saving": "저장 중...",
+      "saved": "저장됨 ✓"
+    },
     "pages": {
-      "students": { "title": "학생 관리", "desc": "학생 명단, 등록, QR 토큰 발급, 반 배정. Supabase 연결 후 활성화됩니다." },
-      "classes": { "title": "반 관리", "desc": "반 개설, 시간표, 강사 배정, 정원 관리." },
-      "attendance": { "title": "출석 관리", "desc": "QR 입·퇴실 기록 조회, 지각·결석 집계." },
-      "tests": { "title": "테스트 결과", "desc": "무료 발음 테스트 · 반배정 테스트 처리 현황과 점수 분포." },
-      "leads": { "title": "상담 리드", "desc": "테스트 전환 리드 · 상담 상태(접수→연락→등록) 파이프라인." },
       "reports": { "title": "학습 리포트", "desc": "주간 · 월간 학생 리포트 생성 및 발송 이력." }
     }
   },

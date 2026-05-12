@@ -1,18 +1,14 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 
-const LEVEL_LABEL: Record<string, string> = {
-  beginner: "입문",
-  elementary: "초급",
-  intermediate: "중급",
-  advanced: "고급",
-};
+type LevelKey = "beginner" | "elementary" | "intermediate" | "advanced";
 
 type Row = {
   id: string;
   name: string;
-  level: string;
+  level: LevelKey;
   schedule: string | null;
   capacity: number;
   teacher_name: string | null;
@@ -20,6 +16,8 @@ type Row = {
 };
 
 export default async function AdminClassesPage() {
+  const t = await getTranslations("admin.classes");
+  const tLevel = await getTranslations("admin.classes.level");
   const orgId = await getCurrentOrgId();
   const classes = (await sql`
     select c.id::text, c.name, c.level::text, c.schedule, c.capacity,
@@ -41,31 +39,29 @@ export default async function AdminClassesPage() {
       <div className="mb-6 flex items-end justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-            Classes
+            {t("subtitle")}
           </p>
-          <h1 className="mt-1 text-2xl font-bold">반 관리</h1>
+          <h1 className="mt-1 text-2xl font-bold">{t("title")}</h1>
           <p className="mt-1 text-sm text-[var(--color-muted)]">
-            총 {classes.length}개 반
+            {t("total", { n: classes.length })}
           </p>
         </div>
         <Link
           href="/admin/classes/new"
           className="brand-gradient inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-white shadow-md hover:opacity-90"
         >
-          + 새 반 개설
+          {t("newButton")}
         </Link>
       </div>
 
       {classes.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[var(--color-line)] bg-white p-10 text-center">
-          <p className="text-sm text-[var(--color-muted)]">
-            아직 개설된 반이 없어요.
-          </p>
+          <p className="text-sm text-[var(--color-muted)]">{t("emptyState")}</p>
           <Link
             href="/admin/classes/new"
             className="mt-4 inline-block text-sm font-bold text-[var(--color-primary-deep)]"
           >
-            첫 반 만들기 →
+            {t("emptyAction")}
           </Link>
         </div>
       ) : (
@@ -78,7 +74,7 @@ export default async function AdminClassesPage() {
               <div className="flex items-start justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-deep)]">
-                    {LEVEL_LABEL[c.level] ?? c.level}
+                    {tLevel(c.level)}
                   </p>
                   <Link
                     href={`/admin/classes/${c.id}`}
@@ -102,7 +98,7 @@ export default async function AdminClassesPage() {
                     {c.student_count}
                     <span className="text-sm text-[var(--color-muted)]">/{c.capacity}</span>
                   </p>
-                  <p className="text-[10px] text-[var(--color-muted)]">학생</p>
+                  <p className="text-[10px] text-[var(--color-muted)]">{t("studentSuffix")}</p>
                 </div>
               </div>
             </li>

@@ -1,17 +1,12 @@
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 import { AttendanceBoard } from "./attendance-board";
 import { SessionStatusEditor } from "./status-editor";
 
-const SESSION_STATUS_LABEL: Record<string, string> = {
-  scheduled: "예정",
-  in_progress: "진행 중",
-  completed: "완료",
-  cancelled: "휴강",
-  rescheduled: "보강 예정",
-};
+type SessionStatus = "scheduled" | "in_progress" | "completed" | "cancelled" | "rescheduled";
 
 export default async function SessionDetailPage({
   params,
@@ -20,11 +15,16 @@ export default async function SessionDetailPage({
 }) {
   const { id } = await params;
   const orgId = await getCurrentOrgId();
+  const locale = await getLocale();
+
+  const dateFormat = locale === "vi"
+    ? '"Ngày" DD "tháng" MM "năm" YYYY (Dy)'
+    : 'YYYY"년" MM"월" DD"일" (Dy)';
 
   const rows = (await sql`
     select cs.id::text, cs.class_id::text,
            to_char(cs.session_date, 'YYYY-MM-DD') as date,
-           to_char(cs.session_date, 'YYYY년 MM월 DD일 (Dy)') as date_label,
+           to_char(cs.session_date, ${dateFormat}) as date_label,
            to_char(cs.start_time, 'HH24:MI') as start_time,
            to_char(cs.end_time, 'HH24:MI') as end_time,
            cs.status, cs.topic, cs.notes,
@@ -42,7 +42,7 @@ export default async function SessionDetailPage({
     date_label: string;
     start_time: string;
     end_time: string;
-    status: string;
+    status: SessionStatus;
     topic: string | null;
     notes: string | null;
     class_name: string;
@@ -52,7 +52,6 @@ export default async function SessionDetailPage({
   if (!rows[0]) notFound();
   const s = rows[0];
 
-  // 반 학생 목록 + 이 회차에 이미 마킹된 status
   const roster = (await sql`
     select st.id::text, st.name,
            sa.status::text as att_status,
@@ -80,6 +79,10 @@ export default async function SessionDetailPage({
     {} as Record<string, number>
   );
 
+  const t = await getTranslations("admin.sessions");
+  const tStatus = await getTranslations("admin.sessions.statusLabel");
+  const tKpi = await getTranslations("admin.sessions.kpi");
+
   return (
     <div>
       <Link
@@ -95,27 +98,26 @@ export default async function SessionDetailPage({
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KPI label="출석" value={counts.present ?? 0} tone="emerald" />
-        <KPI label="지각" value={counts.late ?? 0} tone="amber" />
-        <KPI label="결석" value={counts.absent ?? 0} tone="red" />
-        <KPI label="사유" value={counts.excused ?? 0} tone="blue" />
+        <KPI label={tKpi("present")} value={counts.present ?? 0} tone="emerald" />
+        <KPI label={tKpi("late")} value={counts.late ?? 0} tone="amber" />
+        <KPI label={tKpi("absent")} value={counts.absent ?? 0} tone="red" />
+        <KPI label={tKpi("excused")} value={counts.excused ?? 0} tone="blue" />
       </div>
       {(counts.unmarked ?? 0) > 0 && (
         <p className="mt-3 text-xs text-amber-700">
-          ⚠️ 아직 체크 안 한 학생 {counts.unmarked}명 — 모두 체크해야 수업 완료 처리 권장
+          {t("unmarkedWarn", { count: counts.unmarked })}
         </p>
       )}
 
       <section className="mt-8 rounded-xl border border-[var(--color-line)] bg-white p-6">
-        <h2 className="mb-4 text-base font-bold">출석 체크</h2>
+        <h2 className="mb-4 text-base font-bold">{t("boardTitle")}</h2>
         <AttendanceBoard sessionId={s.id} roster={roster} />
       </section>
 
       <section className="mt-8 rounded-xl border border-[var(--color-line)] bg-white p-6">
-        <h2 className="mb-3 text-base font-bold">수업 상태 · 메모</h2>
+        <h2 className="mb-3 text-base font-bold">{t("metaTitle")}</h2>
         <p className="mb-3 text-xs text-[var(--color-muted)]">
-          현재 상태:{" "}
-          <strong>{SESSION_STATUS_LABEL[s.status] ?? s.status}</strong>
+          {t("currentStatus")}: <strong>{tStatus(s.status)}</strong>
         </p>
         <SessionStatusEditor
           sessionId={s.id}

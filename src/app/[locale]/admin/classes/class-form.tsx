@@ -1,24 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { createClass, updateClass, deleteClass } from "./actions";
 
-const LEVELS = [
-  { value: "beginner", label: "입문반" },
-  { value: "elementary", label: "초급반" },
-  { value: "intermediate", label: "중급반" },
-  { value: "advanced", label: "고급반" },
-] as const;
-
-const DAYS = [
-  { value: "mon", label: "월" },
-  { value: "tue", label: "화" },
-  { value: "wed", label: "수" },
-  { value: "thu", label: "목" },
-  { value: "fri", label: "금" },
-  { value: "sat", label: "토" },
-  { value: "sun", label: "일" },
-] as const;
+const LEVEL_KEYS = ["beginner", "elementary", "intermediate", "advanced"] as const;
+const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+type DayKey = (typeof DAY_KEYS)[number];
 
 type Teacher = { id: string; name: string };
 
@@ -47,6 +35,9 @@ export function ClassForm({
   teachers: Teacher[];
   initial?: Initial;
 }) {
+  const t = useTranslations("admin.classes.form");
+  const tLevel = useTranslations("admin.classes.level");
+  const tDay = useTranslations("admin.classes.days");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -62,28 +53,22 @@ export function ClassForm({
         const payload = {
           name: String(fd.get("name") ?? ""),
           level: fd.get("level") as
-            | "beginner"
-            | "elementary"
-            | "intermediate"
-            | "advanced",
+            | "beginner" | "elementary" | "intermediate" | "advanced",
           teacherId: String(fd.get("teacherId") ?? ""),
           schedule: String(fd.get("schedule") ?? ""),
           capacity: Number(fd.get("capacity") ?? 10),
           recurringPattern: {
-            days: Array.from(days) as ("sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat")[],
+            days: Array.from(days) as DayKey[],
             start_time: String(fd.get("startTime") ?? ""),
             end_time: String(fd.get("endTime") ?? ""),
           },
         };
         startTransition(async () => {
           try {
-            if (mode === "create") {
-              await createClass(payload);
-            } else if (initial) {
-              await updateClass({ ...payload, id: initial.id });
-            }
+            if (mode === "create") await createClass(payload);
+            else if (initial) await updateClass({ ...payload, id: initial.id });
           } catch (err) {
-            setError(err instanceof Error ? err.message : "오류");
+            setError(err instanceof Error ? err.message : "error");
           }
         });
       }}
@@ -91,13 +76,13 @@ export function ClassForm({
     >
       <label className="block">
         <span className="mb-1 block text-xs font-semibold">
-          반 이름 <span className="text-red-500">*</span>
+          {t("name")} <span className="text-red-500">*</span>
         </span>
         <input
           name="name"
           required
           maxLength={60}
-          placeholder="예: 중급반 A"
+          placeholder={t("namePlaceholder")}
           defaultValue={initial?.name ?? ""}
           className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
         />
@@ -105,31 +90,31 @@ export function ClassForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1 block text-xs font-semibold">레벨</span>
+          <span className="mb-1 block text-xs font-semibold">{t("level")}</span>
           <select
             name="level"
             required
             defaultValue={initial?.level ?? "beginner"}
             className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
           >
-            {LEVELS.map((l) => (
-              <option key={l.value} value={l.value}>
-                {l.label}
+            {LEVEL_KEYS.map((k) => (
+              <option key={k} value={k}>
+                {tLevel(k)}
               </option>
             ))}
           </select>
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-semibold">담당 강사</span>
+          <span className="mb-1 block text-xs font-semibold">{t("teacher")}</span>
           <select
             name="teacherId"
             defaultValue={initial?.teacherId ?? ""}
             className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
           >
-            <option value="">미배정</option>
-            {teachers.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
+            <option value="">{t("teacherNone")}</option>
+            {teachers.map((te) => (
+              <option key={te.id} value={te.id}>
+                {te.name}
               </option>
             ))}
           </select>
@@ -137,22 +122,20 @@ export function ClassForm({
       </div>
 
       <fieldset className="rounded-lg border border-[var(--color-line)] p-4">
-        <legend className="px-2 text-xs font-semibold">정기 수업 시간표</legend>
-        <p className="mb-3 text-[11px] text-[var(--color-muted)]">
-          여기를 채우면 그 요일·시간으로 향후 4주 회차가 자동 생성됩니다.
-        </p>
+        <legend className="px-2 text-xs font-semibold">{t("recurringTitle")}</legend>
+        <p className="mb-3 text-[11px] text-[var(--color-muted)]">{t("recurringDesc")}</p>
         <div className="mb-3 flex flex-wrap gap-2">
-          {DAYS.map((d) => {
-            const active = days.has(d.value);
+          {DAY_KEYS.map((d) => {
+            const active = days.has(d);
             return (
               <button
-                key={d.value}
+                key={d}
                 type="button"
                 onClick={() => {
                   setDays((prev) => {
                     const next = new Set(prev);
-                    if (next.has(d.value)) next.delete(d.value);
-                    else next.add(d.value);
+                    if (next.has(d)) next.delete(d);
+                    else next.add(d);
                     return next;
                   });
                 }}
@@ -162,14 +145,14 @@ export function ClassForm({
                     : "border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
                 }`}
               >
-                {d.label}
+                {tDay(d)}
               </button>
             );
           })}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold">시작</span>
+            <span className="mb-1 block text-xs font-semibold">{t("startTime")}</span>
             <input
               name="startTime"
               type="time"
@@ -178,7 +161,7 @@ export function ClassForm({
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold">종료</span>
+            <span className="mb-1 block text-xs font-semibold">{t("endTime")}</span>
             <input
               name="endTime"
               type="time"
@@ -190,18 +173,18 @@ export function ClassForm({
       </fieldset>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">시간표 메모 (자유 텍스트)</span>
+        <span className="mb-1 block text-xs font-semibold">{t("schedule")}</span>
         <input
           name="schedule"
           maxLength={120}
-          placeholder="예: 월수금 19:00–21:00, 보강은 토요일"
+          placeholder={t("schedulePlaceholder")}
           defaultValue={initial?.schedule ?? ""}
           className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
         />
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">정원</span>
+        <span className="mb-1 block text-xs font-semibold">{t("capacity")}</span>
         <input
           name="capacity"
           type="number"
@@ -224,26 +207,25 @@ export function ClassForm({
           disabled={pending}
           className="brand-gradient inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-white shadow-md hover:opacity-90 disabled:opacity-60"
         >
-          {pending ? "저장 중..." : mode === "create" ? "개설 →" : "저장"}
+          {pending ? t("saving") : mode === "create" ? t("createBtn") : t("saveBtn")}
         </button>
         {mode === "edit" && initial && (
           <button
             type="button"
             disabled={pending}
             onClick={() => {
-              if (!confirm(`${initial.name} 반을 삭제할까요? 이 반에 배정된 학생은 미배정으로 바뀝니다.`))
-                return;
+              if (!confirm(t("deleteConfirm", { name: initial.name }))) return;
               startTransition(async () => {
                 try {
                   await deleteClass(initial.id);
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : "오류");
+                  setError(err instanceof Error ? err.message : "error");
                 }
               });
             }}
             className="rounded-full border-2 border-red-300 px-5 py-2 text-xs font-bold text-red-700 hover:bg-red-50"
           >
-            삭제
+            {t("deleteBtn")}
           </button>
         )}
       </div>

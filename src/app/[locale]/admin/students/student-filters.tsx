@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useTransition, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 type Class = { id: string; name: string };
 
@@ -12,15 +13,17 @@ export function StudentFilters({
   classes: Class[];
   initial: { q: string; status: string | null; level: string | null; classFilter: string | null };
 }) {
+  const t = useTranslations("admin.students.filters");
+  const tStatus = useTranslations("admin.students.status");
+  const tLevel = useTranslations("admin.students.level");
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [q, setQ] = useState(initial.q);
 
-  // 검색어 디바운스 적용
   useEffect(() => {
-    const t = setTimeout(() => {
+    const tm = setTimeout(() => {
       const next = new URLSearchParams(sp.toString());
       if (q) next.set("q", q);
       else next.delete("q");
@@ -29,7 +32,7 @@ export function StudentFilters({
         startTransition(() => router.replace(url));
       }
     }, 300);
-    return () => clearTimeout(t);
+    return () => clearTimeout(tm);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
@@ -52,7 +55,7 @@ export function StudentFilters({
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="🔍 이름 또는 연락처로 검색..."
+        placeholder={t("search")}
         className="rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm focus:border-[var(--color-primary)]"
       />
       <select
@@ -60,30 +63,30 @@ export function StudentFilters({
         onChange={(e) => setParam("status", e.target.value || null)}
         className="rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm"
       >
-        <option value="">전체 상태</option>
-        <option value="active">수강중</option>
-        <option value="paused">휴학</option>
-        <option value="graduated">수료</option>
-        <option value="dropped">이탈</option>
+        <option value="">{t("allStatus")}</option>
+        <option value="active">{tStatus("active")}</option>
+        <option value="paused">{tStatus("paused")}</option>
+        <option value="graduated">{tStatus("graduated")}</option>
+        <option value="dropped">{tStatus("dropped")}</option>
       </select>
       <select
         value={initial.level ?? ""}
         onChange={(e) => setParam("level", e.target.value || null)}
         className="rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm"
       >
-        <option value="">전체 레벨</option>
-        <option value="beginner">입문</option>
-        <option value="elementary">초급</option>
-        <option value="intermediate">중급</option>
-        <option value="advanced">고급</option>
+        <option value="">{t("allLevel")}</option>
+        <option value="beginner">{tLevel("beginner")}</option>
+        <option value="elementary">{tLevel("elementary")}</option>
+        <option value="intermediate">{tLevel("intermediate")}</option>
+        <option value="advanced">{tLevel("advanced")}</option>
       </select>
       <select
         value={initial.classFilter ?? ""}
         onChange={(e) => setParam("class", e.target.value || null)}
         className="rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm"
       >
-        <option value="">전체 반</option>
-        <option value="none">미배정</option>
+        <option value="">{t("allClass")}</option>
+        <option value="none">{t("unassigned")}</option>
         {classes.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
@@ -97,7 +100,7 @@ export function StudentFilters({
           disabled={pending}
           className="rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-xs font-semibold hover:border-[var(--color-ink)]"
         >
-          ✕ 초기화
+          {t("reset")}
         </button>
       )}
     </div>

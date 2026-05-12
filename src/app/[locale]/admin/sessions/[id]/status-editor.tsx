@@ -1,17 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { updateSessionStatus, updateSessionTopic } from "../actions";
 
-const STATUS_OPTIONS = [
-  { value: "scheduled", label: "예정" },
-  { value: "in_progress", label: "진행 중" },
-  { value: "completed", label: "완료" },
-  { value: "cancelled", label: "휴강" },
-  { value: "rescheduled", label: "보강 예정" },
-] as const;
-
-type StatusValue = (typeof STATUS_OPTIONS)[number]["value"];
+const STATUS_OPTIONS = ["scheduled", "in_progress", "completed", "cancelled", "rescheduled"] as const;
+type StatusValue = (typeof STATUS_OPTIONS)[number];
 
 export function SessionStatusEditor({
   sessionId,
@@ -24,6 +18,8 @@ export function SessionStatusEditor({
   notes: string | null;
   topic: string | null;
 }) {
+  const t = useTranslations("admin.sessions");
+  const tStatus = useTranslations("admin.sessions.statusLabel");
   const [pending, startTransition] = useTransition();
   const [status, setStatus] = useState<StatusValue>(initialStatus as StatusValue);
   const [notes, setNotes] = useState(initialNotes ?? "");
@@ -33,7 +29,7 @@ export function SessionStatusEditor({
   return (
     <div className="grid gap-4">
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">수업 주제</span>
+        <span className="mb-1 block text-xs font-semibold">{t("topicLabel")}</span>
         <input
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
@@ -48,22 +44,22 @@ export function SessionStatusEditor({
             });
           }}
           maxLength={200}
-          placeholder="예: 받침 발음 단원 3"
+          placeholder={t("topicPlaceholder")}
           className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm focus:border-[var(--color-primary)]"
         />
       </label>
 
       <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
         <label className="block">
-          <span className="mb-1 block text-xs font-semibold">상태</span>
+          <span className="mb-1 block text-xs font-semibold">{t("statusFieldLabel")}</span>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as StatusValue)}
             className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2 text-sm"
           >
             {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
+              <option key={o} value={o}>
+                {tStatus(o)}
               </option>
             ))}
           </select>
@@ -71,7 +67,7 @@ export function SessionStatusEditor({
       </div>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold">메모 (휴강 사유 등)</span>
+        <span className="mb-1 block text-xs font-semibold">{t("notesLabel")}</span>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -89,16 +85,16 @@ export function SessionStatusEditor({
             startTransition(async () => {
               try {
                 await updateSessionStatus({ sessionId, status, notes });
-                setSavedMsg("저장됨 ✓");
+                setSavedMsg(t("saved"));
                 setTimeout(() => setSavedMsg(null), 2000);
               } catch (err) {
-                setSavedMsg(err instanceof Error ? err.message : "오류");
+                setSavedMsg(err instanceof Error ? err.message : "error");
               }
             });
           }}
           className="brand-gradient rounded-full px-5 py-2 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60"
         >
-          {pending ? "저장 중..." : "상태·메모 저장"}
+          {pending ? t("saving") : t("saveBtn")}
         </button>
         {savedMsg && (
           <span className="text-xs font-semibold text-emerald-600">{savedMsg}</span>

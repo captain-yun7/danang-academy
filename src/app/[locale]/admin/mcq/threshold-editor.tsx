@@ -1,18 +1,17 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { updateThresholds } from "./actions";
 
 type Thresholds = Record<"beginner" | "elementary" | "intermediate" | "advanced", [number, number]>;
 
-const ROWS: { key: keyof Thresholds; label: string }[] = [
-  { key: "beginner", label: "입문반" },
-  { key: "elementary", label: "초급반" },
-  { key: "intermediate", label: "중급반" },
-  { key: "advanced", label: "고급반" },
-];
+const ROW_KEYS: (keyof Thresholds)[] = ["beginner", "elementary", "intermediate", "advanced"];
 
 export function ThresholdEditor({ initial }: { initial: Thresholds }) {
+  const t = useTranslations("admin.mcq");
+  const tLevel = useTranslations("admin.mcq.levelClass");
+  const tCommon = useTranslations("admin.common");
   const [v, setV] = useState<Thresholds>(initial);
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
@@ -32,22 +31,22 @@ export function ThresholdEditor({ initial }: { initial: Thresholds }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-xs text-[var(--color-muted)]">
-            <th className="text-left font-semibold">반</th>
-            <th className="font-semibold">최소</th>
-            <th className="font-semibold">최대</th>
+            <th className="text-left font-semibold"></th>
+            <th className="font-semibold">{t("minCol")}</th>
+            <th className="font-semibold">{t("maxCol")}</th>
           </tr>
         </thead>
         <tbody>
-          {ROWS.map((r) => (
-            <tr key={r.key} className="border-t border-[var(--color-line)]">
-              <td className="py-2 font-semibold">{r.label}</td>
+          {ROW_KEYS.map((k) => (
+            <tr key={k} className="border-t border-[var(--color-line)]">
+              <td className="py-2 font-semibold">{tLevel(k)}</td>
               <td className="py-2 text-center">
                 <input
                   type="number"
                   min={0}
                   max={20}
-                  value={v[r.key][0]}
-                  onChange={(e) => set(r.key, 0, Number(e.target.value))}
+                  value={v[k][0]}
+                  onChange={(e) => set(k, 0, Number(e.target.value))}
                   className="w-16 rounded border border-[var(--color-line)] px-2 py-1 text-center"
                 />
               </td>
@@ -56,8 +55,8 @@ export function ThresholdEditor({ initial }: { initial: Thresholds }) {
                   type="number"
                   min={0}
                   max={20}
-                  value={v[r.key][1]}
-                  onChange={(e) => set(r.key, 1, Number(e.target.value))}
+                  value={v[k][1]}
+                  onChange={(e) => set(k, 1, Number(e.target.value))}
                   className="w-16 rounded border border-[var(--color-line)] px-2 py-1 text-center"
                 />
               </td>
@@ -67,9 +66,7 @@ export function ThresholdEditor({ initial }: { initial: Thresholds }) {
       </table>
 
       <div className="mt-4 flex items-center justify-between gap-3">
-        <p className="text-[11px] text-[var(--color-muted)]">
-          가중치 합 점수가 [최소, 최대] 구간에 들면 그 반으로 추천됩니다.
-        </p>
+        <p className="text-[11px] text-[var(--color-muted)]">{t("thresholdHint")}</p>
         <button
           type="button"
           disabled={pending}
@@ -78,22 +75,20 @@ export function ThresholdEditor({ initial }: { initial: Thresholds }) {
             startTransition(async () => {
               try {
                 await updateThresholds(v);
-                setMsg("저장됨 ✓");
+                setMsg(tCommon("saved"));
                 setTimeout(() => setMsg(null), 2000);
               } catch {
-                setMsg("저장 실패");
+                setMsg(tCommon("error"));
               }
             });
           }}
           className="brand-gradient rounded-full px-4 py-2 text-xs font-bold text-white hover:opacity-90 disabled:opacity-60"
         >
-          {pending ? "저장 중..." : "저장"}
+          {pending ? tCommon("saving") : tCommon("save")}
         </button>
       </div>
       {msg && (
-        <p className="mt-2 text-right text-xs font-semibold text-emerald-600">
-          {msg}
-        </p>
+        <p className="mt-2 text-right text-xs font-semibold text-emerald-600">{msg}</p>
       )}
     </div>
   );

@@ -1,20 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { addStudentNote, deleteStudentNote } from "./actions";
 
-const CATEGORIES = [
-  { value: "general", label: "일반", emoji: "📝" },
-  { value: "pronunciation", label: "발음", emoji: "🎤" },
-  { value: "attendance", label: "출결", emoji: "📅" },
-  { value: "progress", label: "진도", emoji: "📈" },
-  { value: "behavior", label: "태도", emoji: "🤝" },
-] as const;
+const CATEGORIES = ["general", "pronunciation", "attendance", "progress", "behavior"] as const;
+type Category = (typeof CATEGORIES)[number];
 
-type Category = (typeof CATEGORIES)[number]["value"];
-
-const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map((c) => [c.value, c.label]));
-const CATEGORY_EMOJI = Object.fromEntries(CATEGORIES.map((c) => [c.value, c.emoji]));
+const CATEGORY_EMOJI: Record<Category, string> = {
+  general: "📝",
+  pronunciation: "🎤",
+  attendance: "📅",
+  progress: "📈",
+  behavior: "🤝",
+};
 
 const CATEGORY_TONE: Record<string, string> = {
   general: "bg-gray-100 text-gray-700",
@@ -44,6 +43,8 @@ export function NotesSection({
   currentUserId: string;
   currentRole: string;
 }) {
+  const t = useTranslations("admin.students.notes");
+  const tCat = useTranslations("admin.students.notes.categories");
   const [pending, startTransition] = useTransition();
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<Category>("general");
@@ -59,42 +60,42 @@ export function NotesSection({
         setContent("");
         setCategory("general");
       } catch (err) {
-        setError(err instanceof Error ? err.message : "오류");
+        setError(err instanceof Error ? err.message : "error");
       }
     });
   }
 
   function remove(id: string) {
-    if (!confirm("이 메모를 삭제할까요?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     startTransition(async () => {
       try {
         await deleteStudentNote({ id });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "오류");
+        setError(err instanceof Error ? err.message : "error");
       }
     });
   }
 
   return (
     <section className="rounded-xl border border-[var(--color-line)] bg-white p-6">
-      <h2 className="mb-4 text-base font-bold">강사 메모 ({notes.length})</h2>
+      <h2 className="mb-4 text-base font-bold">{t("title", { count: notes.length })}</h2>
 
       <div className="mb-6 rounded-lg border border-[var(--color-line)] bg-[var(--color-soft)] p-4">
         <div className="mb-2 flex flex-wrap gap-2">
           {CATEGORIES.map((c) => {
-            const active = category === c.value;
+            const active = category === c;
             return (
               <button
-                key={c.value}
+                key={c}
                 type="button"
-                onClick={() => setCategory(c.value)}
+                onClick={() => setCategory(c)}
                 className={`rounded-full px-2.5 py-1 text-xs font-bold ${
                   active
-                    ? CATEGORY_TONE[c.value]
+                    ? CATEGORY_TONE[c]
                     : "border border-[var(--color-line)] text-[var(--color-muted)]"
                 }`}
               >
-                {c.emoji} {c.label}
+                {CATEGORY_EMOJI[c]} {tCat(c)}
               </button>
             );
           })}
@@ -104,20 +105,18 @@ export function NotesSection({
           onChange={(e) => setContent(e.target.value)}
           rows={2}
           maxLength={2000}
-          placeholder="예: 받침 발음 약함, 받침 ㄴ/ㅁ/ㅇ 보충 필요"
+          placeholder={t("placeholder")}
           className="w-full rounded-md border border-[var(--color-line)] bg-white px-3 py-2 text-sm focus:border-[var(--color-primary)]"
         />
         <div className="mt-2 flex items-center justify-between">
-          <span className="text-[10px] text-[var(--color-muted)]">
-            {content.length}/2000
-          </span>
+          <span className="text-[10px] text-[var(--color-muted)]">{content.length}/2000</span>
           <button
             type="button"
             disabled={pending || !content.trim()}
             onClick={submit}
             className="brand-gradient rounded-full px-4 py-1.5 text-xs font-bold text-white hover:opacity-90 disabled:opacity-40"
           >
-            {pending ? "저장 중..." : "+ 메모 추가"}
+            {pending ? t("adding") : t("add")}
           </button>
         </div>
         {error && (
@@ -126,13 +125,12 @@ export function NotesSection({
       </div>
 
       {notes.length === 0 ? (
-        <p className="text-sm text-[var(--color-muted)]">
-          아직 메모가 없어요. 발음 약점, 결석 사유, 진도 등 강사가 알아야 할 것을 남겨주세요.
-        </p>
+        <p className="text-sm text-[var(--color-muted)]">{t("empty")}</p>
       ) : (
         <ul className="space-y-3">
           {notes.map((n) => {
             const canDelete = n.author_id === currentUserId || isManagerPlus;
+            const cat = n.category as Category;
             return (
               <li
                 key={n.id}
@@ -142,12 +140,12 @@ export function NotesSection({
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-wrap items-center gap-2">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${CATEGORY_TONE[n.category]}`}
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${CATEGORY_TONE[cat]}`}
                       >
-                        {CATEGORY_EMOJI[n.category]} {CATEGORY_LABEL[n.category]}
+                        {CATEGORY_EMOJI[cat]} {tCat(cat)}
                       </span>
                       <span className="text-[10px] text-[var(--color-muted)]">
-                        {n.author_name ?? "(삭제됨)"} · {n.created_at}
+                        {n.author_name ?? t("deletedAuthor")} · {n.created_at}
                       </span>
                     </div>
                     <p className="whitespace-pre-wrap text-sm leading-relaxed">{n.content}</p>
@@ -159,7 +157,7 @@ export function NotesSection({
                       onClick={() => remove(n.id)}
                       className="shrink-0 text-[10px] text-[var(--color-muted)] hover:text-red-600"
                     >
-                      삭제
+                      {t("deleteBtn")}
                     </button>
                   )}
                 </div>

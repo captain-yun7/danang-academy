@@ -1,16 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { updateLeadStatus, updateLeadNote } from "./actions";
 
-const LEVEL_LABEL: Record<string, string> = {
-  beginner: "입문",
-  elementary: "초급",
-  intermediate: "중급",
-  advanced: "고급",
-};
-
 const STATUS_OPTIONS = ["new", "contacted", "enrolled", "dropped"] as const;
+type StatusKey = (typeof STATUS_OPTIONS)[number];
+
 const STATUS_TONE: Record<string, string> = {
   new: "bg-amber-100 text-amber-700",
   contacted: "bg-blue-100 text-blue-700",
@@ -22,6 +18,7 @@ export function LeadRow({
   lead,
   statusLabel,
   sourceLabel,
+  levelLabel,
 }: {
   lead: {
     id: string;
@@ -37,7 +34,9 @@ export function LeadRow({
   };
   statusLabel: Record<string, string>;
   sourceLabel: Record<string, string>;
+  levelLabel: Record<string, string>;
 }) {
+  const t = useTranslations("admin.leads.note");
   const [status, setStatus] = useState(lead.status);
   const [note, setNote] = useState(lead.note ?? "");
   const [editingNote, setEditingNote] = useState(false);
@@ -61,7 +60,7 @@ export function LeadRow({
             )}
             {lead.level && (
               <span className="rounded-full bg-[var(--color-primary)]/15 px-2 py-0.5 text-xs font-semibold">
-                {LEVEL_LABEL[lead.level]}
+                {levelLabel[lead.level] ?? lead.level}
               </span>
             )}
           </div>
@@ -76,7 +75,7 @@ export function LeadRow({
           disabled={pending}
           value={status}
           onChange={(e) => {
-            const next = e.target.value as (typeof STATUS_OPTIONS)[number];
+            const next = e.target.value as StatusKey;
             setStatus(next);
             startTransition(async () => {
               try {
@@ -103,7 +102,7 @@ export function LeadRow({
             onClick={() => setEditingNote(true)}
             className="text-left text-xs text-[var(--color-muted)] hover:text-[var(--color-ink)]"
           >
-            📝 {note || "메모 없음 — 추가하기"}
+            {note || t("empty")}
           </button>
         ) : (
           <div className="flex gap-2">
@@ -112,7 +111,7 @@ export function LeadRow({
               onChange={(e) => setNote(e.target.value)}
               maxLength={1000}
               autoFocus
-              placeholder="메모 (1000자 이내)"
+              placeholder={t("placeholder")}
               className="flex-1 rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs outline-none focus:border-[var(--color-primary)]"
             />
             <button
@@ -130,7 +129,7 @@ export function LeadRow({
               }}
               className="brand-gradient rounded-full px-3 py-1.5 text-xs font-bold text-white"
             >
-              저장
+              {t("save")}
             </button>
             <button
               type="button"
@@ -140,7 +139,7 @@ export function LeadRow({
               }}
               className="rounded-full border-2 border-[var(--color-line)] px-3 py-1.5 text-xs font-bold"
             >
-              취소
+              {t("cancel")}
             </button>
           </div>
         )}

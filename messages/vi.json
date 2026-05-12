@@ -281,6 +281,22 @@
       "mcq": { "label": "Câu hỏi xếp lớp", "desc": "Câu hỏi · ngưỡng" },
       "reports": { "label": "Báo cáo", "desc": "Tuần · tháng" }
     },
+    "common": {
+      "save": "Lưu",
+      "saving": "Đang lưu...",
+      "saved": "Đã lưu ✓",
+      "delete": "Xóa",
+      "cancel": "Hủy",
+      "loading": "Đang tải...",
+      "error": "Lỗi",
+      "search": "Tìm kiếm",
+      "all": "Tất cả",
+      "none": "Không",
+      "unassigned": "Chưa phân lớp",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép ✓",
+      "back": "Quay lại"
+    },
     "dashboard": {
       "eyebrow": "Dashboard",
       "title": "Tóm tắt hôm nay",
@@ -288,30 +304,352 @@
       "recent": "Xem bài kiểm tra gần đây",
       "leadsTitle": "Yêu cầu tư vấn gần đây",
       "classesTitle": "Lớp hôm nay",
-      "classesPlaceholder": "Biểu đồ lịch học (đang chuẩn bị)",
-      "sampleNote": "※ Các chỉ số hiện tại là dữ liệu mẫu dùng để xem giao diện. Sẽ được thay bằng dữ liệu thật sau khi kết nối Supabase.",
+      "leadsEmpty": "Chưa có yêu cầu tư vấn nào.",
+      "classesEmpty": "Chưa có lớp nào được mở.",
+      "studentSuffix": "học viên",
       "kpi": {
         "students": "Tổng học viên",
-        "studentsSub": "+12 trong tháng",
-        "attendance": "Điểm danh hôm nay",
-        "attendanceSub": "24 / 26 có mặt",
+        "attendance": "Tỷ lệ điểm danh hôm nay",
         "tests": "Kiểm tra miễn phí",
-        "testsSub": "Trong tuần",
-        "leads": "Chuyển đổi tư vấn",
-        "leadsSub": "Test → Tư vấn",
+        "leads": "Tỷ lệ chuyển đổi tư vấn",
         "score": "Điểm phát âm trung bình",
-        "scoreSub": "100 bài gần nhất",
-        "classes": "Lớp đang mở",
-        "classesSub": "Đang diễn ra"
+        "classes": "Lớp đang mở"
+      },
+      "kpiSub": {
+        "students": "Tổng đăng ký",
+        "attendance": "Hôm nay {n} người vào lớp",
+        "tests": "7 ngày gần nhất",
+        "leads": "Tích lũy {n} yêu cầu",
+        "score": "100 bài gần nhất",
+        "classes": "Đang vận hành"
       },
       "viewAll": "Xem tất cả"
     },
+    "students": {
+      "subtitle": "Students",
+      "title": "Quản lý học viên",
+      "totalSummary": "Tổng {total} · Đang học {active} / Nghỉ {paused} / Hoàn thành {graduated} / Bỏ học {dropped}",
+      "newButton": "+ Đăng ký học viên mới",
+      "newTitle": "Đăng ký học viên mới",
+      "newDesc": "Sau khi đăng ký, mã QR sẽ được cấp tự động.",
+      "backToList": "← Danh sách học viên",
+      "resultCount": "Kết quả: {count}",
+      "noResults": "Không tìm thấy học viên phù hợp. Hãy điều chỉnh bộ lọc.",
+      "emptyState": "Chưa có học viên nào.",
+      "emptyAction": "Đăng ký học viên đầu tiên →",
+      "columns": {
+        "name": "Tên",
+        "status": "Trạng thái",
+        "phone": "Số điện thoại",
+        "level": "Trình độ",
+        "class": "Lớp",
+        "language": "Tiếng mẹ đẻ",
+        "enrolledDate": "Ngày đăng ký"
+      },
+      "filters": {
+        "search": "🔍 Tìm theo tên hoặc số điện thoại...",
+        "allStatus": "Mọi trạng thái",
+        "allLevel": "Mọi trình độ",
+        "allClass": "Mọi lớp",
+        "unassigned": "Chưa phân lớp",
+        "reset": "✕ Đặt lại"
+      },
+      "status": {
+        "active": "Đang học",
+        "paused": "Nghỉ",
+        "graduated": "Hoàn thành",
+        "dropped": "Bỏ học"
+      },
+      "level": {
+        "beginner": "Vỡ lòng",
+        "elementary": "Sơ cấp",
+        "intermediate": "Trung cấp",
+        "advanced": "Cao cấp"
+      },
+      "form": {
+        "name": "Tên",
+        "phone": "Số điện thoại",
+        "phonePlaceholder": "+84 ...",
+        "nativeLanguage": "Tiếng mẹ đẻ",
+        "koreanLevel": "Trình độ tiếng Hàn",
+        "class": "Lớp",
+        "parentContact": "Liên hệ phụ huynh",
+        "parentPlaceholder": "(tùy chọn)",
+        "enrolledAt": "Ngày đăng ký",
+        "status": "Trạng thái",
+        "save": "Lưu",
+        "saving": "Đang lưu...",
+        "createBtn": "Đăng ký →",
+        "creating": "Đang đăng ký...",
+        "deleteBtn": "Xóa",
+        "deleteConfirm": "Xóa học viên {name}? Lịch sử điểm danh cũng sẽ bị xóa."
+      },
+      "detail": {
+        "levelUndefined": "Chưa có trình độ",
+        "editTitle": "Sửa thông tin cơ bản",
+        "qrTitle": "Mã QR điểm danh",
+        "qrDownload": "Tải xuống",
+        "recentAttendance": "Điểm danh gần đây ({count})",
+        "noLogs": "Chưa có lịch sử",
+        "checkIn": "Vào lớp",
+        "checkOut": "Tan học"
+      },
+      "notes": {
+        "title": "Ghi chú của giáo viên ({count})",
+        "placeholder": "Ví dụ: Phát âm patchim yếu, cần bổ sung patchim ㄴ/ㅁ/ㅇ",
+        "add": "+ Thêm ghi chú",
+        "adding": "Đang lưu...",
+        "empty": "Chưa có ghi chú. Hãy để lại điểm yếu phát âm, lý do vắng, tiến độ... những thông tin giáo viên cần biết.",
+        "deleteConfirm": "Xóa ghi chú này?",
+        "deletedAuthor": "(đã bị xóa)",
+        "deleteBtn": "Xóa",
+        "categories": {
+          "general": "Chung",
+          "pronunciation": "Phát âm",
+          "attendance": "Điểm danh",
+          "progress": "Tiến độ",
+          "behavior": "Thái độ"
+        }
+      },
+      "languages": { "vi": "🇻🇳 vi", "en": "🇺🇸 en", "other": "Khác" }
+    },
+    "classes": {
+      "subtitle": "Classes",
+      "title": "Quản lý lớp",
+      "total": "Tổng {n} lớp",
+      "newButton": "+ Mở lớp mới",
+      "newTitle": "Mở lớp mới",
+      "backToList": "← Danh sách lớp",
+      "emptyState": "Chưa có lớp nào.",
+      "emptyAction": "Mở lớp đầu tiên →",
+      "studentSuffix": "học viên",
+      "form": {
+        "name": "Tên lớp",
+        "namePlaceholder": "VD: Trung cấp A",
+        "level": "Trình độ",
+        "teacher": "Giáo viên phụ trách",
+        "teacherNone": "Chưa phân",
+        "schedule": "Ghi chú lịch (văn bản tự do)",
+        "schedulePlaceholder": "VD: T2 T4 T6 19:00–21:00, bù vào thứ Bảy",
+        "capacity": "Sĩ số tối đa",
+        "recurringTitle": "Lịch học định kỳ",
+        "recurringDesc": "Điền vào đây để hệ thống tự tạo các buổi học trong 4 tuần tới theo lịch này.",
+        "startTime": "Bắt đầu",
+        "endTime": "Kết thúc",
+        "createBtn": "Mở lớp →",
+        "saveBtn": "Lưu",
+        "saving": "Đang lưu...",
+        "deleteBtn": "Xóa",
+        "deleteConfirm": "Xóa lớp {name}? Các học viên đang được phân vào lớp này sẽ chuyển sang chưa phân lớp."
+      },
+      "level": {
+        "beginner": "Vỡ lòng",
+        "elementary": "Sơ cấp",
+        "intermediate": "Trung cấp",
+        "advanced": "Cao cấp"
+      },
+      "days": { "mon": "T2", "tue": "T3", "wed": "T4", "thu": "T5", "fri": "T6", "sat": "T7", "sun": "CN" },
+      "detail": {
+        "editTitle": "Sửa thông tin lớp",
+        "rosterTitle": "Học viên đã phân ({count} / {capacity})",
+        "rosterEmpty": "Chưa có học viên. Hãy phân lớp từ trang quản lý học viên.",
+        "sessionsTitle": "Buổi học",
+        "sessionsDesc": "Từ 7 ngày trước cho đến lịch sắp tới (tối đa 30 buổi)",
+        "needPattern": "Hãy đặt lịch học định kỳ (ngày · giờ) trước, hệ thống sẽ tự tạo các buổi học.",
+        "sessionsEmpty": "Chưa có buổi học nào. Nhấn nút \"Tạo buổi học\" ở góc phải.",
+        "generate": "📅 Tạo 4 tuần buổi học",
+        "generating": "Đang tạo...",
+        "generateResult": "✓ Đã tạo {generated} buổi (bỏ qua {skipped} buổi trùng)",
+        "presentRatio": "Điểm danh {present}/{total}",
+        "markAttendance": "Điểm danh →"
+      }
+    },
+    "teachers": {
+      "subtitle": "Teachers · Staff",
+      "title": "Quản lý giáo viên · nhân viên",
+      "intro": "Tổng {n} người. Hãy tạo tài khoản tại đây để giáo viên có thể điểm danh bằng điện thoại của mình.",
+      "addTitle": "Thêm nhân viên mới",
+      "listTitle": "Danh sách nhân viên",
+      "columns": {
+        "name": "Tên",
+        "role": "Vai trò",
+        "email": "Email",
+        "phone": "Số điện thoại",
+        "classes": "Lớp phụ trách",
+        "joined": "Ngày vào",
+        "actions": "Quản lý"
+      },
+      "classCountSuffix": "lớp",
+      "form": {
+        "name": "Tên",
+        "role": "Vai trò",
+        "email": "Email",
+        "phone": "Số điện thoại",
+        "password": "Mật khẩu ban đầu (≥ 8 ký tự)",
+        "passwordHint": "Hãy hướng dẫn giáo viên đổi mật khẩu sau khi đăng nhập lần đầu.",
+        "passwordRandom": "🎲 Ngẫu nhiên",
+        "errorMinLength": "Mật khẩu phải có ít nhất 8 ký tự.",
+        "errorEmailTaken": "Email này đã được sử dụng.",
+        "errorForbidden": "Bạn không có quyền tạo vai trò này.",
+        "errorPrefix": "Đăng ký thất bại:",
+        "createBtn": "+ Đăng ký",
+        "creating": "Đang đăng ký...",
+        "successTitle": "✓ Đăng ký thành công!",
+        "successInitialPw": "Mật khẩu ban đầu:",
+        "copy": "Sao chép",
+        "copied": "Đã sao chép ✓",
+        "warningOnce": "⚠️ Mật khẩu chỉ hiển thị một lần. Hãy gửi qua kênh an toàn cho giáo viên."
+      },
+      "row": {
+        "self": "(bạn)",
+        "reset": "🔑 Đặt lại mật khẩu",
+        "delete": "Xóa",
+        "deleteConfirm": "Xóa nhân viên {name}? Các lớp đang do người này phụ trách sẽ chuyển sang chưa phân giáo viên.",
+        "resetHeader": "✓ Mật khẩu mới:",
+        "resetExpiry": "Sẽ biến mất sau 1 phút — hãy gửi qua kênh an toàn."
+      },
+      "roles": {
+        "super_admin": "Quản trị tối cao",
+        "owner": "Giám đốc",
+        "manager": "Quản lý",
+        "teacher": "Giáo viên"
+      }
+    },
+    "attendance": {
+      "subtitle": "Attendance",
+      "title": "Quản lý điểm danh",
+      "intro": "Tình hình điểm danh hôm nay + lịch sử QR (theo giờ Asia/Ho_Chi_Minh)",
+      "kpi": {
+        "checkIn": "Vào lớp hôm nay",
+        "checkOut": "Tan học hôm nay",
+        "current": "Hiện đang ở lớp",
+        "currentHint": "Vào lớp - Tan học"
+      },
+      "byClassTitle": "Điểm danh theo lớp hôm nay",
+      "byClassEmpty": "Chưa có lớp nào được mở.",
+      "recentTitle": "QR gần đây ({count})",
+      "recentEmpty": "Chưa có lịch sử. Học viên quét QR để vào lớp thì dữ liệu sẽ xuất hiện ở đây.",
+      "checkInLabel": "Vào lớp",
+      "checkOutLabel": "Tan học"
+    },
+    "tests": {
+      "subtitle": "Tests",
+      "title": "Lịch sử bài kiểm tra",
+      "intro": "Xem chung kết quả các bài kiểm tra phát âm · xếp lớp miễn phí.",
+      "tabs": { "all": "Tất cả", "free_pron": "Phát âm", "placement": "Xếp lớp" },
+      "empty": "Chưa có lượt làm bài nào.",
+      "columns": {
+        "type": "Loại",
+        "name": "Tên",
+        "status": "Trạng thái",
+        "score": "Điểm",
+        "recommended": "Đề xuất",
+        "details": "Chi tiết",
+        "audio": "Ghi âm",
+        "time": "Thời gian"
+      },
+      "type": { "free_pron": "Phát âm", "placement": "Xếp lớp" },
+      "status": { "pending": "Chờ", "processing": "Đang chấm", "completed": "Hoàn tất", "failed": "Thất bại" },
+      "audio": {
+        "play": "🔊 Nghe",
+        "noAudio": "Không có",
+        "r2Disabled": "R2 chưa bật",
+        "forbidden": "Không có quyền",
+        "error": "Lỗi",
+        "playError": "Phát thất bại — file Mock hoặc đã hết hạn"
+      },
+      "level": {
+        "beginner": "Vỡ lòng",
+        "elementary": "Sơ cấp",
+        "intermediate": "Trung cấp",
+        "advanced": "Cao cấp"
+      }
+    },
+    "leads": {
+      "subtitle": "Leads",
+      "title": "Pipeline khách tư vấn",
+      "intro": "Quản lý trạng thái chuyển đổi: Yêu cầu → Liên hệ → Đăng ký.",
+      "tabs": { "all": "Tất cả", "new": "Mới", "contacted": "Đã liên hệ", "enrolled": "Đã đăng ký", "dropped": "Bỏ" },
+      "empty": "Chưa có yêu cầu tư vấn nào.",
+      "emptyFiltered": "Không có khách ở trạng thái '{label}'.",
+      "status": {
+        "new": "Mới",
+        "contacted": "Đã liên hệ",
+        "enrolled": "Đã đăng ký",
+        "dropped": "Bỏ"
+      },
+      "source": { "landing": "Landing", "pronunciation_test": "Kiểm tra phát âm", "placement_test": "Kiểm tra xếp lớp" },
+      "level": {
+        "beginner": "Vỡ lòng",
+        "elementary": "Sơ cấp",
+        "intermediate": "Trung cấp",
+        "advanced": "Cao cấp"
+      },
+      "note": {
+        "empty": "📝 Chưa có ghi chú — Thêm mới",
+        "placeholder": "Ghi chú (tối đa 1000 ký tự)",
+        "save": "Lưu",
+        "cancel": "Hủy"
+      }
+    },
+    "mcq": {
+      "subtitle": "Placement / MCQ",
+      "title": "Quản lý câu hỏi xếp lớp",
+      "intro": "Bật/tắt câu hỏi trắc nghiệm + điều chỉnh ngưỡng điểm → lớp.",
+      "thresholdTitle": "Ngưỡng điểm",
+      "thresholdHint": "Nếu tổng điểm theo trọng số nằm trong [Min, Max], lớp đó sẽ được đề xuất.",
+      "minCol": "Min",
+      "maxCol": "Max",
+      "questionsTitle": "Danh sách câu hỏi ({count})",
+      "weight": "Trọng số {n}",
+      "correctTag": "✓ Đáp án",
+      "active": "Bật",
+      "inactive": "Tắt",
+      "level": {
+        "beginner": "Vỡ lòng",
+        "elementary": "Sơ cấp",
+        "intermediate": "Trung cấp",
+        "advanced": "Cao cấp"
+      },
+      "levelClass": {
+        "beginner": "Lớp Vỡ lòng",
+        "elementary": "Lớp Sơ cấp",
+        "intermediate": "Lớp Trung cấp",
+        "advanced": "Lớp Cao cấp"
+      }
+    },
+    "sessions": {
+      "statusLabel": {
+        "scheduled": "Sắp tới",
+        "in_progress": "Đang diễn ra",
+        "completed": "Hoàn tất",
+        "cancelled": "Nghỉ",
+        "rescheduled": "Bù sẽ tới"
+      },
+      "kpi": {
+        "present": "Có mặt",
+        "late": "Đi trễ",
+        "absent": "Vắng",
+        "excused": "Có phép"
+      },
+      "unmarkedWarn": "⚠️ Còn {count} học viên chưa được điểm danh — hãy hoàn tất trước khi kết thúc buổi học.",
+      "currentStatus": "Trạng thái hiện tại",
+      "boardTitle": "Điểm danh",
+      "rosterEmpty": "Chưa có học viên nào được phân vào lớp này.",
+      "qrAutoTag": "📱 Tự động ghi nhận từ QR",
+      "statusButtons": { "present": "Có mặt", "late": "Trễ", "absent": "Vắng", "excused": "Có phép" },
+      "notePlaceholder": "Ghi chú (tùy chọn)",
+      "noteSave": "Lưu",
+      "metaTitle": "Trạng thái · Ghi chú buổi học",
+      "topicLabel": "Chủ đề buổi học",
+      "topicPlaceholder": "VD: Phát âm patchim - bài 3",
+      "statusFieldLabel": "Trạng thái",
+      "notesLabel": "Ghi chú (lý do nghỉ, v.v.)",
+      "saveBtn": "Lưu trạng thái · ghi chú",
+      "saving": "Đang lưu...",
+      "saved": "Đã lưu ✓"
+    },
     "pages": {
-      "students": { "title": "Quản lý học viên", "desc": "Danh sách, đăng ký, cấp mã QR, phân lớp. Kích hoạt sau khi nối Supabase." },
-      "classes": { "title": "Quản lý lớp", "desc": "Mở lớp, lịch học, phân giáo viên, quản lý sĩ số." },
-      "attendance": { "title": "Quản lý điểm danh", "desc": "Xem lịch sử QR ra vào, thống kê đi trễ · vắng." },
-      "tests": { "title": "Kết quả kiểm tra", "desc": "Trạng thái xử lý và phân phối điểm các bài kiểm tra phát âm · xếp lớp." },
-      "leads": { "title": "Khách tư vấn", "desc": "Pipeline tư vấn: tiếp nhận → liên hệ → đăng ký." },
       "reports": { "title": "Báo cáo học tập", "desc": "Lịch sử tạo và gửi báo cáo tuần · tháng." }
     }
   },

@@ -1,35 +1,24 @@
+import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 import { AudioCell } from "./audio-cell";
 
-const LEVEL_LABEL: Record<string, string> = {
-  beginner: "입문",
-  elementary: "초급",
-  intermediate: "중급",
-  advanced: "고급",
-};
-const STATUS_TONE: Record<string, string> = {
+type LevelKey = "beginner" | "elementary" | "intermediate" | "advanced";
+type TypeKey = "free_pron" | "placement";
+type StatusKey = "pending" | "processing" | "completed" | "failed";
+
+const STATUS_TONE: Record<StatusKey, string> = {
   pending: "bg-amber-100 text-amber-700",
   processing: "bg-blue-100 text-blue-700",
   completed: "bg-emerald-100 text-emerald-700",
   failed: "bg-red-100 text-red-700",
 };
-const STATUS_LABEL: Record<string, string> = {
-  pending: "대기",
-  processing: "채점 중",
-  completed: "완료",
-  failed: "실패",
-};
-const TYPE_LABEL: Record<string, string> = {
-  free_pron: "발음",
-  placement: "레벨",
-};
 
 type UnifiedRow = {
   id: string;
-  type: "free_pron" | "placement";
+  type: TypeKey;
   visitor_name: string;
-  status: string;
+  status: StatusKey;
   score: number | null;
   recommended_level: string | null;
   created_at: string;
@@ -41,6 +30,13 @@ export default async function AdminTestsPage({
 }: {
   searchParams: Promise<{ type?: string }>;
 }) {
+  const t = await getTranslations("admin.tests");
+  const tCol = await getTranslations("admin.tests.columns");
+  const tTabs = await getTranslations("admin.tests.tabs");
+  const tType = await getTranslations("admin.tests.type");
+  const tStatus = await getTranslations("admin.tests.status");
+  const tLevel = await getTranslations("admin.tests.level");
+
   const sp = await searchParams;
   const filter = sp.type === "free_pron" || sp.type === "placement" ? sp.type : null;
   const orgId = await getCurrentOrgId();
@@ -86,7 +82,7 @@ export default async function AdminTestsPage({
       id: r.id,
       type: "free_pron" as const,
       visitor_name: r.visitor_name,
-      status: r.status,
+      status: r.status as StatusKey,
       score: r.score,
       recommended_level: r.level,
       created_at: r.created_at,
@@ -96,7 +92,7 @@ export default async function AdminTestsPage({
       id: r.id,
       type: "placement" as const,
       visitor_name: r.visitor_name,
-      status: r.status,
+      status: r.status as StatusKey,
       score: r.mcq_score,
       recommended_level: r.level,
       created_at: r.created_at,
@@ -107,28 +103,26 @@ export default async function AdminTestsPage({
     .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
 
   const tabs: { key: string | null; label: string; count: number }[] = [
-    { key: null, label: "전체", count: fpts.length + pts.length },
-    { key: "free_pron", label: "발음", count: fpts.length },
-    { key: "placement", label: "레벨", count: pts.length },
+    { key: null, label: tTabs("all"), count: fpts.length + pts.length },
+    { key: "free_pron", label: tTabs("free_pron"), count: fpts.length },
+    { key: "placement", label: tTabs("placement"), count: pts.length },
   ];
 
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-        Tests
+        {t("subtitle")}
       </p>
-      <h1 className="mt-1 text-2xl font-bold">테스트 이력</h1>
-      <p className="mt-1 text-sm text-[var(--color-muted)]">
-        무료 발음 / 레벨 테스트 응시자와 결과를 한곳에서 봐요.
-      </p>
+      <h1 className="mt-1 text-2xl font-bold">{t("title")}</h1>
+      <p className="mt-1 text-sm text-[var(--color-muted)]">{t("intro")}</p>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        {tabs.map((t) => {
-          const href = t.key ? `?type=${t.key}` : "?";
-          const active = (filter ?? null) === t.key;
+        {tabs.map((tab) => {
+          const href = tab.key ? `?type=${tab.key}` : "?";
+          const active = (filter ?? null) === tab.key;
           return (
             <a
-              key={t.key ?? "all"}
+              key={tab.key ?? "all"}
               href={href}
               className={`rounded-full px-3 py-1.5 text-xs font-bold ${
                 active
@@ -136,7 +130,7 @@ export default async function AdminTestsPage({
                   : "border border-[var(--color-line)] hover:border-[var(--color-ink)]"
               }`}
             >
-              {t.label} <span className="opacity-70">{t.count}</span>
+              {tab.label} <span className="opacity-70">{tab.count}</span>
             </a>
           );
         })}
@@ -144,21 +138,21 @@ export default async function AdminTestsPage({
 
       {all.length === 0 ? (
         <div className="mt-6 rounded-xl border border-dashed border-[var(--color-line)] bg-white p-10 text-center">
-          <p className="text-sm text-[var(--color-muted)]">아직 응시 이력이 없어요.</p>
+          <p className="text-sm text-[var(--color-muted)]">{t("empty")}</p>
         </div>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-lg border border-[var(--color-line)] bg-white">
           <table className="w-full text-sm">
             <thead className="border-b border-[var(--color-line)] bg-[var(--color-soft)] text-xs">
               <tr>
-                <th className="px-4 py-3 text-left font-bold">유형</th>
-                <th className="px-4 py-3 text-left font-bold">이름</th>
-                <th className="px-4 py-3 text-left font-bold">상태</th>
-                <th className="px-4 py-3 text-left font-bold">점수</th>
-                <th className="px-4 py-3 text-left font-bold">추천</th>
-                <th className="px-4 py-3 text-left font-bold">상세</th>
-                <th className="px-4 py-3 text-left font-bold">녹음</th>
-                <th className="px-4 py-3 text-left font-bold">일시</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("type")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("name")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("status")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("score")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("recommended")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("details")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("audio")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("time")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-line)]">
@@ -166,7 +160,7 @@ export default async function AdminTestsPage({
                 <tr key={`${r.type}-${r.id}`} className="hover:bg-[var(--color-soft)]/40">
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-[var(--color-soft)] px-2 py-0.5 text-xs font-bold">
-                      {TYPE_LABEL[r.type]}
+                      {tType(r.type)}
                     </span>
                   </td>
                   <td className="px-4 py-3 font-semibold">{r.visitor_name}</td>
@@ -174,14 +168,14 @@ export default async function AdminTestsPage({
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_TONE[r.status]}`}
                     >
-                      {STATUS_LABEL[r.status] ?? r.status}
+                      {tStatus(r.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3 font-bold">{r.score ?? "—"}</td>
                   <td className="px-4 py-3">
                     {r.recommended_level ? (
                       <span className="rounded-full bg-[var(--color-primary)]/15 px-2 py-0.5 text-xs font-semibold">
-                        {LEVEL_LABEL[r.recommended_level]}
+                        {tLevel(r.recommended_level as LevelKey)}
                       </span>
                     ) : (
                       <span className="text-xs text-[var(--color-muted)]">—</span>

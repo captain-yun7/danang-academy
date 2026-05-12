@@ -1,10 +1,15 @@
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 
+type LevelKey = "beginner" | "elementary" | "intermediate" | "advanced";
+
 export default async function AdminAttendancePage() {
+  const t = await getTranslations("admin.attendance");
+  const tLevel = await getTranslations("admin.classes.level");
   const orgId = await getCurrentOrgId();
-  // 오늘 입실/퇴실 카운트 (Asia/Ho_Chi_Minh 기준일)
+
   const today = (await sql`
     select kind::text, count(*)::int as cnt
     from attendance_logs
@@ -15,7 +20,6 @@ export default async function AdminAttendancePage() {
   `) as { kind: string; cnt: number }[];
   const todayMap = Object.fromEntries(today.map((r) => [r.kind, r.cnt]));
 
-  // 반별 오늘 입실 수
   const byClass = (await sql`
     select c.name as class_name, c.level::text as level,
            count(distinct al.student_id)::int as checked_in,
@@ -29,9 +33,8 @@ export default async function AdminAttendancePage() {
     where c.organization_id = ${orgId}
     group by c.id, c.name, c.level, c.capacity
     order by c.name
-  `) as { class_name: string; level: string; checked_in: number; capacity: number }[];
+  `) as { class_name: string; level: LevelKey; checked_in: number; capacity: number }[];
 
-  // 최근 30개 로그
   const recent = (await sql`
     select al.id::text, al.kind::text,
            to_char(al.logged_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD HH24:MI') as ts,
@@ -55,46 +58,40 @@ export default async function AdminAttendancePage() {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-        Attendance
+        {t("subtitle")}
       </p>
-      <h1 className="mt-1 text-2xl font-bold">출석 관리</h1>
-      <p className="mt-1 text-sm text-[var(--color-muted)]">
-        오늘 출석 현황 + 최근 QR 스캔 기록 (Asia/Ho_Chi_Minh 기준)
-      </p>
+      <h1 className="mt-1 text-2xl font-bold">{t("title")}</h1>
+      <p className="mt-1 text-sm text-[var(--color-muted)]">{t("intro")}</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-lg border border-[var(--color-line)] bg-white p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-            오늘 입실
+            {t("kpi.checkIn")}
           </p>
-          <p className="mt-2 text-3xl font-black text-emerald-600">
-            {todayMap.check_in ?? 0}
-          </p>
+          <p className="mt-2 text-3xl font-black text-emerald-600">{todayMap.check_in ?? 0}</p>
         </div>
         <div className="rounded-lg border border-[var(--color-line)] bg-white p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-            오늘 퇴실
+            {t("kpi.checkOut")}
           </p>
-          <p className="mt-2 text-3xl font-black text-amber-600">
-            {todayMap.check_out ?? 0}
-          </p>
+          <p className="mt-2 text-3xl font-black text-amber-600">{todayMap.check_out ?? 0}</p>
         </div>
         <div className="rounded-lg border border-[var(--color-line)] bg-white p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-            현재 학원 안
+            {t("kpi.current")}
           </p>
           <p className="mt-2 text-3xl font-black">
             {Math.max((todayMap.check_in ?? 0) - (todayMap.check_out ?? 0), 0)}
           </p>
-          <p className="mt-1 text-[10px] text-[var(--color-muted)]">입실 - 퇴실</p>
+          <p className="mt-1 text-[10px] text-[var(--color-muted)]">{t("kpi.currentHint")}</p>
         </div>
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-base font-bold">반별 오늘 출석</h2>
+        <h2 className="mb-3 text-base font-bold">{t("byClassTitle")}</h2>
         {byClass.length === 0 ? (
           <p className="rounded-lg border border-dashed border-[var(--color-line)] bg-white p-6 text-center text-sm text-[var(--color-muted)]">
-            아직 개설된 반이 없어요.
+            {t("byClassEmpty")}
           </p>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -104,7 +101,7 @@ export default async function AdminAttendancePage() {
                 className="rounded-lg border border-[var(--color-line)] bg-white p-4"
               >
                 <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-deep)]">
-                  {r.level}
+                  {tLevel(r.level)}
                 </p>
                 <p className="mt-1 text-sm font-bold">{r.class_name}</p>
                 <p className="mt-2 text-2xl font-black">
@@ -120,10 +117,10 @@ export default async function AdminAttendancePage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-base font-bold">최근 QR 스캔 ({recent.length})</h2>
+        <h2 className="mb-3 text-base font-bold">{t("recentTitle", { count: recent.length })}</h2>
         {recent.length === 0 ? (
           <p className="rounded-lg border border-dashed border-[var(--color-line)] bg-white p-6 text-center text-sm text-[var(--color-muted)]">
-            아직 스캔 기록이 없어요. QR 출석 라우트(`/qr/[token]`)를 학생용 QR로 이용하면 여기 쌓여요.
+            {t("recentEmpty")}
           </p>
         ) : (
           <ul className="overflow-hidden rounded-lg border border-[var(--color-line)] bg-white divide-y divide-[var(--color-line)] text-sm">
@@ -137,7 +134,7 @@ export default async function AdminAttendancePage() {
                         : "bg-amber-100 text-amber-700"
                     }`}
                   >
-                    {l.kind === "check_in" ? "입실" : "퇴실"}
+                    {l.kind === "check_in" ? t("checkInLabel") : t("checkOutLabel")}
                   </span>
                   <Link
                     href={`/admin/students/${l.student_id}`}

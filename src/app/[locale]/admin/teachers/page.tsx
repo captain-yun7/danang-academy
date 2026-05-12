@@ -1,15 +1,9 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 import { TeacherForm } from "./teacher-form";
 import { TeacherRow } from "./teacher-row";
-
-const ROLE_LABEL: Record<string, string> = {
-  super_admin: "슈퍼관리자",
-  owner: "원장",
-  manager: "매니저",
-  teacher: "강사",
-};
 
 const ROLE_TONE: Record<string, string> = {
   super_admin: "bg-purple-100 text-purple-700",
@@ -18,7 +12,13 @@ const ROLE_TONE: Record<string, string> = {
   teacher: "bg-emerald-100 text-emerald-700",
 };
 
+type Role = "super_admin" | "owner" | "manager" | "teacher";
+
 export default async function AdminTeachersPage() {
+  const t = await getTranslations("admin.teachers");
+  const tCol = await getTranslations("admin.teachers.columns");
+  const tRoles = await getTranslations("admin.teachers.roles");
+
   const session = await auth();
   const sessionRole = (session?.user as { role?: string } | undefined)?.role ?? "teacher";
   const sessionUserId = (session?.user as { id?: string } | undefined)?.id ?? "";
@@ -50,40 +50,47 @@ export default async function AdminTeachersPage() {
   const canManage = ["manager", "owner", "super_admin"].includes(sessionRole);
   const canRoleEdit = ["owner", "super_admin"].includes(sessionRole);
 
+  const roleLabel: Record<string, string> = {
+    super_admin: tRoles("super_admin"),
+    owner: tRoles("owner"),
+    manager: tRoles("manager"),
+    teacher: tRoles("teacher"),
+  };
+
   return (
     <div>
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-            Teachers · Staff
+            {t("subtitle")}
           </p>
-          <h1 className="mt-1 text-2xl font-bold">강사·직원 관리</h1>
+          <h1 className="mt-1 text-2xl font-bold">{t("title")}</h1>
           <p className="mt-1 text-sm text-[var(--color-muted)]">
-            총 {users.length}명. 강사가 본인 폰으로 출석 체크하려면 여기서 계정을 만들어주세요.
+            {t("intro", { n: users.length })}
           </p>
         </div>
       </div>
 
       {canManage && (
         <section className="mt-6 rounded-xl border border-[var(--color-line)] bg-white p-6">
-          <h2 className="mb-4 text-base font-bold">새 직원 추가</h2>
+          <h2 className="mb-4 text-base font-bold">{t("addTitle")}</h2>
           <TeacherForm sessionRole={sessionRole} />
         </section>
       )}
 
       <section className="mt-8">
-        <h2 className="mb-3 text-base font-bold">직원 목록</h2>
+        <h2 className="mb-3 text-base font-bold">{t("listTitle")}</h2>
         <div className="overflow-x-auto rounded-lg border border-[var(--color-line)] bg-white">
           <table className="w-full text-sm">
             <thead className="border-b border-[var(--color-line)] bg-[var(--color-soft)] text-xs">
               <tr>
-                <th className="px-4 py-3 text-left font-bold">이름</th>
-                <th className="px-4 py-3 text-left font-bold">역할</th>
-                <th className="px-4 py-3 text-left font-bold">이메일</th>
-                <th className="px-4 py-3 text-left font-bold">연락처</th>
-                <th className="px-4 py-3 text-left font-bold">담당 반</th>
-                <th className="px-4 py-3 text-left font-bold">가입일</th>
-                <th className="px-4 py-3 text-right font-bold">관리</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("name")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("role")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("email")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("phone")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("classes")}</th>
+                <th className="px-4 py-3 text-left font-bold">{tCol("joined")}</th>
+                <th className="px-4 py-3 text-right font-bold">{tCol("actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-line)]">
@@ -94,7 +101,7 @@ export default async function AdminTeachersPage() {
                   sessionUserId={sessionUserId}
                   canManage={canManage}
                   canRoleEdit={canRoleEdit}
-                  roleLabel={ROLE_LABEL}
+                  roleLabel={roleLabel}
                   roleTone={ROLE_TONE}
                 />
               ))}

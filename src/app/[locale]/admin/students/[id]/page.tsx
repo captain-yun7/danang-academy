@@ -2,18 +2,14 @@ import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { headers } from "next/headers";
 import QRCode from "qrcode";
+import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { auth } from "@/auth";
 import { getCurrentOrgId } from "@/lib/auth/scope";
 import { StudentForm } from "../student-form";
 import { NotesSection, type StudentNote } from "../notes/notes-section";
 
-const LEVEL_LABEL: Record<string, string> = {
-  beginner: "입문",
-  elementary: "초급",
-  intermediate: "중급",
-  advanced: "고급",
-};
+type LevelKey = "beginner" | "elementary" | "intermediate" | "advanced";
 
 export default async function StudentDetailPage({
   params,
@@ -82,6 +78,10 @@ export default async function StudentDetailPage({
   const currentUserId = (session?.user as { id?: string } | undefined)?.id ?? "";
   const currentRole = (session?.user as { role?: string } | undefined)?.role ?? "teacher";
 
+  const t = await getTranslations("admin.students.detail");
+  const tList = await getTranslations("admin.students");
+  const tLevel = await getTranslations("admin.students.level");
+
   // 사이트 호스트 추출 (QR URL용)
   const h = await headers();
   const proto = h.get("x-forwarded-proto") ?? "https";
@@ -99,17 +99,17 @@ export default async function StudentDetailPage({
         href="/admin/students"
         className="text-xs font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)]"
       >
-        ← 학생 목록
+        {tList("backToList")}
       </Link>
       <h1 className="mt-2 text-2xl font-bold">{s.name}</h1>
       <p className="mt-1 text-sm text-[var(--color-muted)]">
         {s.class_name ? `${s.class_name} · ` : ""}
-        {s.korean_level ? LEVEL_LABEL[s.korean_level] : "레벨 미정"}
+        {s.korean_level ? tLevel(s.korean_level as LevelKey) : t("levelUndefined")}
       </p>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
         <section className="rounded-xl border border-[var(--color-line)] bg-white p-6">
-          <h2 className="mb-4 text-base font-bold">기본 정보 수정</h2>
+          <h2 className="mb-4 text-base font-bold">{t("editTitle")}</h2>
           <StudentForm
             mode="edit"
             classes={classes}
@@ -130,7 +130,7 @@ export default async function StudentDetailPage({
         <section className="space-y-4">
           <div className="rounded-xl border border-[var(--color-line)] bg-white p-5 text-center">
             <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
-              QR 출석 토큰
+              {t("qrTitle")}
             </p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={qrPng} alt="QR" className="mx-auto mt-3 h-44 w-44" />
@@ -142,16 +142,16 @@ export default async function StudentDetailPage({
               download={`qr-${s.name}.png`}
               className="mt-3 inline-block text-xs font-bold text-[var(--color-primary-deep)]"
             >
-              다운로드
+              {t("qrDownload")}
             </a>
           </div>
 
           <div className="rounded-xl border border-[var(--color-line)] bg-white p-5">
             <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
-              최근 출석 ({recentLogs.length})
+              {t("recentAttendance", { count: recentLogs.length })}
             </p>
             {recentLogs.length === 0 ? (
-              <p className="mt-3 text-xs text-[var(--color-muted)]">아직 기록 없음</p>
+              <p className="mt-3 text-xs text-[var(--color-muted)]">{t("noLogs")}</p>
             ) : (
               <ul className="mt-3 space-y-2 text-xs">
                 {recentLogs.map((l, i) => (
@@ -163,7 +163,7 @@ export default async function StudentDetailPage({
                           : "bg-amber-100 text-amber-700"
                       }`}
                     >
-                      {l.kind === "check_in" ? "입실" : "퇴실"}
+                      {l.kind === "check_in" ? t("checkIn") : t("checkOut")}
                     </span>
                     <span className="text-[var(--color-muted)]">{l.ts}</span>
                   </li>
