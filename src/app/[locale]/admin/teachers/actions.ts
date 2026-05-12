@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db/client";
 import { auth } from "@/auth";
+import { normalizeVnPhone } from "@/lib/phone";
 
 async function requireRoleOrAbove(min: "manager" | "owner" | "super_admin") {
   const session = await auth();
@@ -52,9 +53,10 @@ export async function createTeacher(input: z.infer<typeof createSchema>) {
   if (dup[0]) throw new Error("email_taken");
 
   const hash = await bcrypt.hash(d.password, 10);
+  const phone = normalizeVnPhone(d.phone) || null;
   await sql`
     insert into users (email, password_hash, name, phone, role, organization_id, email_verified)
-    values (${d.email}, ${hash}, ${d.name}, ${d.phone || null},
+    values (${d.email}, ${hash}, ${d.name}, ${phone},
             ${d.targetRole}::user_role, ${session.organizationId}, now())
   `;
 

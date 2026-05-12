@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db/client";
 import { auth } from "@/auth";
+import { normalizeVnPhone } from "@/lib/phone";
 
 type Session = { user: { role: string; organizationId: string } };
 
@@ -38,16 +39,19 @@ export async function createStudent(input: z.infer<typeof createSchema>) {
   if (!parsed.success) throw new Error("invalid_input");
   const d = parsed.data;
 
+  const phone = normalizeVnPhone(d.phone) || null;
+  const parentContact = normalizeVnPhone(d.parentContact) || null;
+
   const inserted = (await sql`
     insert into students
       (name, phone, native_language, korean_level, class_id, parent_contact, enrolled_at, status, organization_id)
     values
       (${d.name},
-       ${d.phone || null},
+       ${phone},
        ${d.nativeLanguage}::native_language,
        ${d.koreanLevel ? d.koreanLevel : null}::korean_level,
        ${d.classId ? d.classId : null}::uuid,
-       ${d.parentContact || null},
+       ${parentContact},
        ${d.enrolledAt ? d.enrolledAt : null}::date,
        ${d.status}::student_status,
        ${user.organizationId})
@@ -69,14 +73,17 @@ export async function updateStudent(input: z.infer<typeof updateSchema>) {
   if (!parsed.success) throw new Error("invalid_input");
   const d = parsed.data;
 
+  const phone = normalizeVnPhone(d.phone) || null;
+  const parentContact = normalizeVnPhone(d.parentContact) || null;
+
   await sql`
     update students set
       name = ${d.name},
-      phone = ${d.phone || null},
+      phone = ${phone},
       native_language = ${d.nativeLanguage}::native_language,
       korean_level = ${d.koreanLevel ? d.koreanLevel : null}::korean_level,
       class_id = ${d.classId ? d.classId : null}::uuid,
-      parent_contact = ${d.parentContact || null},
+      parent_contact = ${parentContact},
       enrolled_at = ${d.enrolledAt ? d.enrolledAt : null}::date,
       status = ${d.status}::student_status
     where id = ${d.id} and organization_id = ${user.organizationId}

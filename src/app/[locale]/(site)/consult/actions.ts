@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { sql } from "@/lib/db/client";
 import { getCurrentOrgId } from "@/lib/auth/scope";
+import { normalizeVnPhone } from "@/lib/phone";
 
 const schema = z.object({
   name: z.string().trim().min(1).max(60),
@@ -24,13 +25,15 @@ export async function submitConsult(
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const d = parsed.data;
+  const phone = normalizeVnPhone(d.phone);
+  if (!phone) return { ok: false, error: "invalid_phone" };
   const organizationId = await getCurrentOrgId();
 
   await sql`
     insert into consult_leads
       (name, phone, email, source, source_test_id, recommended_level, note, status, organization_id)
     values
-      (${d.name}, ${d.phone}, ${d.email || null},
+      (${d.name}, ${phone}, ${d.email || null},
        ${d.source}, ${d.sourceTestId ? d.sourceTestId : null},
        ${d.recommendedLevel ? d.recommendedLevel : null}::korean_level,
        ${d.note || null}, 'new', ${organizationId})

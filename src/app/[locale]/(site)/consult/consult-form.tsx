@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { submitConsult } from "./actions";
+import { PhoneInput } from "@/components/phone-input";
 
 const LEVEL_KEYS = ["beginner", "elementary", "intermediate", "advanced"] as const;
 
@@ -75,13 +76,7 @@ export function ConsultForm({
           <span className="mb-1 block text-xs font-semibold">
             {t("phone")} <span className="text-red-500">*</span>
           </span>
-          <input
-            name="phone"
-            required
-            type="tel"
-            placeholder={t("phonePlaceholder")}
-            className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
-          />
+          <PhoneInput name="phone" required />
         </label>
         <label className="block">
           <span className="mb-1 block text-xs font-semibold">{t("email")}</span>

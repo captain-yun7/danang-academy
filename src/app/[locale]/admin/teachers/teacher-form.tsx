@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { createTeacher } from "./actions";
+import { PhoneInput } from "@/components/phone-input";
 
 const ROLE_KEYS = ["teacher", "manager", "owner"] as const;
 type RoleKey = (typeof ROLE_KEYS)[number];
@@ -111,12 +112,7 @@ export function TeacherForm({ sessionRole }: { sessionRole: string }) {
         </label>
         <label className="block">
           <span className="mb-1 block text-xs font-semibold">{t("phone")}</span>
-          <input
-            name="phone"
-            type="tel"
-            placeholder="+84 ..."
-            className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm focus:border-[var(--color-primary)]"
-          />
+          <PhoneInput name="phone" />
         </label>
       </div>
 

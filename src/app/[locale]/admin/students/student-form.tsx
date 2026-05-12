@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { createStudent, updateStudent, deleteStudent } from "./actions";
+import { PhoneInput } from "@/components/phone-input";
 
 const LEVEL_KEYS = ["", "beginner", "elementary", "intermediate", "advanced"] as const;
 const LANG_KEYS = ["vi", "en", "other"] as const;
@@ -83,13 +84,7 @@ export function StudentForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1 block text-xs font-semibold">{t("phone")}</span>
-          <input
-            name="phone"
-            type="tel"
-            placeholder={t("phonePlaceholder")}
-            defaultValue={initial?.phone ?? ""}
-            className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
-          />
+          <PhoneInput name="phone" defaultValue={initial?.phone ?? ""} />
         </label>
         <label className="block">
           <span className="mb-1 block text-xs font-semibold">{t("nativeLanguage")}</span>
@@ -141,13 +136,7 @@ export function StudentForm({
 
       <label className="block">
         <span className="mb-1 block text-xs font-semibold">{t("parentContact")}</span>
-        <input
-          name="parentContact"
-          maxLength={120}
-          placeholder={t("parentPlaceholder")}
-          defaultValue={initial?.parentContact ?? ""}
-          className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
-        />
+        <PhoneInput name="parentContact" defaultValue={initial?.parentContact ?? ""} />
       </label>
 
       <div className="grid gap-3 sm:grid-cols-2">
