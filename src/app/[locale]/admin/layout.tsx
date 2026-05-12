@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { adminMenuKeys } from "@/lib/site";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default async function AdminLayout({
   children,
@@ -51,6 +52,9 @@ export default async function AdminLayout({
             >
               ← {tSite("publicSite")}
             </Link>
+            <div className="mt-3 flex justify-center">
+              <LanguageSwitcher />
+            </div>
           </div>
         </aside>
 
