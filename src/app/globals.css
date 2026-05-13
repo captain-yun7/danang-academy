@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* 한글은 Pretendard로 — dynamic-subset 은 unicode-range 로 필요한 글리프만 받음 */
+@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
 :root {
   /* KTL 로고 팔레트 (시안 → 퍼플 그라디언트 + 네이비) */
@@ -37,7 +39,9 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-montserrat), var(--font-noto-kr),
+  /* 라틴/베트남어 → Montserrat, 한글 글리프 fallback → Pretendard Variable.
+     Montserrat 에 한글이 없어 자동으로 다음 폰트로 떨어짐. */
+  font-family: var(--font-montserrat), "Pretendard Variable", Pretendard,
     "Apple SD Gothic Neo", "Noto Sans KR", system-ui, -apple-system, sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;

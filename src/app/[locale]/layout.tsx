@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat, Noto_Sans_KR } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -10,13 +10,6 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin", "vietnamese"],
   weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const notoKr = Noto_Sans_KR({
-  variable: "--font-noto-kr",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
   display: "swap",
 });
 
@@ -53,7 +46,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${montserrat.variable} ${notoKr.variable} h-full`}
+      className={`${montserrat.variable} h-full`}
     >
       <body className="min-h-full bg-white text-[var(--color-ink)]">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
