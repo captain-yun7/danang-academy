@@ -29,12 +29,17 @@ const PPT_PATH = path.join(ROOT, "_docs/guides/beta-guidebook-v1.pptx");
 const BASE_URL = process.env.GUIDEBOOK_BASE_URL ?? "https://danang-academy.vercel.app";
 const VIEWPORT = { width: 1600, height: 900 };
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
+const SKIP_SHOTS = process.env.SKIP_SCREENSHOTS === "1";
+
+// PowerPoint 에서 한국어 줄바꿈이 가장 안정적인 폰트.
+// Noto Sans KR 은 Windows 에 기본 설치 안 되어 폰트 대체가 일어나며 wrap 동작이 달라짐.
+const FONT = "Malgun Gothic";
 
 if (!existsSync(SCREENSHOTS_DIR)) mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
 const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
-if (!url) throw new Error("DATABASE_URL is required");
-const sql = neon(url);
+if (!url && !SKIP_SHOTS) throw new Error("DATABASE_URL is required");
+const sql = url ? neon(url) : null;
 
 const TEMP_EMAIL = "beta-demo@temp.local";
 const TEMP_PASSWORD = randomBytes(12).toString("hex");
@@ -208,22 +213,22 @@ function buildPpt() {
   cover.addText("Da Nang K-Talk Lab", {
     x: 0.5, y: 1.7, w: 12.3, h: 0.6,
     fontSize: 18, color: COLORS.accent, bold: true, align: "center",
-    fontFace: "Noto Sans KR",
+    fontFace: FONT,
   });
   cover.addText("베타 가이드북", {
     x: 0.5, y: 2.5, w: 12.3, h: 1.1,
     fontSize: 56, color: "FFFFFF", bold: true, align: "center",
-    fontFace: "Noto Sans KR",
+    fontFace: FONT,
   });
   cover.addText("학생·강사·운영자가 처음 사용할 때 한 번 훑어보면 좋은 가이드", {
     x: 0.5, y: 3.9, w: 12.3, h: 0.4,
     fontSize: 16, color: "FFFFFF", align: "center",
-    fontFace: "Noto Sans KR",
+    fontFace: FONT,
   });
   cover.addText("danang-academy.vercel.app  ·  2026-05-12", {
     x: 0.5, y: 6.8, w: 12.3, h: 0.3,
     fontSize: 12, color: COLORS.muted, align: "center",
-    fontFace: "Noto Sans KR",
+    fontFace: FONT,
   });
 
   // 목차
@@ -231,20 +236,21 @@ function buildPpt() {
   toc.addText("목차", {
     x: 0.5, y: 0.4, w: 12.3, h: 0.7,
     fontSize: 32, bold: true, color: COLORS.dark,
-    fontFace: "Noto Sans KR",
+    fontFace: FONT,
   });
+  // pptxgenjs 는 배열로 넣은 텍스트 항목을 같은 줄에 이어 붙임 — 줄바꿈 원하는 곳마다 breakLine 필수
   toc.addText(
     [
-      { text: "Part 1. 학생·방문자 흐름", options: { fontSize: 22, bold: true, color: COLORS.primary, fontFace: "Noto Sans KR" } },
-      { text: "홈 · 무료 발음 테스트 · 무료 레벨 테스트 · 상담 신청 · QR 출석", options: { fontSize: 14, color: COLORS.muted, fontFace: "Noto Sans KR" } },
-      { text: " ", options: {} },
-      { text: "Part 2. 학원 운영진", options: { fontSize: 22, bold: true, color: COLORS.primary, fontFace: "Noto Sans KR" } },
-      { text: "로그인 · 대시보드 · 학생 · 반 · 강사 · 출석 · 테스트 · 상담 · MCQ", options: { fontSize: 14, color: COLORS.muted, fontFace: "Noto Sans KR" } },
-      { text: " ", options: {} },
-      { text: "Part 3. 정책과 부탁", options: { fontSize: 22, bold: true, color: COLORS.primary, fontFace: "Noto Sans KR" } },
-      { text: "권한 매트릭스 · 베타 주의사항 · 피드백 요청", options: { fontSize: 14, color: COLORS.muted, fontFace: "Noto Sans KR" } },
+      { text: "Part 1. 학생·방문자 흐름", options: { fontSize: 22, bold: true, color: COLORS.primary, fontFace: FONT, breakLine: true } },
+      { text: "홈 · 무료 발음 테스트 · 무료 레벨 테스트 · 상담 신청 · QR 출석", options: { fontSize: 14, color: COLORS.muted, fontFace: FONT, breakLine: true } },
+      { text: " ", options: { breakLine: true } },
+      { text: "Part 2. 학원 운영진", options: { fontSize: 22, bold: true, color: COLORS.primary, fontFace: FONT, breakLine: true } },
+      { text: "로그인 · 대시보드 · 학생 · 반 · 강사 · 출석 · 테스트 · 상담 · MCQ", options: { fontSize: 14, color: COLORS.muted, fontFace: FONT, breakLine: true } },
+      { text: " ", options: { breakLine: true } },
+      { text: "Part 3. 정책과 부탁", options: { fontSize: 22, bold: true, color: COLORS.primary, fontFace: FONT, breakLine: true } },
+      { text: "권한 매트릭스 · 베타 주의사항 · 피드백 요청", options: { fontSize: 14, color: COLORS.muted, fontFace: FONT } },
     ],
-    { x: 0.8, y: 1.5, w: 12, h: 5.5 }
+    { x: 0.8, y: 1.5, w: 12, h: 5.5, paraSpaceAfter: 4, lineSpacingMultiple: 1.35 }
   );
 
   // 섹션 헤더 슬라이드
@@ -254,44 +260,44 @@ function buildPpt() {
     slide.addText(label, {
       x: 0.7, y: 2.5, w: 12, h: 0.5,
       fontSize: 16, bold: true, color: COLORS.primary,
-      fontFace: "Noto Sans KR",
+      fontFace: FONT,
     });
     slide.addText(title, {
       x: 0.7, y: 3.1, w: 12, h: 1,
       fontSize: 44, bold: true, color: COLORS.dark,
-      fontFace: "Noto Sans KR",
+      fontFace: FONT,
     });
     slide.addText(desc, {
       x: 0.7, y: 4.3, w: 12, h: 0.5,
       fontSize: 16, color: COLORS.muted,
-      fontFace: "Noto Sans KR",
+      fontFace: FONT,
     });
   }
 
-  // 콘텐츠 슬라이드 — 큰 단일 스크린샷 + 우측 설명
+  // 콘텐츠 슬라이드 — 좌측 스크린샷 + 우측 설명 박스 (박스를 넓혀 줄바꿈 빈도 ↓)
   function addContentSlide({ title, subtitle, shot, bullets }) {
     const slide = pres.addSlide();
     slide.addText(title, {
-      x: 0.5, y: 0.35, w: 12.3, h: 0.55,
+      x: 0.5, y: 0.3, w: 12.3, h: 0.55,
       fontSize: 26, bold: true, color: COLORS.dark,
-      fontFace: "Noto Sans KR",
+      fontFace: FONT,
     });
     if (subtitle) {
       slide.addText(subtitle, {
-        x: 0.5, y: 0.95, w: 12.3, h: 0.35,
+        x: 0.5, y: 0.9, w: 12.3, h: 0.4,
         fontSize: 13, color: COLORS.muted,
-        fontFace: "Noto Sans KR",
+        fontFace: FONT,
       });
     }
-    // 좌측: 스크린샷 (8.9" 너비)
+    // 좌측: 스크린샷 (7.5" 너비 — 폭 줄여 우측 텍스트 박스에 자리 양보)
     slide.addImage({
       path: shotPath(shot),
-      x: 0.5, y: 1.5, w: 8.9, h: 5.7,
-      sizing: { type: "contain", w: 8.9, h: 5.7 },
+      x: 0.5, y: 1.4, w: 7.5, h: 5.8,
+      sizing: { type: "contain", w: 7.5, h: 5.8 },
     });
-    // 우측: 설명 박스
+    // 우측: 설명 박스 (3.5" → 4.7" 로 확장)
     slide.addShape("rect", {
-      x: 9.6, y: 1.5, w: 3.5, h: 5.7,
+      x: 8.2, y: 1.4, w: 4.7, h: 5.8,
       fill: { color: COLORS.light },
       line: { color: COLORS.border, width: 1 },
     });
@@ -299,60 +305,84 @@ function buildPpt() {
       slide.addText(
         bullets.map((b) => ({
           text: b,
-          options: { bullet: { type: "bullet" }, fontSize: 12, color: COLORS.dark, fontFace: "Noto Sans KR", paraSpaceAfter: 6 },
+          options: {
+            bullet: { type: "bullet" },
+            fontSize: 11,
+            color: COLORS.dark,
+            fontFace: FONT,
+            paraSpaceAfter: 5,
+            lineSpacingMultiple: 1.35,
+          },
         })),
-        { x: 9.8, y: 1.7, w: 3.2, h: 5.4, valign: "top" }
+        { x: 8.4, y: 1.55, w: 4.4, h: 5.55, valign: "top" }
       );
     }
   }
 
-  // 큰 스크린샷 + 캡션만 (모바일/세로형)
+  // 큰 스크린샷 + 캡션만 (모바일/세로형) — 박스 넓힘, 폰트 좁힘, 행간 ↑
   function addPortraitSlide({ title, subtitle, shot, bullets }) {
     const slide = pres.addSlide();
     slide.addText(title, {
-      x: 0.5, y: 0.35, w: 12.3, h: 0.55,
+      x: 0.5, y: 0.3, w: 12.3, h: 0.55,
       fontSize: 26, bold: true, color: COLORS.dark,
-      fontFace: "Noto Sans KR",
+      fontFace: FONT,
     });
     if (subtitle) {
       slide.addText(subtitle, {
-        x: 0.5, y: 0.95, w: 12.3, h: 0.35,
+        x: 0.5, y: 0.9, w: 12.3, h: 0.4,
         fontSize: 13, color: COLORS.muted,
-        fontFace: "Noto Sans KR",
+        fontFace: FONT,
       });
     }
-    // 모바일 이미지: 가운데 작게
+    // 모바일 이미지: 좌측 배치
     slide.addImage({
       path: shotPath(shot),
-      x: 1.5, y: 1.5, w: 4.5, h: 5.7,
-      sizing: { type: "contain", w: 4.5, h: 5.7 },
+      x: 0.7, y: 1.4, w: 4.0, h: 5.8,
+      sizing: { type: "contain", w: 4.0, h: 5.8 },
     });
     slide.addShape("rect", {
-      x: 7, y: 1.5, w: 5.8, h: 5.7,
+      x: 5.0, y: 1.4, w: 7.8, h: 5.8,
       fill: { color: COLORS.light },
       line: { color: COLORS.border, width: 1 },
     });
     slide.addText(
       bullets.map((b) => ({
         text: b,
-        options: { bullet: { type: "bullet" }, fontSize: 14, color: COLORS.dark, fontFace: "Noto Sans KR", paraSpaceAfter: 8 },
+        options: {
+          bullet: { type: "bullet" },
+          fontSize: 13,
+          color: COLORS.dark,
+          fontFace: FONT,
+          paraSpaceAfter: 6,
+          lineSpacingMultiple: 1.4,
+        },
       })),
-      { x: 7.3, y: 1.7, w: 5.2, h: 5.4, valign: "top" }
+      { x: 5.3, y: 1.55, w: 7.4, h: 5.55, valign: "top" }
     );
   }
 
-  // 텍스트 전용 슬라이드
+  // 텍스트 전용 슬라이드 — 행간/단락 간격 명시
   function addTextSlide(title, blocks) {
     const slide = pres.addSlide();
     slide.addText(title, {
       x: 0.5, y: 0.4, w: 12.3, h: 0.7,
       fontSize: 30, bold: true, color: COLORS.dark,
-      fontFace: "Noto Sans KR",
+      fontFace: FONT,
     });
     slide.addText(
       blocks.map((b) => {
         if (typeof b === "string") {
-          return { text: b, options: { fontSize: 14, color: COLORS.dark, bullet: { type: "bullet" }, fontFace: "Noto Sans KR", paraSpaceAfter: 8 } };
+          return {
+            text: b,
+            options: {
+              fontSize: 14, color: COLORS.dark,
+              bullet: { type: "bullet" },
+              fontFace: FONT,
+              paraSpaceAfter: 6,
+              lineSpacingMultiple: 1.4,
+              breakLine: true,
+            },
+          };
         }
         return {
           text: b.text,
@@ -361,13 +391,15 @@ function buildPpt() {
             color: b.color ?? COLORS.dark,
             bold: b.bold ?? false,
             bullet: b.bullet === false ? false : { type: "bullet" },
-            fontFace: "Noto Sans KR",
-            paraSpaceAfter: 8,
+            fontFace: FONT,
+            paraSpaceAfter: 6,
+            lineSpacingMultiple: 1.4,
             indentLevel: b.indent ?? 0,
+            breakLine: true,
           },
         };
       }),
-      { x: 0.9, y: 1.3, w: 11.5, h: 5.8, valign: "top" }
+      { x: 0.8, y: 1.3, w: 11.7, h: 5.8, valign: "top" }
     );
   }
 
@@ -659,30 +691,36 @@ function buildPpt() {
   last.addText("감사합니다", {
     x: 0.5, y: 2.7, w: 12.3, h: 1.4,
     fontSize: 64, color: "FFFFFF", bold: true, align: "center",
-    fontFace: "Noto Sans KR",
+    fontFace: FONT,
   });
   last.addText("Cảm ơn bạn", {
     x: 0.5, y: 4.2, w: 12.3, h: 0.5,
     fontSize: 22, color: COLORS.accent, align: "center",
-    fontFace: "Noto Sans KR",
+    fontFace: FONT,
   });
   last.addText("danang-academy.vercel.app", {
     x: 0.5, y: 5.5, w: 12.3, h: 0.4,
     fontSize: 14, color: "FFFFFF", align: "center",
-    fontFace: "Noto Sans KR",
+    fontFace: FONT,
   });
 
   return pres.writeFile({ fileName: PPT_PATH });
 }
 
 try {
-  await seedDemoData();
-  await captureScreenshots();
+  if (SKIP_SHOTS) {
+    console.log("→ SKIP_SCREENSHOTS=1 — 기존 스크린샷 재사용, 시드/캡처 스킵\n");
+  } else {
+    await seedDemoData();
+    await captureScreenshots();
+  }
   const file = await buildPpt();
   console.log(`\n가이드북 생성 완료: ${file}\n`);
 } catch (err) {
   console.error("실패:", err);
   process.exit(1);
 } finally {
-  await cleanupDemoData();
+  if (!SKIP_SHOTS) {
+    await cleanupDemoData();
+  }
 }
