@@ -124,8 +124,8 @@ async function runMockEvaluation(id: string) {
       set status='completed',
           transcript = target_sentence,
           score = ${score},
-          strengths = ${"속도와 억양이 자연스러워요. 또박또박 잘 발음했어요. (Mock)"},
-          improvements = ${"받침 발음을 조금 더 명확히 하면 좋아요. 'ㄴ/ㅁ/ㅇ' 구분을 신경 써보세요. (Mock)"},
+          strengths = ${"Tốc độ và ngữ điệu tự nhiên, phát âm rõ ràng. (Mock)"},
+          improvements = ${"Phát âm patchim cần rõ hơn một chút. Hãy chú ý phân biệt 'ㄴ/ㅁ/ㅇ'. (Mock)"},
           recommended_class_level = ${level}
       where id = ${id}
     `;

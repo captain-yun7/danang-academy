@@ -36,17 +36,18 @@ const QUESTIONS = [
     answer_index: 2,
   },
   {
+    // 보기 4 개 중 정답이 문제 본문에 그대로 노출되지 않도록 — 동물 명사 분류 문제로 교체
     level_target: "elementary",
     weight: 1,
-    question_ko: "'시장'의 뜻은 무엇인가요?",
-    question_vi: "Nghĩa của '시장' là gì?",
+    question_ko: "다음 중 동물을 가리키는 단어는?",
+    question_vi: "Từ nào dưới đây chỉ một loài động vật?",
     choices: [
-      { ko: "병원", vi: "Bệnh viện" },
+      { ko: "책상", vi: "Cái bàn" },
+      { ko: "고양이", vi: "Con mèo" },
+      { ko: "사과", vi: "Quả táo" },
       { ko: "학교", vi: "Trường học" },
-      { ko: "시장 (Market)", vi: "Chợ" },
-      { ko: "공원", vi: "Công viên" },
     ],
-    answer_index: 2,
+    answer_index: 1,
   },
   {
     level_target: "intermediate",

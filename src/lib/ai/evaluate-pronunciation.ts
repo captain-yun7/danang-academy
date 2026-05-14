@@ -107,20 +107,39 @@ async function generateWithRetry(prompt: string): Promise<string> {
   throw lastErr;
 }
 
+export type FeedbackLocale = "vi" | "ko";
+
 export async function evaluateWithGemini({
   target,
   transcript,
   declaredLevel,
+  feedbackLocale = "vi",
 }: {
   target: string;
   transcript: string;
   declaredLevel?: string;
+  /** 피드백(strengths/improvements) 출력 언어. 기본 vi — 사용자는 베트남 학생 위주. */
+  feedbackLocale?: FeedbackLocale;
 }): Promise<Omit<EvaluationResult, "transcript">> {
+  const langRules =
+    feedbackLocale === "ko"
+      ? [
+          "- strengths/improvements: 한국어로 한 문장씩, 학생이 알아듣기 쉽게 친절하게.",
+          "- 한국어 자모(ㄱ/ㄴ/ㅏ/ㅓ 등)나 단어 예시를 인용할 때는 한국어 그대로 표기.",
+        ]
+      : [
+          "- strengths/improvements: bằng tiếng Việt, mỗi mục một câu, viết thân thiện cho học sinh dễ hiểu.",
+          "- KHÔNG dùng tiếng Hàn trong câu giải thích (trừ khi cần trích dẫn âm/từ tiếng Hàn cụ thể — ví dụ ㄷ, ㅌ, ㅏ, 다낭).",
+          '- KHÔNG dùng tiếng Anh hoặc dịch nghĩa (ví dụ không viết "Market" hay "(meaning ...)").',
+          "- Tránh dịch từ tiếng Hàn sang tiếng Việt giữa câu; nếu cần trích dẫn từ tiếng Hàn thì để nguyên trong dấu nháy đơn.",
+        ];
+
   const prompt = [
     "당신은 베트남에서 한국어를 가르치는 학원의 발음 평가 전문가입니다.",
     "학생의 발음 녹음을 STT로 받아쓴 결과와 목표 문장을 비교해 평가합니다.",
+    "학생은 베트남 사람이며 한국어를 배우는 입장입니다.",
     "",
-    `목표 문장: "${target}"`,
+    `목표 문장(한국어): "${target}"`,
     `STT 결과(학생이 실제로 읽은 것으로 추정): "${transcript}"`,
     declaredLevel ? `학생이 신고한 자가 평가 레벨: ${declaredLevel}` : "",
     "",
@@ -131,9 +150,9 @@ export async function evaluateWithGemini({
     "",
     "출력 규칙:",
     "- score: 0~100 정수. 80 이상은 발음이 매우 명확할 때만.",
-    "- strengths/improvements: 한국어로 한 문장씩, 학생이 알아듣기 쉽게 친절하게.",
+    ...langRules,
     "- recommendedLevel: beginner|elementary|intermediate|advanced 중 하나.",
-    '- STT 결과가 목표와 거의 동일하면 점수 높게, 많이 다르면 낮게.',
+    "- STT 결과가 목표와 거의 동일하면 점수 높게, 많이 다르면 낮게.",
     '- STT 결과가 비어있거나 의미 없는 문자열이면 score 30 이하 + recommendedLevel "beginner".',
   ]
     .filter(Boolean)
@@ -154,13 +173,20 @@ export async function evaluatePronunciation({
   contentType,
   target,
   declaredLevel,
+  feedbackLocale,
 }: {
   audioBytes: ArrayBuffer;
   contentType: string;
   target: string;
   declaredLevel?: string;
+  feedbackLocale?: FeedbackLocale;
 }): Promise<EvaluationResult> {
   const transcript = await transcribeKorean(audioBytes, contentType);
-  const evalResult = await evaluateWithGemini({ target, transcript, declaredLevel });
+  const evalResult = await evaluateWithGemini({
+    target,
+    transcript,
+    declaredLevel,
+    feedbackLocale,
+  });
   return { transcript, ...evalResult };
 }
