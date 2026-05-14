@@ -57,6 +57,27 @@ h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, button, a 
   overflow-wrap: break-word;
 }
 
+/* 한국어 페이지에서 Pretendard 자간 보정 — 라틴/베트남어는 영향 없음. */
+html[lang="ko"] body {
+  letter-spacing: -0.015em;
+  word-spacing: -0.04em;
+}
+html[lang="ko"] h1,
+html[lang="ko"] h2,
+html[lang="ko"] h3 {
+  letter-spacing: -0.03em;
+  word-spacing: -0.06em;
+}
+
+/* uppercase 라벨(eyebrow / nav secondary / stats label) 의 letter-spacing 은
+   라틴 전용 효과인데 한글이 섞이면 글자 사이가 비정상으로 벌어짐.
+   → 한국어 페이지에서만 자간을 평탄화. */
+html[lang="ko"] .eyebrow,
+html[lang="ko"] [class*="tracking-"] {
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+
 /* 공통 섹션 헤더 스타일 (hikorean .heading_s4 대응) */
 .eyebrow {
   display: inline-block;
