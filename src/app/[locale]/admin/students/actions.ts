@@ -30,7 +30,7 @@ const createSchema = z.object({
   classId: z.string().uuid().optional().or(z.literal("")),
   parentContact: z.string().trim().max(120).optional().or(z.literal("")),
   enrolledAt: z.string().optional().or(z.literal("")),
-  status: z.enum(["active", "paused", "graduated", "dropped"]).default("active"),
+  status: z.enum(["waiting", "active", "paused", "graduated", "dropped"]).default("active"),
 });
 
 export async function createStudent(input: z.infer<typeof createSchema>) {

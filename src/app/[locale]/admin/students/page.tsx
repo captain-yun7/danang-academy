@@ -5,6 +5,7 @@ import { getCurrentOrgId } from "@/lib/auth/scope";
 import { StudentFilters } from "./student-filters";
 
 const STATUS_TONE: Record<string, string> = {
+  waiting: "bg-violet-100 text-violet-700",
   active: "bg-emerald-100 text-emerald-700",
   paused: "bg-amber-100 text-amber-700",
   graduated: "bg-blue-100 text-blue-700",
@@ -26,7 +27,7 @@ type Row = {
 };
 
 const ALLOWED_LEVELS = ["beginner", "elementary", "intermediate", "advanced"] as const;
-const ALLOWED_STATUSES = ["active", "paused", "graduated", "dropped"] as const;
+const ALLOWED_STATUSES = ["waiting", "active", "paused", "graduated", "dropped"] as const;
 type LevelKey = (typeof ALLOWED_LEVELS)[number];
 type StatusKey = (typeof ALLOWED_STATUSES)[number];
 
@@ -98,6 +99,7 @@ export default async function AdminStudentsPage({
           <p className="mt-1 text-sm text-[var(--color-muted)]">
             {t("totalSummary", {
               total,
+              waiting: countMap.waiting ?? 0,
               active: countMap.active ?? 0,
               paused: countMap.paused ?? 0,
               graduated: countMap.graduated ?? 0,
@@ -152,7 +154,7 @@ export default async function AdminStudentsPage({
                 <tr
                   key={s.id}
                   className={`hover:bg-[var(--color-soft)]/40 ${
-                    s.status !== "active" ? "opacity-60" : ""
+                    s.status !== "active" && s.status !== "waiting" ? "opacity-60" : ""
                   }`}
                 >
                   <td className="px-4 py-3 font-semibold">

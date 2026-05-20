@@ -7,7 +7,7 @@ import { PhoneInput } from "@/components/phone-input";
 
 const LEVEL_KEYS = ["", "beginner", "elementary", "intermediate", "advanced"] as const;
 const LANG_KEYS = ["vi", "en", "other"] as const;
-const STATUS_KEYS = ["active", "paused", "graduated", "dropped"] as const;
+const STATUS_KEYS = ["waiting", "active", "paused", "graduated", "dropped"] as const;
 
 type Klass = { id: string; name: string; level: string };
 
@@ -55,7 +55,7 @@ export function StudentForm({
           parentContact: String(fd.get("parentContact") ?? ""),
           enrolledAt: String(fd.get("enrolledAt") ?? ""),
           status: (fd.get("status") as string) as
-            | "active" | "paused" | "graduated" | "dropped",
+            | "waiting" | "active" | "paused" | "graduated" | "dropped",
         };
         startTransition(async () => {
           try {

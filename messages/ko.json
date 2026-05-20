@@ -329,7 +329,7 @@
     "students": {
       "subtitle": "Students",
       "title": "학생 관리",
-      "totalSummary": "전체 {total}명 · 수강중 {active} / 휴학 {paused} / 수료 {graduated} / 이탈 {dropped}",
+      "totalSummary": "전체 {total}명 · 대기 {waiting} / 수강중 {active} / 휴학 {paused} / 수료 {graduated} / 이탈 {dropped}",
       "newButton": "+ 새 학생 등록",
       "newTitle": "새 학생 등록",
       "newDesc": "등록하면 QR 토큰이 자동으로 발급됩니다.",
@@ -356,6 +356,7 @@
         "reset": "✕ 초기화"
       },
       "status": {
+        "waiting": "수강 대기",
         "active": "수강중",
         "paused": "휴학",
         "graduated": "수료",

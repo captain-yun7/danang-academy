@@ -64,6 +64,7 @@ export function StudentFilters({
         className="rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm"
       >
         <option value="">{t("allStatus")}</option>
+        <option value="waiting">{tStatus("waiting")}</option>
         <option value="active">{tStatus("active")}</option>
         <option value="paused">{tStatus("paused")}</option>
         <option value="graduated">{tStatus("graduated")}</option>

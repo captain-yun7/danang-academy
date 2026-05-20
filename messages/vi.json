@@ -329,7 +329,7 @@
     "students": {
       "subtitle": "Students",
       "title": "Quản lý học viên",
-      "totalSummary": "Tổng {total} · Đang học {active} / Nghỉ {paused} / Hoàn thành {graduated} / Bỏ học {dropped}",
+      "totalSummary": "Tổng {total} · Chờ {waiting} / Đang học {active} / Nghỉ {paused} / Hoàn thành {graduated} / Bỏ học {dropped}",
       "newButton": "+ Đăng ký học viên mới",
       "newTitle": "Đăng ký học viên mới",
       "newDesc": "Sau khi đăng ký, mã QR sẽ được cấp tự động.",
@@ -356,6 +356,7 @@
         "reset": "✕ Đặt lại"
       },
       "status": {
+        "waiting": "Chờ nhập học",
         "active": "Đang học",
         "paused": "Nghỉ",
         "graduated": "Hoàn thành",
