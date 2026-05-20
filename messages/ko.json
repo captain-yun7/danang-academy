@@ -72,37 +72,10 @@
   },
   "courses": {
     "eyebrow": "Khoá học · 강의",
-    "title": "목표에 맞춘 5가지 코스",
+    "title": "목표에 맞춘 맞춤 코스",
     "subtitle": "입문부터 TOPIK 고급까지 수준별 · 목적별 맞춤 커리큘럼",
     "sessions": "{count}회",
-    "detail": "자세히 보기",
-    "items": {
-      "beginner": {
-        "title": "초급 한국어",
-        "level": "입문 · 초급",
-        "desc": "한글 자모부터 기본 회화까지, 처음 시작하는 학생을 위한 코스"
-      },
-      "intermediate": {
-        "title": "중급 한국어",
-        "level": "중급",
-        "desc": "자연스러운 문장과 일상 표현, 문법 심화까지 확장합니다"
-      },
-      "topik": {
-        "title": "TOPIK 대비반",
-        "level": "시험 준비",
-        "desc": "유형 분석 + 실전 모의고사 + 쓰기 첨삭으로 원하는 급수까지"
-      },
-      "conversation": {
-        "title": "한국어 회화",
-        "level": "회화",
-        "desc": "실전 대화 중심 · AI 발음 교정으로 말하기 자신감 확보"
-      },
-      "self": {
-        "title": "자율 학습",
-        "level": "자율",
-        "desc": "AI 평가와 주간 리포트로 혼자서도 꾸준히 성장합니다"
-      }
-    }
+    "detail": "자세히 보기"
   },
   "about": {
     "eyebrow": "Về chúng tôi · 소개",

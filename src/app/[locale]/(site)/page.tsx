@@ -1,10 +1,10 @@
 import Image from "next/image";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Hero } from "@/components/hero";
+import { getActiveCourses, type CourseLocale } from "@/lib/courses";
 import {
   activityKeys,
-  courses,
   newsItems,
   partners,
   teachers,
@@ -94,6 +94,13 @@ function SectionHead({
 
 async function CoursesSection() {
   const t = await getTranslations("courses");
+  const locale = (await getLocale()) as CourseLocale;
+  const items = await getActiveCourses(locale);
+  // 6개까지는 5컬럼, 그 이상이면 자연스럽게 줄바꿈
+  const colClass =
+    items.length >= 6
+      ? "sm:grid-cols-2 lg:grid-cols-3"
+      : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5";
   return (
     <Section id="courses">
       <SectionHead
@@ -101,8 +108,8 @@ async function CoursesSection() {
         title={t("title")}
         subtitle={t("subtitle")}
       />
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {courses.map((c) => (
+      <div className={`grid gap-6 ${colClass}`}>
+        {items.map((c) => (
           <Link
             key={c.slug}
             href={`/courses/${c.slug}`}
@@ -113,7 +120,7 @@ async function CoursesSection() {
               aria-hidden
             >
               <span className="text-5xl font-black text-[var(--color-ink)]/15">
-                {t(`items.${c.key}.title`).charAt(0)}
+                {c.title.charAt(0)}
               </span>
               <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-[var(--color-ink)]">
                 ★ {c.rating.toFixed(1)} · {t("sessions", { count: c.sessions })}
@@ -121,11 +128,11 @@ async function CoursesSection() {
             </div>
             <div className="flex flex-1 flex-col p-5">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-primary-deep)]">
-                {t(`items.${c.key}.level`)}
+                {c.levelLabel}
               </span>
-              <h3 className="mt-1 text-base font-bold">{t(`items.${c.key}.title`)}</h3>
+              <h3 className="mt-1 text-base font-bold">{c.title}</h3>
               <p className="mt-3 flex-1 text-sm leading-relaxed text-[var(--color-ink)]/80">
-                {t(`items.${c.key}.desc`)}
+                {c.desc}
               </p>
               <span className="mt-4 text-sm font-semibold text-[var(--color-ink)]">
                 {t("detail")} →

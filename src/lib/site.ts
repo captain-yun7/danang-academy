@@ -37,20 +37,8 @@ export const levelKeys = [
   "advanced",
 ] as const;
 
-export type CourseSlug =
-  | "beginner"
-  | "intermediate"
-  | "topik"
-  | "conversation"
-  | "self-study";
-
-export const courses: { slug: CourseSlug; key: string; rating: number; sessions: number }[] = [
-  { slug: "beginner", key: "beginner", rating: 4.9, sessions: 33 },
-  { slug: "intermediate", key: "intermediate", rating: 4.8, sessions: 30 },
-  { slug: "topik", key: "topik", rating: 4.8, sessions: 30 },
-  { slug: "conversation", key: "conversation", rating: 4.7, sessions: 30 },
-  { slug: "self-study", key: "self", rating: 4.6, sessions: 20 },
-];
+// 코스 카탈로그는 DB(course_catalog) 에서 관리 — src/lib/courses.ts 참조.
+// 헤더/푸터 네비의 4개 핵심 코스만 primaryNavSlugs 에 별도로 박혀 있음.
 
 export const teachers = [
   { nameKey: "ngoc", name: "Vũ Thị Hồng Ngọc", roleKey: "director", bioKey: "ngoc" },

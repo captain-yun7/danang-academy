@@ -72,37 +72,10 @@
   },
   "courses": {
     "eyebrow": "Khoá học",
-    "title": "5 khoá học phù hợp với mục tiêu của bạn",
+    "title": "Khoá học phù hợp với mục tiêu của bạn",
     "subtitle": "Lộ trình theo trình độ và mục đích, từ nhập môn đến TOPIK cao cấp",
     "sessions": "{count} buổi",
-    "detail": "Xem chi tiết",
-    "items": {
-      "beginner": {
-        "title": "Tiếng Hàn sơ cấp",
-        "level": "Nhập môn · Sơ cấp",
-        "desc": "Từ bảng chữ Hangul đến giao tiếp cơ bản, dành cho người mới bắt đầu"
-      },
-      "intermediate": {
-        "title": "Tiếng Hàn trung cấp",
-        "level": "Trung cấp",
-        "desc": "Câu tự nhiên, mẫu câu đời sống và ngữ pháp nâng cao"
-      },
-      "topik": {
-        "title": "Luyện thi TOPIK",
-        "level": "Luyện thi",
-        "desc": "Phân tích dạng bài · đề thi thử · chữa viết để đạt cấp mong muốn"
-      },
-      "conversation": {
-        "title": "Khoá giao tiếp",
-        "level": "Giao tiếp",
-        "desc": "Thực hành hội thoại · AI sửa phát âm giúp tự tin khi nói"
-      },
-      "self": {
-        "title": "Tự học có hướng dẫn",
-        "level": "Tự học",
-        "desc": "AI chấm bài và báo cáo tuần giúp bạn duy trì tiến độ ổn định"
-      }
-    }
+    "detail": "Xem chi tiết"
   },
   "about": {
     "eyebrow": "Về chúng tôi",
