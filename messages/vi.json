@@ -252,6 +252,7 @@
       "tests": { "label": "Bài kiểm tra", "desc": "Phát âm · xếp lớp" },
       "leads": { "label": "Khách tư vấn", "desc": "Pipeline chuyển đổi" },
       "mcq": { "label": "Câu hỏi xếp lớp", "desc": "Câu hỏi · ngưỡng" },
+      "courses": { "label": "Quản lý khoá học", "desc": "Hiển thị · đa ngôn ngữ" },
       "reports": { "label": "Báo cáo", "desc": "Tuần · tháng" },
       "settings": { "label": "Cài đặt học viện", "desc": "Vị trí · bán kính QR" }
     },
@@ -631,6 +632,57 @@
     },
     "pages": {
       "reports": { "title": "Báo cáo học tập", "desc": "Lịch sử tạo và gửi báo cáo tuần · tháng." }
+    },
+    "courses": {
+      "subtitle": "Courses · Hiển thị trang chính",
+      "title": "Quản lý khoá học",
+      "summary": "Tổng {total} · Đang hiển thị {active}",
+      "newButton": "+ Khoá học mới",
+      "newTitle": "Thêm khoá học mới",
+      "newDesc": "Sẽ được phản ánh ngay trên thẻ khoá học trang chủ và trang chi tiết.",
+      "editTitle": "Chỉnh sửa khoá học",
+      "backToList": "← Danh sách khoá học",
+      "empty": "Chưa có khoá học nào.",
+      "emptyAction": "Thêm khoá học đầu tiên",
+      "edit": "Sửa",
+      "active": "Hiển thị",
+      "inactive": "Ẩn",
+      "columns": {
+        "sort": "Thứ tự",
+        "slug": "URL",
+        "title": "Tiêu đề",
+        "level": "Trình độ",
+        "rating": "Sao",
+        "sessions": "Số buổi",
+        "active": "Hiển thị"
+      },
+      "form": {
+        "slug": "URL slug",
+        "slugHint": "Chỉ chữ thường, số, dấu gạch ngang. URL /courses/{slug}",
+        "titleKo": "Tiêu đề (Hàn)",
+        "titleVi": "Tiêu đề (Việt)",
+        "levelLabelKo": "Nhãn trình độ (Hàn)",
+        "levelLabelVi": "Nhãn trình độ (Việt)",
+        "descKo": "Mô tả (Hàn)",
+        "descVi": "Mô tả (Việt)",
+        "rating": "Đánh giá",
+        "ratingHint": "0.0 ~ 5.0",
+        "sessions": "Số buổi",
+        "sessionsHint": "Hiển thị trên thẻ khoá học",
+        "sortOrder": "Thứ tự sắp xếp",
+        "sortOrderHint": "Số càng nhỏ càng lên trước",
+        "active": "Hiển thị trang chính",
+        "save": "Lưu",
+        "saving": "Đang lưu...",
+        "create": "Tạo",
+        "delete": "Xoá",
+        "confirmDelete": "Thật sự xoá? Không thể hoàn tác.",
+        "errors": {
+          "slugTaken": "URL slug này đã được sử dụng.",
+          "invalidInput": "Hãy kiểm tra lại dữ liệu nhập.",
+          "generic": "Lưu thất bại. Vui lòng thử lại."
+        }
+      }
     },
     "settings": {
       "subtitle": "Settings · Cài đặt học viện",

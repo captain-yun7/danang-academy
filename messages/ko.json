@@ -252,6 +252,7 @@
       "tests": { "label": "테스트", "desc": "발음 · 배정 결과" },
       "leads": { "label": "상담 리드", "desc": "전환 파이프라인" },
       "mcq": { "label": "레벨테스트 문항", "desc": "문항 · 임계값" },
+      "courses": { "label": "코스 관리", "desc": "메인 노출 · 다국어" },
       "reports": { "label": "리포트", "desc": "주간·월간" },
       "settings": { "label": "학원 설정", "desc": "위치 · QR 반경" }
     },
@@ -631,6 +632,57 @@
     },
     "pages": {
       "reports": { "title": "학습 리포트", "desc": "주간 · 월간 학생 리포트 생성 및 발송 이력." }
+    },
+    "courses": {
+      "subtitle": "Courses · 메인 노출",
+      "title": "코스 관리",
+      "summary": "전체 {total}개 · 노출중 {active}",
+      "newButton": "+ 새 코스",
+      "newTitle": "새 코스 등록",
+      "newDesc": "메인 사이트 카드와 코스 상세 페이지에 동시에 반영됩니다.",
+      "editTitle": "코스 편집",
+      "backToList": "← 코스 목록",
+      "empty": "아직 등록된 코스가 없어요.",
+      "emptyAction": "첫 코스 등록하기",
+      "edit": "편집",
+      "active": "노출",
+      "inactive": "숨김",
+      "columns": {
+        "sort": "순서",
+        "slug": "URL",
+        "title": "제목",
+        "level": "레벨",
+        "rating": "별점",
+        "sessions": "회차",
+        "active": "노출"
+      },
+      "form": {
+        "slug": "URL slug",
+        "slugHint": "영문 소문자·숫자·하이픈만. URL 의 /courses/{slug}",
+        "titleKo": "제목 (한국어)",
+        "titleVi": "제목 (베트남어)",
+        "levelLabelKo": "레벨 라벨 (한국어)",
+        "levelLabelVi": "레벨 라벨 (베트남어)",
+        "descKo": "설명 (한국어)",
+        "descVi": "설명 (베트남어)",
+        "rating": "별점",
+        "ratingHint": "0.0 ~ 5.0",
+        "sessions": "회차 수",
+        "sessionsHint": "코스 카드에 표시",
+        "sortOrder": "정렬 순서",
+        "sortOrderHint": "작을수록 앞에 배치",
+        "active": "메인 노출",
+        "save": "저장",
+        "saving": "저장 중...",
+        "create": "등록",
+        "delete": "삭제",
+        "confirmDelete": "정말 삭제할까요? 되돌릴 수 없습니다.",
+        "errors": {
+          "slugTaken": "이미 사용 중인 URL slug 입니다.",
+          "invalidInput": "입력값을 확인해 주세요.",
+          "generic": "저장 실패. 잠시 후 다시 시도해 주세요."
+        }
+      }
     },
     "settings": {
       "subtitle": "Settings · 학원 설정",
