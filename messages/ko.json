@@ -355,6 +355,7 @@
         "status": "상태",
         "save": "저장",
         "saving": "저장 중...",
+        "saved": "저장이 완료되었습니다",
         "createBtn": "등록 →",
         "creating": "등록 중...",
         "deleteBtn": "삭제",
@@ -415,6 +416,7 @@
         "createBtn": "개설 →",
         "saveBtn": "저장",
         "saving": "저장 중...",
+        "saved": "저장이 완료되었습니다",
         "deleteBtn": "삭제",
         "deleteConfirm": "{name} 반을 삭제할까요? 이 반에 배정된 학생은 미배정으로 바뀝니다."
       },
@@ -674,6 +676,7 @@
         "active": "메인 노출",
         "save": "저장",
         "saving": "저장 중...",
+        "saved": "저장이 완료되었습니다",
         "create": "등록",
         "delete": "삭제",
         "confirmDelete": "정말 삭제할까요? 되돌릴 수 없습니다.",

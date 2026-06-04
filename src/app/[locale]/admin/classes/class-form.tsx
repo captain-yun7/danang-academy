@@ -40,15 +40,18 @@ export function ClassForm({
   const tDay = useTranslations("admin.classes.days");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   const initialDays = new Set(initial?.recurringPattern?.days ?? []);
   const [days, setDays] = useState<Set<string>>(initialDays);
 
   return (
     <form
+      onChange={() => saved && setSaved(false)}
       onSubmit={(e) => {
         e.preventDefault();
         setError(null);
+        setSaved(false);
         const fd = new FormData(e.currentTarget);
         const payload = {
           name: String(fd.get("name") ?? ""),
@@ -66,7 +69,10 @@ export function ClassForm({
         startTransition(async () => {
           try {
             if (mode === "create") await createClass(payload);
-            else if (initial) await updateClass({ ...payload, id: initial.id });
+            else if (initial) {
+              await updateClass({ ...payload, id: initial.id });
+              setSaved(true);
+            }
           } catch (err) {
             setError(err instanceof Error ? err.message : "error");
           }
@@ -198,6 +204,13 @@ export function ClassForm({
       {error && (
         <p className="rounded-md bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
           {error}
+        </p>
+      )}
+
+      {saved && (
+        <p className="flex items-center gap-1.5 rounded-md bg-green-50 px-3 py-2 text-xs font-semibold text-green-700">
+          <span aria-hidden>✓</span>
+          {t("saved")}
         </p>
       )}
 

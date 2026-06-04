@@ -355,6 +355,7 @@
         "status": "Trạng thái",
         "save": "Lưu",
         "saving": "Đang lưu...",
+        "saved": "Đã lưu thành công",
         "createBtn": "Đăng ký →",
         "creating": "Đang đăng ký...",
         "deleteBtn": "Xóa",
@@ -415,6 +416,7 @@
         "createBtn": "Mở lớp →",
         "saveBtn": "Lưu",
         "saving": "Đang lưu...",
+        "saved": "Đã lưu thành công",
         "deleteBtn": "Xóa",
         "deleteConfirm": "Xóa lớp {name}? Các học viên đang được phân vào lớp này sẽ chuyển sang chưa phân lớp."
       },
@@ -674,6 +676,7 @@
         "active": "Hiển thị trang chính",
         "save": "Lưu",
         "saving": "Đang lưu...",
+        "saved": "Đã lưu thành công",
         "create": "Tạo",
         "delete": "Xoá",
         "confirmDelete": "Thật sự xoá? Không thể hoàn tác.",
