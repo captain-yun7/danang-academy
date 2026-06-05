@@ -313,6 +313,7 @@
       "emptyState": "Chưa có học viên nào.",
       "emptyAction": "Đăng ký học viên đầu tiên →",
       "columns": {
+        "studentCode": "Mã học viên",
         "name": "Tên",
         "status": "Trạng thái",
         "phone": "Số điện thoại",
@@ -322,7 +323,7 @@
         "enrolledDate": "Ngày đăng ký"
       },
       "filters": {
-        "search": "🔍 Tìm theo tên hoặc số điện thoại...",
+        "search": "🔍 Tìm theo tên, SĐT hoặc mã học viên...",
         "allStatus": "Mọi trạng thái",
         "allLevel": "Mọi trình độ",
         "allClass": "Mọi lớp",
@@ -344,6 +345,11 @@
       },
       "form": {
         "name": "Tên",
+        "studentCode": "Mã học viên",
+        "studentCodePlaceholder": "VD: 2026-0001",
+        "studentCodeHint": "Dùng cho tên file nộp bài tập. Để trống khi đăng ký sẽ tự động tạo.",
+        "generateCode": "Tạo mã",
+        "generating": "Đang tạo...",
         "phone": "Số điện thoại",
         "phonePlaceholder": "+84 ...",
         "nativeLanguage": "Tiếng mẹ đẻ",
@@ -359,7 +365,12 @@
         "createBtn": "Đăng ký →",
         "creating": "Đang đăng ký...",
         "deleteBtn": "Xóa",
-        "deleteConfirm": "Xóa học viên {name}? Lịch sử điểm danh cũng sẽ bị xóa."
+        "deleteConfirm": "Xóa học viên {name}? Lịch sử điểm danh cũng sẽ bị xóa.",
+        "errors": {
+          "codeTaken": "Mã học viên đã được sử dụng.",
+          "invalidInput": "Vui lòng kiểm tra dữ liệu. Mã học viên chỉ gồm chữ, số, gạch ngang (-) và gạch dưới (_).",
+          "generic": "Đã xảy ra lỗi. Vui lòng thử lại."
+        }
       },
       "detail": {
         "levelUndefined": "Chưa có trình độ",

@@ -2,7 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { createStudent, updateStudent, deleteStudent } from "./actions";
+import {
+  createStudent,
+  updateStudent,
+  deleteStudent,
+  suggestStudentCode,
+} from "./actions";
 import { PhoneInput } from "@/components/phone-input";
 
 const LEVEL_KEYS = ["", "beginner", "elementary", "intermediate", "advanced"] as const;
@@ -21,6 +26,7 @@ type Initial = {
   parentContact: string | null;
   enrolledAt: string | null;
   status: string;
+  studentCode: string | null;
 };
 
 export function StudentForm({
@@ -39,6 +45,8 @@ export function StudentForm({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [studentCode, setStudentCode] = useState(initial?.studentCode ?? "");
+  const [generating, setGenerating] = useState(false);
 
   return (
     <form
@@ -59,6 +67,7 @@ export function StudentForm({
           enrolledAt: String(fd.get("enrolledAt") ?? ""),
           status: (fd.get("status") as string) as
             | "waiting" | "active" | "paused" | "graduated" | "dropped",
+          studentCode: studentCode.trim(),
         };
         startTransition(async () => {
           try {
@@ -68,7 +77,14 @@ export function StudentForm({
               setSaved(true);
             }
           } catch (err) {
-            setError(err instanceof Error ? err.message : "오류");
+            const msg = err instanceof Error ? err.message : "error";
+            setError(
+              msg === "code_taken"
+                ? t("errors.codeTaken")
+                : msg === "invalid_input"
+                  ? t("errors.invalidInput")
+                  : t("errors.generic")
+            );
           }
         });
       }}
@@ -85,6 +101,44 @@ export function StudentForm({
           defaultValue={initial?.name ?? ""}
           className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
         />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block text-xs font-semibold">{t("studentCode")}</span>
+        <div className="flex gap-2">
+          <input
+            name="studentCode"
+            value={studentCode}
+            onChange={(e) => setStudentCode(e.target.value)}
+            maxLength={32}
+            placeholder={t("studentCodePlaceholder")}
+            className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+          />
+          <button
+            type="button"
+            disabled={generating || pending}
+            onClick={() => {
+              setGenerating(true);
+              setError(null);
+              startTransition(async () => {
+                try {
+                  const code = await suggestStudentCode();
+                  setStudentCode(code);
+                } catch {
+                  setError(t("errors.generic"));
+                } finally {
+                  setGenerating(false);
+                }
+              });
+            }}
+            className="shrink-0 rounded-lg border-2 border-[var(--color-line)] px-3 py-2 text-xs font-bold hover:border-[var(--color-primary)] disabled:opacity-50"
+          >
+            {generating ? t("generating") : t("generateCode")}
+          </button>
+        </div>
+        <span className="mt-1 block text-[11px] text-[var(--color-muted)]">
+          {t("studentCodeHint")}
+        </span>
       </label>
 
       <div className="grid gap-3 sm:grid-cols-2">

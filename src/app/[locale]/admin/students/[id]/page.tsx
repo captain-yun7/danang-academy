@@ -23,6 +23,7 @@ export default async function StudentDetailPage({
            s.korean_level::text,
            s.class_id::text,
            s.parent_contact,
+           s.student_code,
            to_char(s.enrolled_at, 'YYYY-MM-DD') as enrolled_at,
            s.status::text,
            c.name as class_name
@@ -38,6 +39,7 @@ export default async function StudentDetailPage({
     korean_level: string | null;
     class_id: string | null;
     parent_contact: string | null;
+    student_code: string | null;
     enrolled_at: string | null;
     status: string;
     class_name: string | null;
@@ -88,6 +90,7 @@ export default async function StudentDetailPage({
       </Link>
       <h1 className="mt-2 text-2xl font-bold">{s.name}</h1>
       <p className="mt-1 text-sm text-[var(--color-muted)]">
+        {s.student_code ? `${s.student_code} · ` : ""}
         {s.class_name ? `${s.class_name} · ` : ""}
         {s.korean_level ? tLevel(s.korean_level as LevelKey) : t("levelUndefined")}
       </p>
@@ -108,6 +111,7 @@ export default async function StudentDetailPage({
               parentContact: s.parent_contact,
               enrolledAt: s.enrolled_at,
               status: s.status,
+              studentCode: s.student_code,
             }}
           />
         </section>

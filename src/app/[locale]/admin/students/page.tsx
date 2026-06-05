@@ -15,6 +15,7 @@ const STATUS_TONE: Record<string, string> = {
 type Row = {
   id: string;
   name: string;
+  student_code: string | null;
   phone: string | null;
   native_language: string;
   korean_level: string | null;
@@ -54,7 +55,7 @@ export default async function AdminStudentsPage({
   const qLike = q ? `%${q}%` : null;
 
   const students = (await sql`
-    select s.id::text, s.name, s.phone,
+    select s.id::text, s.name, s.student_code, s.phone,
            s.native_language::text,
            s.korean_level::text,
            s.class_id::text,
@@ -66,7 +67,7 @@ export default async function AdminStudentsPage({
     from students s
     left join classes c on c.id = s.class_id
     where s.organization_id = ${orgId}
-      ${qLike ? sql`and (s.name ilike ${qLike} or coalesce(s.phone, '') ilike ${qLike})` : sql``}
+      ${qLike ? sql`and (s.name ilike ${qLike} or coalesce(s.phone, '') ilike ${qLike} or coalesce(s.student_code, '') ilike ${qLike})` : sql``}
       ${status ? sql`and s.status = ${status}::student_status` : sql``}
       ${level ? sql`and s.korean_level = ${level}::korean_level` : sql``}
       ${classFilter === "none" ? sql`and s.class_id is null` : classFilter ? sql`and s.class_id = ${classFilter}::uuid` : sql``}
@@ -140,6 +141,7 @@ export default async function AdminStudentsPage({
           <table className="w-full text-sm">
             <thead className="border-b border-[var(--color-line)] bg-[var(--color-soft)] text-xs">
               <tr>
+                <th className="px-4 py-3 text-left font-bold">{tCols("studentCode")}</th>
                 <th className="px-4 py-3 text-left font-bold">{tCols("name")}</th>
                 <th className="px-4 py-3 text-left font-bold">{tCols("status")}</th>
                 <th className="px-4 py-3 text-left font-bold">{tCols("phone")}</th>
@@ -157,6 +159,15 @@ export default async function AdminStudentsPage({
                     s.status !== "active" && s.status !== "waiting" ? "opacity-60" : ""
                   }`}
                 >
+                  <td className="px-4 py-3">
+                    {s.student_code ? (
+                      <span className="rounded bg-[var(--color-soft)] px-2 py-0.5 font-mono text-xs font-semibold text-[var(--color-ink)]">
+                        {s.student_code}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[var(--color-muted)]">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-semibold">
                     <Link
                       href={`/admin/students/${s.id}`}

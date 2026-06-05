@@ -313,6 +313,7 @@
       "emptyState": "아직 등록된 학생이 없어요.",
       "emptyAction": "첫 학생 등록하기 →",
       "columns": {
+        "studentCode": "학번",
         "name": "이름",
         "status": "상태",
         "phone": "연락처",
@@ -322,7 +323,7 @@
         "enrolledDate": "등록일"
       },
       "filters": {
-        "search": "🔍 이름 또는 연락처로 검색...",
+        "search": "🔍 이름·연락처·학번으로 검색...",
         "allStatus": "전체 상태",
         "allLevel": "전체 레벨",
         "allClass": "전체 반",
@@ -344,6 +345,11 @@
       },
       "form": {
         "name": "이름",
+        "studentCode": "학번",
+        "studentCodePlaceholder": "예: 2026-0001",
+        "studentCodeHint": "과제 제출 파일명에 쓰입니다. 비워두고 등록하면 자동 생성됩니다.",
+        "generateCode": "학번 생성",
+        "generating": "생성 중...",
         "phone": "전화번호",
         "phonePlaceholder": "+84 ...",
         "nativeLanguage": "모국어",
@@ -359,7 +365,12 @@
         "createBtn": "등록 →",
         "creating": "등록 중...",
         "deleteBtn": "삭제",
-        "deleteConfirm": "{name} 학생을 삭제할까요? 출석 이력도 함께 사라집니다."
+        "deleteConfirm": "{name} 학생을 삭제할까요? 출석 이력도 함께 사라집니다.",
+        "errors": {
+          "codeTaken": "이미 사용 중인 학번입니다.",
+          "invalidInput": "입력값을 확인해 주세요. 학번은 영문·숫자·하이픈(-)·언더스코어(_)만 가능합니다.",
+          "generic": "오류가 발생했습니다. 다시 시도해 주세요."
+        }
       },
       "detail": {
         "levelUndefined": "레벨 미정",
