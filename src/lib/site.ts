@@ -83,6 +83,7 @@ export const adminMenuKeys = [
   { key: "dashboard", href: "/admin" },
   { key: "students", href: "/admin/students" },
   { key: "classes", href: "/admin/classes" },
+  { key: "assignments", href: "/admin/assignments" },
   { key: "teachers", href: "/admin/teachers" },
   { key: "attendance", href: "/admin/attendance" },
   { key: "tests", href: "/admin/tests" },

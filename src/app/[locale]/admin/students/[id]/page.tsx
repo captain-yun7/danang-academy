@@ -4,7 +4,10 @@ import { getTranslations } from "next-intl/server";
 import { sql } from "@/lib/db/client";
 import { auth } from "@/auth";
 import { getCurrentOrgId } from "@/lib/auth/scope";
+import { buildStudentReport } from "@/lib/reports/student-report";
+import { StudentReportView } from "@/components/student-report-view";
 import { StudentForm } from "../student-form";
+import { StudentLoginCredential } from "../student-login-credential";
 import { NotesSection, type StudentNote } from "../notes/notes-section";
 
 type LevelKey = "beginner" | "elementary" | "intermediate" | "advanced";
@@ -24,6 +27,7 @@ export default async function StudentDetailPage({
            s.class_id::text,
            s.parent_contact,
            s.student_code,
+           (s.password_hash is not null) as has_password,
            to_char(s.enrolled_at, 'YYYY-MM-DD') as enrolled_at,
            s.status::text,
            c.name as class_name
@@ -40,6 +44,7 @@ export default async function StudentDetailPage({
     class_id: string | null;
     parent_contact: string | null;
     student_code: string | null;
+    has_password: boolean;
     enrolled_at: string | null;
     status: string;
     class_name: string | null;
@@ -71,6 +76,8 @@ export default async function StudentDetailPage({
     order by n.created_at desc
     limit 50
   `) as StudentNote[];
+
+  const report = await buildStudentReport(id, orgId);
 
   const session = await auth();
   const currentUserId = (session?.user as { id?: string } | undefined)?.id ?? "";
@@ -117,6 +124,11 @@ export default async function StudentDetailPage({
         </section>
 
         <section className="space-y-4">
+          <StudentLoginCredential
+            studentId={s.id}
+            studentCode={s.student_code}
+            hasPassword={s.has_password}
+          />
           <div className="rounded-xl border border-[var(--color-line)] bg-white p-5">
             <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
               {t("recentAttendance", { count: recentLogs.length })}
@@ -144,6 +156,13 @@ export default async function StudentDetailPage({
           </div>
         </section>
       </div>
+
+      {report && (
+        <div className="mt-8">
+          <h2 className="mb-4 text-base font-bold">{t("reportTitle")}</h2>
+          <StudentReportView report={report} />
+        </div>
+      )}
 
       <div className="mt-8">
         <NotesSection

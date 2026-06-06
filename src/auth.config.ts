@@ -16,6 +16,7 @@ export const authConfig = {
         token.role = (user as { role?: string }).role;
         token.id = user.id;
         token.organizationId = (user as { organizationId?: string }).organizationId;
+        token.studentCode = (user as { studentCode?: string }).studentCode;
       }
       return token;
     },
@@ -25,10 +26,12 @@ export const authConfig = {
           id?: string;
           role?: string;
           organizationId?: string;
+          studentCode?: string;
         };
         u.id = token.id as string;
         u.role = token.role as string;
         u.organizationId = token.organizationId as string;
+        u.studentCode = token.studentCode as string | undefined;
       }
       return session;
     },

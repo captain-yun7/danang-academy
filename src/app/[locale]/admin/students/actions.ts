@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db/client";
@@ -168,4 +169,31 @@ export async function deleteStudent(id: string) {
   revalidatePath("/admin/students");
   revalidatePath("/admin");
   redirect("/admin/students");
+}
+
+const passwordSchema = z.object({
+  id: z.string().uuid(),
+  password: z.string().min(4).max(72),
+});
+
+// 학생 로그인 비밀번호 발급/재설정. 학번이 로그인 ID, 이 비밀번호로 학생 포털 로그인.
+export async function setStudentPassword(input: z.infer<typeof passwordSchema>) {
+  const { user } = await requireAdmin();
+  const parsed = passwordSchema.safeParse(input);
+  if (!parsed.success) throw new Error("invalid_input");
+
+  const rows = (await sql`
+    select student_code from students
+    where id = ${parsed.data.id} and organization_id = ${user.organizationId}
+    limit 1
+  `) as { student_code: string | null }[];
+  if (!rows[0]) throw new Error("not_found");
+  if (!rows[0].student_code) throw new Error("no_student_code");
+
+  const hash = await bcrypt.hash(parsed.data.password, 10);
+  await sql`
+    update students set password_hash = ${hash}
+    where id = ${parsed.data.id} and organization_id = ${user.organizationId}
+  `;
+  revalidatePath(`/admin/students/${parsed.data.id}`);
 }
