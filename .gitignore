@@ -55,8 +55,9 @@ Thumbs.db
 next-env.d.ts
 
 # 프로젝트 문서·공유 리소스 (OneDrive 심볼릭, git에 안 올림)
-_docs/
-_shared/
+# 심볼릭이라 trailing slash 없이 — 슬래시 패턴은 심볼릭을 매칭 못함
+_docs
+_shared
 
 # Spec PDFs (원본은 OneDrive에)
 0414다낭메뉴얼.pdf
