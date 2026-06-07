@@ -54,7 +54,13 @@ export async function getMyAssignments(): Promise<StudentAssignmentRow[]> {
       on sub.assignment_id = a.id and sub.student_id = ${studentId}
     where a.organization_id = ${organizationId}
       and a.active = true
-      and (a.class_id is null or a.class_id = st.class_id)
+      and (
+        a.target_type = 'all'
+        or (a.target_type = 'class' and a.class_id = st.class_id)
+        or (a.target_type = 'students' and exists (
+          select 1 from assignment_targets tg
+          where tg.assignment_id = a.id and tg.student_id = ${studentId}))
+      )
     order by a.created_at desc
   `) as StudentAssignmentRow[];
 }
@@ -93,7 +99,13 @@ export async function getMyAssignmentDetail(
     where a.id = ${assignmentId}
       and a.organization_id = ${organizationId}
       and a.active = true
-      and (a.class_id is null or a.class_id = st.class_id)
+      and (
+        a.target_type = 'all'
+        or (a.target_type = 'class' and a.class_id = st.class_id)
+        or (a.target_type = 'students' and exists (
+          select 1 from assignment_targets tg
+          where tg.assignment_id = a.id and tg.student_id = ${studentId}))
+      )
     limit 1
   `) as {
     id: string;
@@ -171,7 +183,13 @@ export async function submitWriting(input: z.infer<typeof writingSchema>) {
     left join students st on st.id = ${studentId}
     where a.id = ${d.assignmentId} and a.organization_id = ${organizationId}
       and a.type = 'writing' and a.active = true
-      and (a.class_id is null or a.class_id = st.class_id)
+      and (
+        a.target_type = 'all'
+        or (a.target_type = 'class' and a.class_id = st.class_id)
+        or (a.target_type = 'students' and exists (
+          select 1 from assignment_targets tg
+          where tg.assignment_id = a.id and tg.student_id = ${studentId}))
+      )
     limit 1
   `) as { id: string }[];
   if (!ok[0]) throw new Error("forbidden");

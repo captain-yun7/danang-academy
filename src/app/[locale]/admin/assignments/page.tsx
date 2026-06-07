@@ -7,7 +7,9 @@ type Row = {
   id: string;
   type: string;
   title: string;
+  target_type: string;
   class_name: string | null;
+  target_count: number;
   due_date: string | null;
   tts_status: string | null;
   active: boolean;
@@ -27,8 +29,9 @@ export default async function AdminAssignmentsPage() {
   const orgId = await getCurrentOrgId();
 
   const rows = (await sql`
-    select a.id::text, a.type::text, a.title,
+    select a.id::text, a.type::text, a.title, a.target_type,
            c.name as class_name,
+           (select count(*)::int from assignment_targets t where t.assignment_id = a.id) as target_count,
            to_char(a.due_date, 'YYYY-MM-DD') as due_date,
            a.tts_status, a.active,
            to_char(a.created_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as created_at,
@@ -101,7 +104,13 @@ export default async function AdminAssignmentsPage() {
                       {tType(a.type)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[var(--color-muted)]">{a.class_name ?? t("allClasses")}</td>
+                  <td className="px-4 py-3 text-[var(--color-muted)]">
+                    {a.target_type === "class"
+                      ? a.class_name ?? t("allClasses")
+                      : a.target_type === "students"
+                        ? t("individualCount", { count: a.target_count })
+                        : t("allClasses")}
+                  </td>
                   <td className="px-4 py-3 text-xs text-[var(--color-muted)]">{a.due_date ?? "—"}</td>
                   <td className="px-4 py-3 text-xs text-[var(--color-muted)]">
                     {a.done_count} / {a.submission_count}

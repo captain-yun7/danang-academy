@@ -268,6 +268,7 @@
       "empty": "아직 과제가 없어요.",
       "emptyAction": "첫 과제 만들기 →",
       "allClasses": "학원 전체",
+      "individualCount": "개별 {count}명",
       "ttsPending": "(모범음성 생성 중)",
       "ttsFailed": "(모범음성 실패)",
       "types": { "pronunciation": "발음", "writing": "쓰기" },
@@ -290,6 +291,11 @@
         "type": "유형",
         "class": "반",
         "allClasses": "학원 전체",
+        "target": "배정 대상",
+        "targets": { "all": "학원 전체", "class": "특정 반", "students": "개별 학생" },
+        "selectClass": "반 선택...",
+        "pickedCount": "{count}명 선택됨",
+        "noStudents": "등록된 학생이 없어요.",
         "titleField": "제목",
         "titlePlaceholder": "예: 1과 인사 대화 발음",
         "targetPronunciation": "발음 대화문 (모범음성으로 생성됨)",
@@ -306,7 +312,9 @@
         "saved": "저장이 완료되었습니다",
         "errors": {
           "invalidInput": "입력값을 확인해 주세요.",
-          "generic": "오류가 발생했습니다."
+          "generic": "오류가 발생했습니다.",
+          "needClass": "배정할 반을 선택해 주세요.",
+          "needStudents": "배정할 학생을 한 명 이상 선택해 주세요."
         }
       },
       "detail": {

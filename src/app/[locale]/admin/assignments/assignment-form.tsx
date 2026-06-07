@@ -5,11 +5,15 @@ import { useTranslations } from "next-intl";
 import { createAssignment, updateAssignment } from "./actions";
 
 type Klass = { id: string; name: string };
+type Student = { id: string; name: string; studentCode: string | null; className: string | null };
+type TargetType = "all" | "class" | "students";
 
 type Initial = {
   id: string;
   type: "pronunciation" | "writing";
+  targetType: TargetType;
   classId: string | null;
+  studentIds: string[];
   title: string;
   instructions: string | null;
   targetText: string | null;
@@ -19,10 +23,12 @@ type Initial = {
 export function AssignmentForm({
   mode,
   classes,
+  students,
   initial,
 }: {
   mode: "create" | "edit";
   classes: Klass[];
+  students: Student[];
   initial?: Initial;
 }) {
   const t = useTranslations("admin.assignments.form");
@@ -31,6 +37,19 @@ export function AssignmentForm({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [type, setType] = useState<"pronunciation" | "writing">(initial?.type ?? "pronunciation");
+  const [targetType, setTargetType] = useState<TargetType>(initial?.targetType ?? "all");
+  const [classId, setClassId] = useState(initial?.classId ?? "");
+  const [picked, setPicked] = useState<Set<string>>(new Set(initial?.studentIds ?? []));
+
+  function toggle(id: string) {
+    setSaved(false);
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   return (
     <form
@@ -42,12 +61,22 @@ export function AssignmentForm({
         const fd = new FormData(e.currentTarget);
         const payload = {
           type,
-          classId: String(fd.get("classId") ?? ""),
+          targetType,
+          classId: targetType === "class" ? classId : "",
+          studentIds: targetType === "students" ? Array.from(picked) : [],
           title: String(fd.get("title") ?? ""),
           instructions: String(fd.get("instructions") ?? ""),
           targetText: String(fd.get("targetText") ?? ""),
           dueDate: String(fd.get("dueDate") ?? ""),
         };
+        if (targetType === "class" && !classId) {
+          setError(t("errors.needClass"));
+          return;
+        }
+        if (targetType === "students" && picked.size === 0) {
+          setError(t("errors.needStudents"));
+          return;
+        }
         startTransition(async () => {
           try {
             if (mode === "create") await createAssignment(payload);
@@ -63,36 +92,98 @@ export function AssignmentForm({
       }}
       className="grid gap-4"
     >
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold">{t("type")}</span>
+      <label className="block sm:max-w-xs">
+        <span className="mb-1 block text-xs font-semibold">{t("type")}</span>
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value as "pronunciation" | "writing")}
+          disabled={mode === "edit"}
+          className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)] disabled:bg-[var(--color-soft)]"
+        >
+          <option value="pronunciation">{tType("pronunciation")}</option>
+          <option value="writing">{tType("writing")}</option>
+        </select>
+      </label>
+
+      {/* 배정 대상 */}
+      <fieldset className="rounded-lg border border-[var(--color-line)] p-4">
+        <legend className="px-2 text-xs font-semibold">{t("target")}</legend>
+        <div className="flex flex-wrap gap-2">
+          {(["all", "class", "students"] as const).map((mode2) => (
+            <button
+              key={mode2}
+              type="button"
+              onClick={() => {
+                setTargetType(mode2);
+                setSaved(false);
+              }}
+              className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
+                targetType === mode2
+                  ? "brand-gradient text-white"
+                  : "border border-[var(--color-line)] hover:border-[var(--color-ink)]"
+              }`}
+            >
+              {t(`targets.${mode2}`)}
+            </button>
+          ))}
+        </div>
+
+        {targetType === "class" && (
           <select
-            name="type"
-            value={type}
-            onChange={(e) => setType(e.target.value as "pronunciation" | "writing")}
-            disabled={mode === "edit"}
-            className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)] disabled:bg-[var(--color-soft)]"
+            value={classId}
+            onChange={(e) => {
+              setClassId(e.target.value);
+              setSaved(false);
+            }}
+            className="mt-3 w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)] sm:max-w-sm"
           >
-            <option value="pronunciation">{tType("pronunciation")}</option>
-            <option value="writing">{tType("writing")}</option>
-          </select>
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold">{t("class")}</span>
-          <select
-            name="classId"
-            defaultValue={initial?.classId ?? ""}
-            className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
-          >
-            <option value="">{t("allClasses")}</option>
+            <option value="">{t("selectClass")}</option>
             {classes.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
             ))}
           </select>
-        </label>
-      </div>
+        )}
+
+        {targetType === "students" && (
+          <div className="mt-3">
+            <p className="mb-2 text-[11px] text-[var(--color-muted)]">
+              {t("pickedCount", { count: picked.size })}
+            </p>
+            <div className="max-h-64 overflow-y-auto rounded-lg border border-[var(--color-line)]">
+              {students.length === 0 ? (
+                <p className="p-4 text-xs text-[var(--color-muted)]">{t("noStudents")}</p>
+              ) : (
+                <ul className="divide-y divide-[var(--color-line)]">
+                  {students.map((s) => (
+                    <li key={s.id}>
+                      <label className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-[var(--color-soft)]/50">
+                        <input
+                          type="checkbox"
+                          checked={picked.has(s.id)}
+                          onChange={() => toggle(s.id)}
+                        />
+                        {s.studentCode && (
+                          <span className="rounded bg-[var(--color-soft)] px-1.5 py-0.5 font-mono text-[11px] font-semibold">
+                            {s.studentCode}
+                          </span>
+                        )}
+                        <span className="text-sm font-semibold">{s.name}</span>
+                        {s.className && (
+                          <span className="ml-auto text-[11px] text-[var(--color-muted)]">
+                            {s.className}
+                          </span>
+                        )}
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+      </fieldset>
 
       <label className="block">
         <span className="mb-1 block text-xs font-semibold">

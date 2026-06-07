@@ -29,14 +29,21 @@ async function requireAdmin(): Promise<Admin> {
   return { userId: u.id, role: u.role, organizationId: u.organizationId };
 }
 
-const createSchema = z.object({
-  type: z.enum(["pronunciation", "writing"]),
-  classId: z.string().uuid().optional().or(z.literal("")),
-  title: z.string().trim().min(1).max(120),
-  instructions: z.string().trim().max(2000).optional().or(z.literal("")),
-  targetText: z.string().trim().min(1).max(2000),
-  dueDate: z.string().optional().or(z.literal("")),
-});
+const createSchema = z
+  .object({
+    type: z.enum(["pronunciation", "writing"]),
+    targetType: z.enum(["all", "class", "students"]).default("all"),
+    classId: z.string().uuid().optional().or(z.literal("")),
+    studentIds: z.array(z.string().uuid()).default([]),
+    title: z.string().trim().min(1).max(120),
+    instructions: z.string().trim().max(2000).optional().or(z.literal("")),
+    targetText: z.string().trim().min(1).max(2000),
+    dueDate: z.string().optional().or(z.literal("")),
+  })
+  .refine((d) => d.targetType !== "class" || !!d.classId, { path: ["classId"] })
+  .refine((d) => d.targetType !== "students" || d.studentIds.length > 0, {
+    path: ["studentIds"],
+  });
 
 export async function createAssignment(input: z.infer<typeof createSchema>) {
   const { userId, organizationId } = await requireAdmin();
@@ -45,14 +52,16 @@ export async function createAssignment(input: z.infer<typeof createSchema>) {
   const d = parsed.data;
 
   const ttsStatus = d.type === "pronunciation" ? "pending" : null;
+  const classId = d.targetType === "class" ? d.classId || null : null;
 
   const inserted = (await sql`
     insert into assignments
-      (organization_id, class_id, type, title, instructions, target_text, tts_status, due_date, created_by)
+      (organization_id, class_id, type, target_type, title, instructions, target_text, tts_status, due_date, created_by)
     values
       (${organizationId},
-       ${d.classId ? d.classId : null}::uuid,
+       ${classId}::uuid,
        ${d.type}::assignment_type,
+       ${d.targetType},
        ${d.title},
        ${d.instructions || null},
        ${d.targetText},
@@ -63,12 +72,38 @@ export async function createAssignment(input: z.infer<typeof createSchema>) {
   `) as { id: string }[];
   const id = inserted[0].id;
 
+  if (d.targetType === "students") {
+    await setAssignmentTargets(id, organizationId, d.studentIds);
+  }
+
   if (d.type === "pronunciation") {
     after(() => generateAndStoreTts(id, d.targetText, organizationId));
   }
 
   revalidatePath("/admin/assignments");
   redirect(`/admin/assignments/${id}`);
+}
+
+// 개별 배정 학생 목록을 교체 (org 스코프로 유효 학생만)
+async function setAssignmentTargets(
+  assignmentId: string,
+  organizationId: string,
+  studentIds: string[]
+) {
+  await sql`delete from assignment_targets where assignment_id = ${assignmentId}`;
+  if (studentIds.length === 0) return;
+  // 본 org 학생만 필터링해서 삽입
+  const valid = (await sql`
+    select id::text from students
+    where organization_id = ${organizationId} and id = any(${studentIds}::uuid[])
+  `) as { id: string }[];
+  for (const s of valid) {
+    await sql`
+      insert into assignment_targets (assignment_id, student_id, organization_id)
+      values (${assignmentId}, ${s.id}::uuid, ${organizationId})
+      on conflict do nothing
+    `;
+  }
 }
 
 const updateSchema = createSchema.extend({ id: z.string().uuid() });
@@ -88,9 +123,12 @@ export async function updateAssignment(input: z.infer<typeof updateSchema>) {
   const textChanged = prev[0].target_text !== d.targetText;
   const isPronunciation = d.type === "pronunciation";
 
+  const classId = d.targetType === "class" ? d.classId || null : null;
+
   await sql`
     update assignments set
-      class_id = ${d.classId ? d.classId : null}::uuid,
+      class_id = ${classId}::uuid,
+      target_type = ${d.targetType},
       title = ${d.title},
       instructions = ${d.instructions || null},
       target_text = ${d.targetText},
@@ -98,6 +136,13 @@ export async function updateAssignment(input: z.infer<typeof updateSchema>) {
       ${isPronunciation && textChanged ? sql`, tts_status = 'pending'` : sql``}
     where id = ${d.id} and organization_id = ${organizationId}
   `;
+
+  // 개별 배정이면 대상 교체, 아니면 기존 대상 제거
+  if (d.targetType === "students") {
+    await setAssignmentTargets(d.id, organizationId, d.studentIds);
+  } else {
+    await sql`delete from assignment_targets where assignment_id = ${d.id}`;
+  }
 
   if (isPronunciation && textChanged) {
     after(() => generateAndStoreTts(d.id, d.targetText, organizationId));

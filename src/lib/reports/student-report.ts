@@ -60,7 +60,13 @@ export async function buildStudentReport(
     select count(*)::int as cnt
     from assignments a
     where a.organization_id = ${organizationId} and a.active = true
-      and (a.class_id is null or a.class_id = ${st.class_id}::uuid)
+      and (
+        a.target_type = 'all'
+        or (a.target_type = 'class' and a.class_id = ${st.class_id}::uuid)
+        or (a.target_type = 'students' and exists (
+          select 1 from assignment_targets tg
+          where tg.assignment_id = a.id and tg.student_id = ${studentId}))
+      )
   `) as { cnt: number }[];
   const totalAssigned = totalRows[0]?.cnt ?? 0;
 

@@ -13,6 +13,7 @@ type Assignment = {
   id: string;
   type: string;
   class_id: string | null;
+  target_type: string;
   title: string;
   instructions: string | null;
   target_text: string | null;
@@ -58,7 +59,7 @@ export default async function AssignmentDetailPage({
   const tStatus = await getTranslations("admin.assignments.status");
 
   const rows = (await sql`
-    select id::text, type::text, class_id::text, title, instructions, target_text,
+    select id::text, type::text, class_id::text, target_type, title, instructions, target_text,
            tts_audio_key, tts_status,
            to_char(due_date, 'YYYY-MM-DD') as due_date
     from assignments
@@ -72,6 +73,19 @@ export default async function AssignmentDetailPage({
   const classes = (await sql`
     select id::text, name from classes where organization_id = ${orgId} order by name
   `) as { id: string; name: string }[];
+
+  const studentList = (await sql`
+    select s.id::text, s.name, s.student_code, c.name as class_name
+    from students s
+    left join classes c on c.id = s.class_id
+    where s.organization_id = ${orgId}
+    order by s.student_code nulls last, s.name
+  `) as { id: string; name: string; student_code: string | null; class_name: string | null }[];
+
+  const targetRows = (await sql`
+    select student_id::text from assignment_targets where assignment_id = ${id}
+  `) as { student_id: string }[];
+  const targetStudentIds = targetRows.map((r) => r.student_id);
 
   const submissions = (await sql`
     select s.id::text, s.student_id::text, st.name as student_name, st.student_code,
@@ -113,10 +127,18 @@ export default async function AssignmentDetailPage({
           <AssignmentForm
             mode="edit"
             classes={classes}
+            students={studentList.map((s) => ({
+              id: s.id,
+              name: s.name,
+              studentCode: s.student_code,
+              className: s.class_name,
+            }))}
             initial={{
               id: a.id,
               type: a.type as "pronunciation" | "writing",
+              targetType: (a.target_type as "all" | "class" | "students") ?? "all",
               classId: a.class_id,
+              studentIds: targetStudentIds,
               title: a.title,
               instructions: a.instructions,
               targetText: a.target_text,

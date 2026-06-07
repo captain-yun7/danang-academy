@@ -30,7 +30,13 @@ export async function POST(req: Request) {
     where a.id = ${assignmentId}
       and a.organization_id = ${student.organizationId}
       and a.type = 'pronunciation' and a.active = true
-      and (a.class_id is null or a.class_id = st.class_id)
+      and (
+        a.target_type = 'all'
+        or (a.target_type = 'class' and a.class_id = st.class_id)
+        or (a.target_type = 'students' and exists (
+          select 1 from assignment_targets tg
+          where tg.assignment_id = a.id and tg.student_id = ${student.studentId}))
+      )
     limit 1
   `) as { id: string; target_text: string | null }[];
   if (!owned[0]) {
