@@ -139,18 +139,54 @@
     "title": "교류와 커뮤니티",
     "subtitle": "한국 대학·기업과의 파트너십, 다양한 문화 행사",
     "items": {
-      "yeungnam": { "title": "영남대 교류", "note": "교환 프로그램 협약" },
-      "cau": { "title": "중앙대 방문", "note": "유학 설명회 주최" },
-      "silla": { "title": "신라대 협력", "note": "교환학생 선발" },
-      "sbs": { "title": "SBS Korea 출연", "note": "한국어 교육 소개" },
-      "school": { "title": "다낭 고교 세미나", "note": "무료 특강" },
-      "culture": { "title": "문화 교류 행사", "note": "한복 체험 데이" },
-      "chuseok": { "title": "추석 한마당", "note": "학생 송편 만들기" },
-      "hangul": { "title": "한글날 백일장", "note": "작문 경연" },
-      "topik": { "title": "TOPIK 응시 지원", "note": "단체 응시" },
-      "corp": { "title": "기업 사내 교육", "note": "FPT · Samsung" },
-      "parent": { "title": "학부모 간담회", "note": "분기별 운영" },
-      "alumni": { "title": "졸업생 동문회", "note": "진로 공유" }
+      "yeungnam": {
+        "title": "영남대 교류",
+        "note": "교환 프로그램 협약"
+      },
+      "cau": {
+        "title": "중앙대 방문",
+        "note": "유학 설명회 주최"
+      },
+      "silla": {
+        "title": "신라대 협력",
+        "note": "교환학생 선발"
+      },
+      "sbs": {
+        "title": "SBS Korea 출연",
+        "note": "한국어 교육 소개"
+      },
+      "school": {
+        "title": "다낭 고교 세미나",
+        "note": "무료 특강"
+      },
+      "culture": {
+        "title": "문화 교류 행사",
+        "note": "한복 체험 데이"
+      },
+      "chuseok": {
+        "title": "추석 한마당",
+        "note": "학생 송편 만들기"
+      },
+      "hangul": {
+        "title": "한글날 백일장",
+        "note": "작문 경연"
+      },
+      "topik": {
+        "title": "TOPIK 응시 지원",
+        "note": "단체 응시"
+      },
+      "corp": {
+        "title": "기업 사내 교육",
+        "note": "FPT · Samsung"
+      },
+      "parent": {
+        "title": "학부모 간담회",
+        "note": "분기별 운영"
+      },
+      "alumni": {
+        "title": "졸업생 동문회",
+        "note": "진로 공유"
+      }
     }
   },
   "reviews": {
@@ -158,12 +194,30 @@
     "title": "수강생의 이야기",
     "subtitle": "다프와 함께한 학생들의 실제 후기입니다",
     "items": {
-      "r1": { "role": "중급반 · 10개월 수강", "quote": "선생님의 설명이 정말 이해하기 쉬워요. 매주 리포트 덕분에 내 약점을 바로 알 수 있었어요." },
-      "r2": { "role": "TOPIK 대비반 · 6급 취득", "quote": "시험 유형별 훈련과 첨삭이 꼼꼼해서 한 번에 원하는 급수를 땄습니다." },
-      "r3": { "role": "회화반 · 8개월 수강", "quote": "AI 발음 평가로 부족한 발음을 반복 연습했어요. 말하기가 정말 편해졌습니다." },
-      "r4": { "role": "초급반 · 3개월 수강", "quote": "한글을 처음 배웠는데 3개월 만에 기본 회화가 돼요. 선생님이 정말 친절해요." },
-      "r5": { "role": "자율 학습 · 4개월", "quote": "일하면서 공부하기 어려웠는데, 주간 리포트 보고 페이스를 유지할 수 있어요." },
-      "r6": { "role": "회화반 · 5개월 수강", "quote": "선생님이 베트남어도 잘 하셔서 궁금한 건 바로 바로 물어볼 수 있습니다." }
+      "r1": {
+        "role": "중급반 · 10개월 수강",
+        "quote": "선생님의 설명이 정말 이해하기 쉬워요. 매주 리포트 덕분에 내 약점을 바로 알 수 있었어요."
+      },
+      "r2": {
+        "role": "TOPIK 대비반 · 6급 취득",
+        "quote": "시험 유형별 훈련과 첨삭이 꼼꼼해서 한 번에 원하는 급수를 땄습니다."
+      },
+      "r3": {
+        "role": "회화반 · 8개월 수강",
+        "quote": "AI 발음 평가로 부족한 발음을 반복 연습했어요. 말하기가 정말 편해졌습니다."
+      },
+      "r4": {
+        "role": "초급반 · 3개월 수강",
+        "quote": "한글을 처음 배웠는데 3개월 만에 기본 회화가 돼요. 선생님이 정말 친절해요."
+      },
+      "r5": {
+        "role": "자율 학습 · 4개월",
+        "quote": "일하면서 공부하기 어려웠는데, 주간 리포트 보고 페이스를 유지할 수 있어요."
+      },
+      "r6": {
+        "role": "회화반 · 5개월 수강",
+        "quote": "선생님이 베트남어도 잘 하셔서 궁금한 건 바로 바로 물어볼 수 있습니다."
+      }
     }
   },
   "news": {
@@ -172,10 +226,22 @@
     "viewAll": "전체 보기",
     "read": "읽기",
     "items": {
-      "n1": { "title": "2026년 봄학기 개강 안내", "excerpt": "초급·중급·TOPIK 반 동시 개강. 조기 등록 10% 할인." },
-      "n2": { "title": "AI 발음 평가 서비스 공개 베타", "excerpt": "방문자 누구나 무료로 한국어 발음 테스트를 받아볼 수 있습니다." },
-      "n3": { "title": "다낭 주재 기업 대상 교육 파트너 모집", "excerpt": "출장 교육, 온라인 교육 모두 가능. 맞춤형 커리큘럼 제공." },
-      "n4": { "title": "여름방학 집중반 사전 접수", "excerpt": "중고등학생 대상 2주 집중 코스. 정원 제한." }
+      "n1": {
+        "title": "2026년 봄학기 개강 안내",
+        "excerpt": "초급·중급·TOPIK 반 동시 개강. 조기 등록 10% 할인."
+      },
+      "n2": {
+        "title": "AI 발음 평가 서비스 공개 베타",
+        "excerpt": "방문자 누구나 무료로 한국어 발음 테스트를 받아볼 수 있습니다."
+      },
+      "n3": {
+        "title": "다낭 주재 기업 대상 교육 파트너 모집",
+        "excerpt": "출장 교육, 온라인 교육 모두 가능. 맞춤형 커리큘럼 제공."
+      },
+      "n4": {
+        "title": "여름방학 집중반 사전 접수",
+        "excerpt": "중고등학생 대상 2주 집중 코스. 정원 제한."
+      }
     }
   },
   "partners": {
@@ -244,18 +310,54 @@
   "admin": {
     "groupTitle": "운영 관리",
     "menu": {
-      "dashboard": { "label": "대시보드", "desc": "오늘의 요약" },
-      "students": { "label": "학생", "desc": "명단 · 등록" },
-      "classes": { "label": "반", "desc": "시간표 · 배정" },
-      "assignments": { "label": "과제", "desc": "발음 · 쓰기" },
-      "teachers": { "label": "강사·직원", "desc": "계정 관리" },
-      "attendance": { "label": "출석", "desc": "QR 기록" },
-      "tests": { "label": "테스트", "desc": "발음 · 배정 결과" },
-      "leads": { "label": "상담 리드", "desc": "전환 파이프라인" },
-      "mcq": { "label": "레벨테스트 문항", "desc": "문항 · 임계값" },
-      "courses": { "label": "코스 관리", "desc": "메인 노출 · 다국어" },
-      "reports": { "label": "리포트", "desc": "주간·월간" },
-      "settings": { "label": "학원 설정", "desc": "위치 · QR 반경" }
+      "dashboard": {
+        "label": "대시보드",
+        "desc": "오늘의 요약"
+      },
+      "students": {
+        "label": "학생",
+        "desc": "명단 · 등록"
+      },
+      "classes": {
+        "label": "반",
+        "desc": "시간표 · 배정"
+      },
+      "assignments": {
+        "label": "과제",
+        "desc": "발음 · 쓰기"
+      },
+      "teachers": {
+        "label": "강사·직원",
+        "desc": "계정 관리"
+      },
+      "attendance": {
+        "label": "출석",
+        "desc": "QR 기록"
+      },
+      "tests": {
+        "label": "테스트",
+        "desc": "발음 · 배정 결과"
+      },
+      "leads": {
+        "label": "상담 리드",
+        "desc": "전환 파이프라인"
+      },
+      "mcq": {
+        "label": "레벨테스트 문항",
+        "desc": "문항 · 임계값"
+      },
+      "courses": {
+        "label": "코스 관리",
+        "desc": "메인 노출 · 다국어"
+      },
+      "reports": {
+        "label": "리포트",
+        "desc": "주간·월간"
+      },
+      "settings": {
+        "label": "학원 설정",
+        "desc": "위치 · QR 반경"
+      }
     },
     "assignments": {
       "subtitle": "ASSIGNMENTS",
@@ -271,7 +373,10 @@
       "individualCount": "개별 {count}명",
       "ttsPending": "(모범음성 생성 중)",
       "ttsFailed": "(모범음성 실패)",
-      "types": { "pronunciation": "발음", "writing": "쓰기" },
+      "types": {
+        "pronunciation": "발음",
+        "writing": "쓰기"
+      },
       "status": {
         "pending": "대기",
         "processing": "평가 중",
@@ -292,7 +397,11 @@
         "class": "반",
         "allClasses": "학원 전체",
         "target": "배정 대상",
-        "targets": { "all": "학원 전체", "class": "특정 반", "students": "개별 학생" },
+        "targets": {
+          "all": "학원 전체",
+          "class": "특정 반",
+          "students": "개별 학생"
+        },
         "selectClass": "반 선택...",
         "pickedCount": "{count}명 선택됨",
         "noStudents": "등록된 학생이 없어요.",
@@ -506,7 +615,11 @@
           "behavior": "태도"
         }
       },
-      "languages": { "vi": "🇻🇳 vi", "en": "🇺🇸 en", "other": "기타" }
+      "languages": {
+        "vi": "🇻🇳 vi",
+        "en": "🇺🇸 en",
+        "other": "기타"
+      }
     },
     "classes": {
       "subtitle": "Classes",
@@ -544,7 +657,15 @@
         "intermediate": "중급",
         "advanced": "고급"
       },
-      "days": { "mon": "월", "tue": "화", "wed": "수", "thu": "목", "fri": "금", "sat": "토", "sun": "일" },
+      "days": {
+        "mon": "월",
+        "tue": "화",
+        "wed": "수",
+        "thu": "목",
+        "fri": "금",
+        "sat": "토",
+        "sun": "일"
+      },
       "detail": {
         "editTitle": "반 정보 수정",
         "rosterTitle": "배정 학생 ({count} / {capacity})",
@@ -637,7 +758,11 @@
       "subtitle": "Tests",
       "title": "테스트 이력",
       "intro": "무료 발음 / 레벨 테스트 응시자와 결과를 한곳에서 봐요.",
-      "tabs": { "all": "전체", "free_pron": "발음", "placement": "레벨" },
+      "tabs": {
+        "all": "전체",
+        "free_pron": "발음",
+        "placement": "레벨"
+      },
       "empty": "아직 응시 이력이 없어요.",
       "columns": {
         "type": "유형",
@@ -649,8 +774,16 @@
         "audio": "녹음",
         "time": "일시"
       },
-      "type": { "free_pron": "발음", "placement": "레벨" },
-      "status": { "pending": "대기", "processing": "채점 중", "completed": "완료", "failed": "실패" },
+      "type": {
+        "free_pron": "발음",
+        "placement": "레벨"
+      },
+      "status": {
+        "pending": "대기",
+        "processing": "채점 중",
+        "completed": "완료",
+        "failed": "실패"
+      },
       "audio": {
         "play": "🔊 듣기",
         "noAudio": "녹음 없음",
@@ -670,7 +803,13 @@
       "subtitle": "Leads",
       "title": "상담 리드 파이프라인",
       "intro": "상담 신청 → 연락 → 등록까지 전환 상태를 관리하세요.",
-      "tabs": { "all": "전체", "new": "신규", "contacted": "연락 완료", "enrolled": "등록 완료", "dropped": "이탈" },
+      "tabs": {
+        "all": "전체",
+        "new": "신규",
+        "contacted": "연락 완료",
+        "enrolled": "등록 완료",
+        "dropped": "이탈"
+      },
       "empty": "아직 상담 신청이 없어요.",
       "emptyFiltered": "'{label}' 상태의 리드가 없어요.",
       "status": {
@@ -679,7 +818,11 @@
         "enrolled": "등록 완료",
         "dropped": "이탈"
       },
-      "source": { "landing": "랜딩", "pronunciation_test": "발음 테스트", "placement_test": "레벨 테스트" },
+      "source": {
+        "landing": "랜딩",
+        "pronunciation_test": "발음 테스트",
+        "placement_test": "레벨 테스트"
+      },
       "level": {
         "beginner": "입문",
         "elementary": "초급",
@@ -738,7 +881,12 @@
       "boardTitle": "출석 체크",
       "rosterEmpty": "이 반에 배정된 학생이 없어요.",
       "qrAutoTag": "📱 QR 자동 기록",
-      "statusButtons": { "present": "출석", "late": "지각", "absent": "결석", "excused": "사유" },
+      "statusButtons": {
+        "present": "출석",
+        "late": "지각",
+        "absent": "결석",
+        "excused": "사유"
+      },
       "notePlaceholder": "메모 (선택)",
       "noteSave": "저장",
       "metaTitle": "수업 상태 · 메모",
@@ -751,7 +899,10 @@
       "saved": "저장됨 ✓"
     },
     "pages": {
-      "reports": { "title": "학습 리포트", "desc": "주간 · 월간 학생 리포트 생성 및 발송 이력." }
+      "reports": {
+        "title": "학습 리포트",
+        "desc": "주간 · 월간 학생 리포트 생성 및 발송 이력."
+      }
     },
     "courses": {
       "subtitle": "Courses · 메인 노출",
@@ -833,6 +984,13 @@
         "geoFailed": "위치를 가져오지 못했어요. 권한을 허용했는지 확인해주세요.",
         "forbidden": "이 설정을 변경할 권한이 없습니다."
       }
+    },
+    "menuGroups": {
+      "overview": "운영",
+      "people": "학생·반",
+      "learning": "학습·평가",
+      "growth": "성장",
+      "org": "조직"
     }
   },
   "fpt": {
@@ -856,7 +1014,11 @@
       "intermediate": "중급 (일상 대화 가능)",
       "advanced": "고급 (뉴스/책을 읽어요)"
     },
-    "languages": { "vi": "Tiếng Việt (베트남어)", "en": "English", "other": "기타" },
+    "languages": {
+      "vi": "Tiếng Việt (베트남어)",
+      "en": "English",
+      "other": "기타"
+    },
     "record": {
       "step": "Step 2 / 3",
       "title": "{name}님, 아래 문장을 따라 읽어보세요",

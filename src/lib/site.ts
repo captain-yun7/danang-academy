@@ -93,3 +93,12 @@ export const adminMenuKeys = [
   { key: "reports", href: "/admin/reports" },
   { key: "settings", href: "/admin/settings" },
 ] as const;
+
+// Mistral 콘솔 스타일 — 섹션별로 묶인 네비게이션
+export const adminMenuGroups = [
+  { group: "overview", items: ["dashboard"] },
+  { group: "people", items: ["students", "classes", "attendance"] },
+  { group: "learning", items: ["assignments", "tests", "mcq"] },
+  { group: "growth", items: ["leads", "courses", "reports"] },
+  { group: "org", items: ["teachers", "settings"] },
+] as const;

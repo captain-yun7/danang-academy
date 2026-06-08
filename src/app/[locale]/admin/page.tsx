@@ -138,12 +138,12 @@ export default async function AdminDashboardPage() {
         {KPI_ORDER.map((k) => (
           <div
             key={k}
-            className="rounded-lg border border-[var(--color-line)] bg-white p-5"
+            className="rounded-xl border border-[var(--color-line)] bg-white p-5 transition-colors hover:border-[var(--color-primary)]/50"
           >
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
               {t(`kpi.${k}`)}
             </p>
-            <p className="mt-2 text-3xl font-black">{kpis[k]}</p>
+            <p className="mt-2 text-3xl font-black tabular-nums">{kpis[k]}</p>
             <p className="mt-1 text-xs text-[var(--color-primary-deep)]">
               {k === "students" && t("kpiSub.students")}
               {k === "attendance" && t("kpiSub.attendance", { n: kpis.todayCheckins })}
@@ -157,7 +157,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <section className="rounded-lg border border-[var(--color-line)] p-5">
+        <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-bold">{t("leadsTitle")}</h2>
             <Link
@@ -193,7 +193,7 @@ export default async function AdminDashboardPage() {
           )}
         </section>
 
-        <section className="rounded-lg border border-[var(--color-line)] p-5">
+        <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-bold">{t("classesTitle")}</h2>
             <Link

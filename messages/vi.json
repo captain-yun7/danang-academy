@@ -139,18 +139,54 @@
     "title": "Giao lưu và cộng đồng",
     "subtitle": "Hợp tác với các trường đại học, doanh nghiệp Hàn Quốc và các sự kiện văn hoá",
     "items": {
-      "yeungnam": { "title": "Giao lưu ĐH Yeungnam", "note": "Hiệp định trao đổi" },
-      "cau": { "title": "Thăm ĐH Chung-Ang", "note": "Hội thảo du học" },
-      "silla": { "title": "Hợp tác ĐH Silla", "note": "Tuyển chọn trao đổi" },
-      "sbs": { "title": "Xuất hiện trên SBS Korea", "note": "Giới thiệu giáo dục tiếng Hàn" },
-      "school": { "title": "Hội thảo trường cấp 3 Đà Nẵng", "note": "Giờ học miễn phí" },
-      "culture": { "title": "Sự kiện giao lưu văn hoá", "note": "Ngày trải nghiệm Hanbok" },
-      "chuseok": { "title": "Lễ hội Chuseok", "note": "Học viên làm Songpyeon" },
-      "hangul": { "title": "Thi viết ngày Hangul", "note": "Cuộc thi sáng tác" },
-      "topik": { "title": "Hỗ trợ dự thi TOPIK", "note": "Đăng ký theo nhóm" },
-      "corp": { "title": "Đào tạo doanh nghiệp", "note": "FPT · Samsung" },
-      "parent": { "title": "Gặp gỡ phụ huynh", "note": "Tổ chức theo quý" },
-      "alumni": { "title": "Hội cựu học viên", "note": "Chia sẻ hướng đi" }
+      "yeungnam": {
+        "title": "Giao lưu ĐH Yeungnam",
+        "note": "Hiệp định trao đổi"
+      },
+      "cau": {
+        "title": "Thăm ĐH Chung-Ang",
+        "note": "Hội thảo du học"
+      },
+      "silla": {
+        "title": "Hợp tác ĐH Silla",
+        "note": "Tuyển chọn trao đổi"
+      },
+      "sbs": {
+        "title": "Xuất hiện trên SBS Korea",
+        "note": "Giới thiệu giáo dục tiếng Hàn"
+      },
+      "school": {
+        "title": "Hội thảo trường cấp 3 Đà Nẵng",
+        "note": "Giờ học miễn phí"
+      },
+      "culture": {
+        "title": "Sự kiện giao lưu văn hoá",
+        "note": "Ngày trải nghiệm Hanbok"
+      },
+      "chuseok": {
+        "title": "Lễ hội Chuseok",
+        "note": "Học viên làm Songpyeon"
+      },
+      "hangul": {
+        "title": "Thi viết ngày Hangul",
+        "note": "Cuộc thi sáng tác"
+      },
+      "topik": {
+        "title": "Hỗ trợ dự thi TOPIK",
+        "note": "Đăng ký theo nhóm"
+      },
+      "corp": {
+        "title": "Đào tạo doanh nghiệp",
+        "note": "FPT · Samsung"
+      },
+      "parent": {
+        "title": "Gặp gỡ phụ huynh",
+        "note": "Tổ chức theo quý"
+      },
+      "alumni": {
+        "title": "Hội cựu học viên",
+        "note": "Chia sẻ hướng đi"
+      }
     }
   },
   "reviews": {
@@ -158,12 +194,30 @@
     "title": "Câu chuyện của học viên",
     "subtitle": "Cảm nhận thật từ học viên đã học tại DAF",
     "items": {
-      "r1": { "role": "Trung cấp · 10 tháng", "quote": "Cô giảng rất dễ hiểu. Nhờ báo cáo hàng tuần, em biết ngay điểm yếu của mình." },
-      "r2": { "role": "TOPIK · đạt cấp 6", "quote": "Luyện theo dạng bài và được chữa kỹ nên em đạt cấp mong muốn ngay lần đầu." },
-      "r3": { "role": "Giao tiếp · 8 tháng", "quote": "Nhờ AI chấm phát âm, em luyện lại được những âm còn yếu. Nói trôi chảy hơn hẳn." },
-      "r4": { "role": "Sơ cấp · 3 tháng", "quote": "Lần đầu học Hangul, chỉ 3 tháng em đã giao tiếp cơ bản được. Giáo viên rất nhiệt tình." },
-      "r5": { "role": "Tự học · 4 tháng", "quote": "Vừa làm vừa học khá khó, nhưng báo cáo tuần giúp mình giữ được nhịp học." },
-      "r6": { "role": "Giao tiếp · 5 tháng", "quote": "Cô giáo nói tiếng Việt rất tốt nên em hỏi gì cũng được giải đáp ngay." }
+      "r1": {
+        "role": "Trung cấp · 10 tháng",
+        "quote": "Cô giảng rất dễ hiểu. Nhờ báo cáo hàng tuần, em biết ngay điểm yếu của mình."
+      },
+      "r2": {
+        "role": "TOPIK · đạt cấp 6",
+        "quote": "Luyện theo dạng bài và được chữa kỹ nên em đạt cấp mong muốn ngay lần đầu."
+      },
+      "r3": {
+        "role": "Giao tiếp · 8 tháng",
+        "quote": "Nhờ AI chấm phát âm, em luyện lại được những âm còn yếu. Nói trôi chảy hơn hẳn."
+      },
+      "r4": {
+        "role": "Sơ cấp · 3 tháng",
+        "quote": "Lần đầu học Hangul, chỉ 3 tháng em đã giao tiếp cơ bản được. Giáo viên rất nhiệt tình."
+      },
+      "r5": {
+        "role": "Tự học · 4 tháng",
+        "quote": "Vừa làm vừa học khá khó, nhưng báo cáo tuần giúp mình giữ được nhịp học."
+      },
+      "r6": {
+        "role": "Giao tiếp · 5 tháng",
+        "quote": "Cô giáo nói tiếng Việt rất tốt nên em hỏi gì cũng được giải đáp ngay."
+      }
     }
   },
   "news": {
@@ -172,10 +226,22 @@
     "viewAll": "Xem tất cả",
     "read": "Đọc bài",
     "items": {
-      "n1": { "title": "Thông báo khai giảng học kỳ Xuân 2026", "excerpt": "Đồng loạt khai giảng các lớp Sơ cấp · Trung cấp · TOPIK. Giảm 10% khi đăng ký sớm." },
-      "n2": { "title": "Ra mắt Beta dịch vụ AI chấm phát âm", "excerpt": "Mọi người đều có thể kiểm tra phát âm tiếng Hàn miễn phí." },
-      "n3": { "title": "Tuyển đối tác đào tạo cho doanh nghiệp tại Đà Nẵng", "excerpt": "Hỗ trợ cả đào tạo tại công ty và online. Chương trình theo yêu cầu." },
-      "n4": { "title": "Mở đăng ký lớp cấp tốc hè", "excerpt": "Khoá 2 tuần dành cho học sinh THCS/THPT. Số lượng giới hạn." }
+      "n1": {
+        "title": "Thông báo khai giảng học kỳ Xuân 2026",
+        "excerpt": "Đồng loạt khai giảng các lớp Sơ cấp · Trung cấp · TOPIK. Giảm 10% khi đăng ký sớm."
+      },
+      "n2": {
+        "title": "Ra mắt Beta dịch vụ AI chấm phát âm",
+        "excerpt": "Mọi người đều có thể kiểm tra phát âm tiếng Hàn miễn phí."
+      },
+      "n3": {
+        "title": "Tuyển đối tác đào tạo cho doanh nghiệp tại Đà Nẵng",
+        "excerpt": "Hỗ trợ cả đào tạo tại công ty và online. Chương trình theo yêu cầu."
+      },
+      "n4": {
+        "title": "Mở đăng ký lớp cấp tốc hè",
+        "excerpt": "Khoá 2 tuần dành cho học sinh THCS/THPT. Số lượng giới hạn."
+      }
     }
   },
   "partners": {
@@ -244,18 +310,54 @@
   "admin": {
     "groupTitle": "Quản trị",
     "menu": {
-      "dashboard": { "label": "Dashboard", "desc": "Tóm tắt hôm nay" },
-      "students": { "label": "Học viên", "desc": "Danh sách · đăng ký" },
-      "classes": { "label": "Lớp", "desc": "Lịch · phân lớp" },
-      "assignments": { "label": "Bài tập", "desc": "Phát âm · Viết" },
-      "teachers": { "label": "Giáo viên · NV", "desc": "Quản lý tài khoản" },
-      "attendance": { "label": "Điểm danh", "desc": "Lịch sử QR" },
-      "tests": { "label": "Bài kiểm tra", "desc": "Phát âm · xếp lớp" },
-      "leads": { "label": "Khách tư vấn", "desc": "Pipeline chuyển đổi" },
-      "mcq": { "label": "Câu hỏi xếp lớp", "desc": "Câu hỏi · ngưỡng" },
-      "courses": { "label": "Quản lý khoá học", "desc": "Hiển thị · đa ngôn ngữ" },
-      "reports": { "label": "Báo cáo", "desc": "Tuần · tháng" },
-      "settings": { "label": "Cài đặt học viện", "desc": "Vị trí · bán kính QR" }
+      "dashboard": {
+        "label": "Dashboard",
+        "desc": "Tóm tắt hôm nay"
+      },
+      "students": {
+        "label": "Học viên",
+        "desc": "Danh sách · đăng ký"
+      },
+      "classes": {
+        "label": "Lớp",
+        "desc": "Lịch · phân lớp"
+      },
+      "assignments": {
+        "label": "Bài tập",
+        "desc": "Phát âm · Viết"
+      },
+      "teachers": {
+        "label": "Giáo viên · NV",
+        "desc": "Quản lý tài khoản"
+      },
+      "attendance": {
+        "label": "Điểm danh",
+        "desc": "Lịch sử QR"
+      },
+      "tests": {
+        "label": "Bài kiểm tra",
+        "desc": "Phát âm · xếp lớp"
+      },
+      "leads": {
+        "label": "Khách tư vấn",
+        "desc": "Pipeline chuyển đổi"
+      },
+      "mcq": {
+        "label": "Câu hỏi xếp lớp",
+        "desc": "Câu hỏi · ngưỡng"
+      },
+      "courses": {
+        "label": "Quản lý khoá học",
+        "desc": "Hiển thị · đa ngôn ngữ"
+      },
+      "reports": {
+        "label": "Báo cáo",
+        "desc": "Tuần · tháng"
+      },
+      "settings": {
+        "label": "Cài đặt học viện",
+        "desc": "Vị trí · bán kính QR"
+      }
     },
     "assignments": {
       "subtitle": "ASSIGNMENTS",
@@ -271,7 +373,10 @@
       "individualCount": "Riêng lẻ {count} người",
       "ttsPending": "(đang tạo giọng mẫu)",
       "ttsFailed": "(tạo giọng mẫu thất bại)",
-      "types": { "pronunciation": "Phát âm", "writing": "Viết" },
+      "types": {
+        "pronunciation": "Phát âm",
+        "writing": "Viết"
+      },
       "status": {
         "pending": "Chờ",
         "processing": "Đang chấm",
@@ -292,7 +397,11 @@
         "class": "Lớp",
         "allClasses": "Toàn học viện",
         "target": "Đối tượng giao",
-        "targets": { "all": "Toàn học viện", "class": "Lớp cụ thể", "students": "Học viên riêng lẻ" },
+        "targets": {
+          "all": "Toàn học viện",
+          "class": "Lớp cụ thể",
+          "students": "Học viên riêng lẻ"
+        },
         "selectClass": "Chọn lớp...",
         "pickedCount": "Đã chọn {count} học viên",
         "noStudents": "Chưa có học viên nào.",
@@ -506,7 +615,11 @@
           "behavior": "Thái độ"
         }
       },
-      "languages": { "vi": "🇻🇳 vi", "en": "🇺🇸 en", "other": "Khác" }
+      "languages": {
+        "vi": "🇻🇳 vi",
+        "en": "🇺🇸 en",
+        "other": "Khác"
+      }
     },
     "classes": {
       "subtitle": "Classes",
@@ -544,7 +657,15 @@
         "intermediate": "Trung cấp",
         "advanced": "Cao cấp"
       },
-      "days": { "mon": "T2", "tue": "T3", "wed": "T4", "thu": "T5", "fri": "T6", "sat": "T7", "sun": "CN" },
+      "days": {
+        "mon": "T2",
+        "tue": "T3",
+        "wed": "T4",
+        "thu": "T5",
+        "fri": "T6",
+        "sat": "T7",
+        "sun": "CN"
+      },
       "detail": {
         "editTitle": "Sửa thông tin lớp",
         "rosterTitle": "Học viên đã phân ({count} / {capacity})",
@@ -637,7 +758,11 @@
       "subtitle": "Tests",
       "title": "Lịch sử bài kiểm tra",
       "intro": "Xem chung kết quả các bài kiểm tra phát âm · xếp lớp miễn phí.",
-      "tabs": { "all": "Tất cả", "free_pron": "Phát âm", "placement": "Xếp lớp" },
+      "tabs": {
+        "all": "Tất cả",
+        "free_pron": "Phát âm",
+        "placement": "Xếp lớp"
+      },
       "empty": "Chưa có lượt làm bài nào.",
       "columns": {
         "type": "Loại",
@@ -649,8 +774,16 @@
         "audio": "Ghi âm",
         "time": "Thời gian"
       },
-      "type": { "free_pron": "Phát âm", "placement": "Xếp lớp" },
-      "status": { "pending": "Chờ", "processing": "Đang chấm", "completed": "Hoàn tất", "failed": "Thất bại" },
+      "type": {
+        "free_pron": "Phát âm",
+        "placement": "Xếp lớp"
+      },
+      "status": {
+        "pending": "Chờ",
+        "processing": "Đang chấm",
+        "completed": "Hoàn tất",
+        "failed": "Thất bại"
+      },
       "audio": {
         "play": "🔊 Nghe",
         "noAudio": "Không có",
@@ -670,7 +803,13 @@
       "subtitle": "Leads",
       "title": "Pipeline khách tư vấn",
       "intro": "Quản lý trạng thái chuyển đổi: Yêu cầu → Liên hệ → Đăng ký.",
-      "tabs": { "all": "Tất cả", "new": "Mới", "contacted": "Đã liên hệ", "enrolled": "Đã đăng ký", "dropped": "Bỏ" },
+      "tabs": {
+        "all": "Tất cả",
+        "new": "Mới",
+        "contacted": "Đã liên hệ",
+        "enrolled": "Đã đăng ký",
+        "dropped": "Bỏ"
+      },
       "empty": "Chưa có yêu cầu tư vấn nào.",
       "emptyFiltered": "Không có khách ở trạng thái '{label}'.",
       "status": {
@@ -679,7 +818,11 @@
         "enrolled": "Đã đăng ký",
         "dropped": "Bỏ"
       },
-      "source": { "landing": "Landing", "pronunciation_test": "Kiểm tra phát âm", "placement_test": "Kiểm tra xếp lớp" },
+      "source": {
+        "landing": "Landing",
+        "pronunciation_test": "Kiểm tra phát âm",
+        "placement_test": "Kiểm tra xếp lớp"
+      },
       "level": {
         "beginner": "Vỡ lòng",
         "elementary": "Sơ cấp",
@@ -738,7 +881,12 @@
       "boardTitle": "Điểm danh",
       "rosterEmpty": "Chưa có học viên nào được phân vào lớp này.",
       "qrAutoTag": "📱 Tự động ghi nhận từ QR",
-      "statusButtons": { "present": "Có mặt", "late": "Trễ", "absent": "Vắng", "excused": "Có phép" },
+      "statusButtons": {
+        "present": "Có mặt",
+        "late": "Trễ",
+        "absent": "Vắng",
+        "excused": "Có phép"
+      },
       "notePlaceholder": "Ghi chú (tùy chọn)",
       "noteSave": "Lưu",
       "metaTitle": "Trạng thái · Ghi chú buổi học",
@@ -751,7 +899,10 @@
       "saved": "Đã lưu ✓"
     },
     "pages": {
-      "reports": { "title": "Báo cáo học tập", "desc": "Lịch sử tạo và gửi báo cáo tuần · tháng." }
+      "reports": {
+        "title": "Báo cáo học tập",
+        "desc": "Lịch sử tạo và gửi báo cáo tuần · tháng."
+      }
     },
     "courses": {
       "subtitle": "Courses · Hiển thị trang chính",
@@ -833,6 +984,13 @@
         "geoFailed": "Không lấy được vị trí. Vui lòng kiểm tra quyền truy cập vị trí.",
         "forbidden": "Bạn không có quyền thay đổi cài đặt này."
       }
+    },
+    "menuGroups": {
+      "overview": "Tổng quan",
+      "people": "Học viên & Lớp",
+      "learning": "Học tập",
+      "growth": "Tăng trưởng",
+      "org": "Tổ chức"
     }
   },
   "fpt": {
@@ -856,7 +1014,11 @@
       "intermediate": "Trung cấp (giao tiếp hằng ngày)",
       "advanced": "Cao cấp (đọc tin tức/sách)"
     },
-    "languages": { "vi": "Tiếng Việt", "en": "English", "other": "Khác" },
+    "languages": {
+      "vi": "Tiếng Việt",
+      "en": "English",
+      "other": "Khác"
+    },
     "record": {
       "step": "Bước 2 / 3",
       "title": "{name}, hãy đọc theo câu bên dưới",
