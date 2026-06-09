@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { sql } from "@/lib/db/client";
 import { distanceMeters } from "@/lib/geo";
+import { normalizeVn } from "@/lib/vn-text";
 
 const LATE_THRESHOLD_MIN = 10;
 const SEARCH_LIMIT = 8;
@@ -82,7 +83,9 @@ export async function searchStudent({
 }): Promise<SearchStudentRow[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const pattern = `%${q}%`;
+  // 베트남어 성조부호 무시 검색: 학생이 "Bao han"으로 입력해도 "Bảo Hân" 매칭.
+  // 반 단위 학생 수가 적으므로 활성 학생을 모두 가져와 서버에서 정규화 비교한다.
+  const nq = normalizeVn(q);
 
   const rows = (await sql`
     select id::text, name,
@@ -91,11 +94,12 @@ export async function searchStudent({
     where class_id = ${classId}::uuid
       and organization_id = ${organizationId}::uuid
       and status = 'active'
-      and name ilike ${pattern}
     order by name
-    limit ${SEARCH_LIMIT}
   `) as Array<{ id: string; name: string; hint: string | null }>;
-  return rows;
+
+  return rows
+    .filter((r) => normalizeVn(r.name).includes(nq))
+    .slice(0, SEARCH_LIMIT);
 }
 
 export async function submitAttendance({
