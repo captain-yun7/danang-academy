@@ -7,6 +7,7 @@
     "address": "Đà Nẵng, Việt Nam (địa chỉ sẽ cập nhật)",
     "hours": "Thứ 2–6: 09:00–21:00 · Thứ 7: 09:00–18:00",
     "admin": "Quản trị",
+    "login": "Đăng nhập",
     "publicSite": "Về trang công khai",
     "rightsReserved": "Bảo lưu mọi quyền.",
     "privacy": "Chính sách bảo mật",
@@ -1231,9 +1232,13 @@
     }
   },
   "loginPage": {
-    "eyebrow": "Đăng nhập Quản trị",
-    "title": "Đăng nhập Quản trị viên",
-    "intro": "Trang dành riêng cho ban điều hành Da Phòng. Học viên/khách có thể sử dụng các bài kiểm tra miễn phí mà không cần đăng nhập.",
+    "eyebrow": "Đăng nhập",
+    "title": "Đăng nhập",
+    "intro": "Học viên đăng nhập bằng mã học viên, giáo viên · quản trị bằng email.",
+    "tabs": {
+      "student": "Học viên",
+      "teacher": "Giáo viên · Quản trị"
+    },
     "form": {
       "email": "Email",
       "password": "Mật khẩu",

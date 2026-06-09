@@ -26,10 +26,10 @@ export function SiteHeader() {
             <span>{tSite("hours")}</span>
             <LanguageSwitcher />
             <Link
-              href="/admin"
+              href="/login"
               className="rounded-full bg-white px-3 py-1 font-semibold text-[var(--color-ink)] hover:bg-[var(--color-primary)] hover:text-white"
             >
-              {tSite("admin")}
+              {tSite("login")}
             </Link>
           </div>
         </div>
@@ -125,11 +125,11 @@ export function SiteHeader() {
               </Link>
             ))}
             <Link
-              href="/admin"
+              href="/login"
               onClick={() => setOpen(false)}
               className="mt-2 rounded-md border border-[var(--color-line)] px-3 py-2.5 text-center text-xs font-bold"
             >
-              {tSite("admin")}
+              {tSite("login")}
             </Link>
           </div>
         </nav>

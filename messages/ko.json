@@ -7,6 +7,7 @@
     "address": "다낭, 베트남 (주소 예정)",
     "hours": "평일 09:00 – 21:00 · 토요일 09:00 – 18:00",
     "admin": "관리자",
+    "login": "로그인",
     "publicSite": "공개 사이트로",
     "rightsReserved": "All rights reserved.",
     "privacy": "개인정보 처리방침",
@@ -1146,9 +1147,13 @@
     }
   },
   "loginPage": {
-    "eyebrow": "Admin Login",
-    "title": "관리자 로그인",
-    "intro": "다프 운영진 전용 페이지입니다. 학생/방문자는 로그인 없이 무료 테스트를 이용할 수 있어요.",
+    "eyebrow": "Login",
+    "title": "로그인",
+    "intro": "학생은 학번으로, 교사·관리자는 이메일로 로그인하세요.",
+    "tabs": {
+      "student": "학생",
+      "teacher": "교사 · 관리자"
+    },
     "form": {
       "email": "이메일",
       "password": "비밀번호",
