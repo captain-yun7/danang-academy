@@ -66,3 +66,4 @@ _shared
 # Claude
 .claude/settings.local.json
 .vercel
+.env*.local

@@ -6,6 +6,7 @@ type ClassRow = {
   class_id: string;
   class_name: string;
   organization_id: string;
+  gps_required: boolean;
 };
 
 type SessionRow = {
@@ -16,8 +17,10 @@ type SessionRow = {
 async function findClass(token: string): Promise<ClassRow | null> {
   if (!token || token.length < 10) return null;
   const rows = (await sql`
-    select c.id::text as class_id, c.name as class_name, c.organization_id::text
+    select c.id::text as class_id, c.name as class_name, c.organization_id::text,
+           (o.lat is not null and o.lng is not null) as gps_required
     from classes c
+    join organizations o on o.id = c.organization_id
     where c.qr_token = ${token}
     limit 1
   `) as Array<ClassRow>;
@@ -112,6 +115,7 @@ export default async function ClassQrPage({
       organizationId={klass.organization_id}
       className={klass.class_name}
       sessionTimeLabel={`${session.start_time}–${session.end_time}`}
+      gpsRequired={klass.gps_required}
     />
   );
 }

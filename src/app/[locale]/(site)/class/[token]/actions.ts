@@ -12,6 +12,7 @@ const SEARCH_LIMIT = 8;
 export type SearchStudentRow = {
   id: string;
   name: string;
+  code: string | null;
   hint: string | null;
 };
 
@@ -84,22 +85,29 @@ export async function searchStudent({
   const q = query.trim();
   if (q.length < 2) return [];
   // 베트남어 성조부호 무시 검색: 학생이 "Bao han"으로 입력해도 "Bảo Hân" 매칭.
-  // 반 단위 학생 수가 적으므로 활성 학생을 모두 가져와 서버에서 정규화 비교한다.
+  // 학번(2026-0001)으로도 찾을 수 있게 student_code 도 함께 비교.
+  // 반 단위 학생 수가 적으므로 해당 반 학생을 모두 가져와 서버에서 정규화 비교한다.
+  // 수강 대기(waiting) 학생도 첫 수업에 출석할 수 있으므로 포함 — 휴학·수료·이탈만 제외.
   const nq = normalizeVn(q);
 
   const rows = (await sql`
-    select id::text, name,
+    select id::text, name, student_code,
            to_char(enrolled_at, 'YYYY-MM-DD') as hint
     from students
     where class_id = ${classId}::uuid
       and organization_id = ${organizationId}::uuid
-      and status = 'active'
+      and status in ('active', 'waiting')
     order by name
-  `) as Array<{ id: string; name: string; hint: string | null }>;
+  `) as Array<{ id: string; name: string; student_code: string | null; hint: string | null }>;
 
   return rows
-    .filter((r) => normalizeVn(r.name).includes(nq))
-    .slice(0, SEARCH_LIMIT);
+    .filter(
+      (r) =>
+        normalizeVn(r.name).includes(nq) ||
+        (r.student_code !== null && r.student_code.toLowerCase().includes(nq))
+    )
+    .slice(0, SEARCH_LIMIT)
+    .map((r) => ({ id: r.id, name: r.name, code: r.student_code, hint: r.hint }));
 }
 
 export async function submitAttendance({
@@ -110,8 +118,9 @@ export async function submitAttendance({
 }: {
   classToken: string;
   studentId: string;
-  lat: number;
-  lng: number;
+  // 학원에 GPS 좌표가 등록 안 된 경우 클라이언트가 위치 요청을 건너뛰므로 null 허용
+  lat: number | null;
+  lng: number | null;
 }): Promise<AttendResult> {
   // 1. classToken → 반 + 학원 좌표
   const classRows = (await sql`
@@ -142,7 +151,7 @@ export async function submitAttendance({
     where id = ${studentId}::uuid
       and class_id = ${cls.class_id}::uuid
       and organization_id = ${cls.organization_id}::uuid
-      and status = 'active'
+      and status in ('active', 'waiting')
     limit 1
   `) as Array<{ id: string; name: string }>;
   if (!stuRows[0]) {
@@ -162,6 +171,19 @@ export async function submitAttendance({
 
   // 3. GPS 검증 (학원 좌표 등록된 경우만)
   if (cls.org_lat !== null && cls.org_lng !== null) {
+    // 학원이 GPS를 요구하는데 좌표가 안 왔으면 거부 — 클라이언트 우회 방지
+    if (lat === null || lng === null) {
+      await logAttempt({
+        organizationId: cls.organization_id,
+        classId: cls.class_id,
+        studentId,
+        deviceFp: fp,
+        ip,
+        result: "gps_out",
+        message: "no_coords",
+      });
+      return { ok: false, reason: "gps_out" };
+    }
     const dist = distanceMeters(lat, lng, Number(cls.org_lat), Number(cls.org_lng));
     if (dist > cls.gps_radius_m) {
       await logAttempt({

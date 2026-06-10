@@ -1288,9 +1288,9 @@
   "classAttend": {
     "eyebrow": "출석",
     "gpsAsking": "위치를 확인하고 있어요...",
-    "searchLabel": "본인 이름",
-    "searchPlaceholder": "이름 두 글자 이상 입력",
-    "searchHint": "그 반에 등록된 본인 이름을 입력하면 카드가 나타나요.",
+    "searchLabel": "본인 이름 또는 학번",
+    "searchPlaceholder": "이름 또는 학번(2026-0001) 입력",
+    "searchHint": "그 반에 등록된 본인 이름이나 학번을 입력하면 카드가 나타나요.",
     "searching": "검색 중...",
     "noMatch": "일치하는 학생이 없어요. 매니저에게 알려주세요.",
     "enrolledAt": "등록일 {date}",

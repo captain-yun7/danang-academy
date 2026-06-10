@@ -15,12 +15,13 @@ type Props = {
   organizationId: string;
   className: string;
   sessionTimeLabel: string;
+  gpsRequired: boolean;
 };
 
 type GpsState =
   | { kind: "init" }
   | { kind: "asking" }
-  | { kind: "ok"; lat: number; lng: number }
+  | { kind: "ok"; lat: number | null; lng: number | null }
   | { kind: "denied" }
   | { kind: "unavailable" }
   | { kind: "timeout" };
@@ -31,52 +32,72 @@ export function ClassAttendClient({
   organizationId,
   className,
   sessionTimeLabel,
+  gpsRequired,
 }: Props) {
   const t = useTranslations("classAttend");
-  const [gps, setGps] = useState<GpsState>({ kind: "init" });
+  // 학원 좌표 미등록이면 위치 요청 없이 바로 진행
+  const [gps, setGps] = useState<GpsState>(() =>
+    gpsRequired ? { kind: "init" } : { kind: "ok", lat: null, lng: null }
+  );
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchStudentRow[]>([]);
   const [searchPending, startSearch] = useTransition();
   const [submitPending, startSubmit] = useTransition();
   const [outcome, setOutcome] = useState<AttendResult | null>(null);
 
-  // GPS 권한 요청 (마운트 시)
+  // GPS 권한 요청 (마운트 시) — 학원에 좌표가 등록 안 됐으면 건너뜀.
+  // 실내 등 고정밀 측위 실패(timeout) 시 저정밀로 1회 재시도.
   useEffect(() => {
+    if (!gpsRequired) return;
+
+    const onSuccess = (pos: GeolocationPosition) =>
+      setGps({ kind: "ok", lat: pos.coords.latitude, lng: pos.coords.longitude });
+
     if (!("geolocation" in navigator)) {
-      setGps({ kind: "unavailable" });
+      queueMicrotask(() => setGps({ kind: "unavailable" }));
       return;
     }
-    setGps({ kind: "asking" });
+    queueMicrotask(() => setGps({ kind: "asking" }));
+
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setGps({
-          kind: "ok",
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
-      },
+      onSuccess,
       (err) => {
-        if (err.code === err.PERMISSION_DENIED) setGps({ kind: "denied" });
-        else if (err.code === err.TIMEOUT) setGps({ kind: "timeout" });
-        else setGps({ kind: "unavailable" });
+        if (err.code === err.PERMISSION_DENIED) {
+          setGps({ kind: "denied" });
+          return;
+        }
+        // 고정밀 실패 → 저정밀(네트워크 기반)로 재시도
+        navigator.geolocation.getCurrentPosition(
+          onSuccess,
+          (err2) => {
+            if (err2.code === err2.PERMISSION_DENIED) setGps({ kind: "denied" });
+            else if (err2.code === err2.TIMEOUT) setGps({ kind: "timeout" });
+            else setGps({ kind: "unavailable" });
+          },
+          { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+        );
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     );
-  }, []);
+  }, [gpsRequired]);
 
   // 디바운스 검색
   useEffect(() => {
     if (gps.kind !== "ok") return;
-    if (query.trim().length < 2) {
-      setResults([]);
-      return;
-    }
-    const handle = setTimeout(() => {
-      startSearch(async () => {
-        const rows = await searchStudent({ classId, organizationId, query });
-        setResults(rows);
-      });
-    }, 250);
+    const short = query.trim().length < 2;
+    const handle = setTimeout(
+      () => {
+        if (short) {
+          setResults([]);
+          return;
+        }
+        startSearch(async () => {
+          const rows = await searchStudent({ classId, organizationId, query });
+          setResults(rows);
+        });
+      },
+      short ? 0 : 250
+    );
     return () => clearTimeout(handle);
   }, [query, classId, organizationId, gps.kind]);
 
@@ -174,9 +195,11 @@ export function ClassAttendClient({
               className="w-full rounded-xl border-2 border-[var(--color-line)] bg-white p-4 text-left transition hover:border-[var(--color-primary)] disabled:opacity-50"
             >
               <p className="text-base font-bold">{s.name}</p>
-              {s.hint && (
+              {(s.code || s.hint) && (
                 <p className="mt-0.5 text-xs text-[var(--color-muted)]">
-                  {t("enrolledAt", { date: s.hint })}
+                  {[s.code, s.hint && t("enrolledAt", { date: s.hint })]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               )}
             </button>

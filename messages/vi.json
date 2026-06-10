@@ -1288,9 +1288,9 @@
   "classAttend": {
     "eyebrow": "Điểm danh",
     "gpsAsking": "Đang xác định vị trí...",
-    "searchLabel": "Tên của bạn",
-    "searchPlaceholder": "Nhập ít nhất 2 ký tự",
-    "searchHint": "Nhập tên của bạn trong lớp này để hiện thẻ.",
+    "searchLabel": "Tên hoặc mã học viên",
+    "searchPlaceholder": "Nhập tên hoặc mã (2026-0001)",
+    "searchHint": "Nhập tên hoặc mã học viên của bạn trong lớp này để hiện thẻ.",
     "searching": "Đang tìm...",
     "noMatch": "Không tìm thấy học viên. Vui lòng liên hệ quản lý.",
     "enrolledAt": "Ngày nhập học {date}",
