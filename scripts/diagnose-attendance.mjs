@@ -2,8 +2,8 @@
 import { chromium } from "playwright";
 
 const BASE = "https://danang-academy.vercel.app";
-const EMAIL = "owner-beta@test.com";
-const PASSWORD = "Beta!2026";
+const EMAIL = process.env.SMOKE_ADMIN_EMAIL ?? "";
+const PASSWORD = process.env.SMOKE_ADMIN_PASSWORD ?? "";
 
 const browser = await chromium.launch();
 const page = await browser.newPage();

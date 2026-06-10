@@ -12,8 +12,8 @@ export async function adminLogin(browser) {
     await tabs.last().click();
     await page.waitForTimeout(400);
   }
-  await page.fill('input[name="email"]', "owner-beta@test.com");
-  await page.fill('input[name="password"]', "Beta!2026");
+  await page.fill('input[name="email"]', process.env.SMOKE_ADMIN_EMAIL ?? "");
+  await page.fill('input[name="password"]', process.env.SMOKE_ADMIN_PASSWORD ?? "");
   await page.click('button[type="submit"]');
   await page.waitForURL("**/admin**", { timeout: 15000 });
   return { ctx, page };
