@@ -376,7 +376,8 @@
       "ttsFailed": "(tạo giọng mẫu thất bại)",
       "types": {
         "pronunciation": "Phát âm",
-        "writing": "Viết"
+        "writing": "Viết",
+        "listening": "Nghe"
       },
       "status": {
         "pending": "Chờ",
@@ -424,8 +425,25 @@
           "invalidInput": "Vui lòng kiểm tra dữ liệu.",
           "generic": "Đã xảy ra lỗi.",
           "needClass": "Vui lòng chọn lớp để giao.",
-          "needStudents": "Vui lòng chọn ít nhất một học viên."
-        }
+          "needStudents": "Vui lòng chọn ít nhất một học viên.",
+          "generateFailed": "Tạo bằng AI thất bại. Vui lòng thử lại.",
+          "needSource": "Vui lòng nhập nội dung buổi học trước.",
+          "needStepItems": "Mỗi bước cần ít nhất 1 mục."
+        },
+        "stepMode": "Chế độ 4 bước (từ → cụm → câu → bài nói)",
+        "stepModeHint": "Tạo bài luyện phát âm 4 bước từ nội dung buổi học.",
+        "sourceText": "Nội dung buổi học (từ vựng · ngữ pháp · hội thoại)",
+        "sourceTextPlaceholder": "Dán từ vựng, ngữ pháp, hội thoại đã học trong buổi này",
+        "sourceHint": "AI sẽ tạo các mục luyện tập theo bước từ nội dung này. Bạn có thể chỉnh sửa sau khi tạo.",
+        "generateSteps": "Tạo 4 bước bằng AI",
+        "generatingSteps": "Đang tạo...",
+        "stepsEditorTitle": "Mục luyện tập theo bước",
+        "addItem": "Thêm mục",
+        "removeItem": "Xóa",
+        "passagePlaceholder": "Bài nói cuối 20–30 giây (5–8 câu)",
+        "stepTtsHint": "Khi lưu, giọng mẫu cho từng mục sẽ được tạo tự động.",
+        "targetListening": "Nội dung nghe (nghe trước buổi học sau)",
+        "targetListeningPlaceholder": "Nhập từ vựng và câu của buổi học tiếp theo"
       },
       "detail": {
         "editTitle": "Thông tin bài tập",
@@ -452,7 +470,28 @@
         "grading": "Đang lưu...",
         "gradeError": "Chấm điểm thất bại",
         "deleteBtn": "Xóa bài tập",
-        "deleteConfirm": "Xóa bài tập này? Các bài nộp cũng sẽ bị xóa."
+        "deleteConfirm": "Xóa bài tập này? Các bài nộp cũng sẽ bị xóa.",
+        "stepResults": "Kết quả theo bước",
+        "stepNotSubmitted": "Chưa nộp",
+        "durationSec": "Ghi âm {sec} giây",
+        "listenedAt": "Đã nghe · {time}",
+        "notListened": "Chưa nghe",
+        "stepTtsTitle": "Giọng mẫu theo bước",
+        "stepTtsSummary": "Sẵn sàng {ready} · Đang chờ {pending} · Lỗi {failed}",
+        "stepTtsRetry": "Tạo lại mục lỗi"
+      },
+      "stepBadge": "4 bước",
+      "steps": {
+        "word": "Từ vựng",
+        "phrase": "Cụm từ",
+        "sentence": "Câu",
+        "passage": "Bài nói cuối"
+      },
+      "scores": {
+        "accuracy": "Độ chính xác",
+        "pronunciation": "Phát âm",
+        "fluency": "Độ trôi chảy",
+        "completion": "Độ hoàn chỉnh"
       }
     },
     "common": {
@@ -580,7 +619,10 @@
         "noLogs": "Chưa có lịch sử",
         "checkIn": "Vào lớp",
         "checkOut": "Tan học",
-        "reportTitle": "Báo cáo học tập"
+        "reportTitle": "Báo cáo học tập",
+        "pronTrendTitle": "Tiến độ phát âm",
+        "pronTrendEmpty": "Chưa có bài nộp phát âm nào.",
+        "pronTrendOverall": "Tổng hợp"
       },
       "login": {
         "title": "Đăng nhập học viên",
@@ -1229,6 +1271,38 @@
       "first": "Đầu",
       "latest": "Gần nhất",
       "back": "← Học tập của tôi"
+    },
+    "listening": {
+      "script": "Nội dung nghe",
+      "audio": "Âm thanh",
+      "audioPending": "Đang chuẩn bị âm thanh. Vui lòng kiểm tra lại sau.",
+      "prompt": "Hãy nghe hết âm thanh rồi bấm nút bên dưới.",
+      "markDone": "Tôi đã nghe xong",
+      "marking": "Đang lưu...",
+      "done": "Hoàn thành! Bạn đã xong bài tập nghe.",
+      "error": "Lưu thất bại. Vui lòng thử lại."
+    },
+    "steps": {
+      "types": {
+        "word": "Từ vựng",
+        "phrase": "Cụm từ",
+        "sentence": "Câu",
+        "passage": "Bài nói cuối"
+      },
+      "listen": "Nghe",
+      "ttsPending": "Đang chuẩn bị âm thanh",
+      "recordHint": "Hãy nghe giọng mẫu rồi ghi âm các mục bên dưới theo thứ tự trong một lần.",
+      "next": "Bước tiếp theo →",
+      "viewSummary": "Xem kết quả cuối →",
+      "summaryTitle": "Kết quả cuối",
+      "summaryDone": "Đã nộp bài! Bạn đã hoàn thành cả 4 bước.",
+      "perStep": "Điểm theo từng bước",
+      "scores": {
+        "accuracy": "Độ chính xác",
+        "pronunciation": "Phát âm",
+        "fluency": "Độ trôi chảy",
+        "completion": "Độ hoàn chỉnh"
+      }
     }
   },
   "loginPage": {

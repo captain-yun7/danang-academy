@@ -12,6 +12,58 @@ import { NotesSection, type StudentNote } from "../notes/notes-section";
 
 type LevelKey = "beginner" | "elementary" | "intermediate" | "advanced";
 
+type PronTrendRow = {
+  kind: "step" | "total";
+  title: string;
+  step_no: number | null;
+  step_type: string | null;
+  total: number | null;
+  accuracy: number | null;
+  pronunciation: number | null;
+  fluency: number | null;
+  completion: number | null;
+  d: string | null;
+};
+
+const SUB_SCORE_MAX = [
+  ["accuracy", 40],
+  ["pronunciation", 30],
+  ["fluency", 20],
+  ["completion", 10],
+] as const;
+
+// 세부 점수 미니 바 (차트 라이브러리 없이 CSS)
+function ScoreBars({
+  row,
+  labels,
+}: {
+  row: PronTrendRow;
+  labels: Record<string, string>;
+}) {
+  return (
+    <div className="flex flex-wrap gap-x-3 gap-y-1">
+      {SUB_SCORE_MAX.map(([key, max]) => {
+        const value = row[key];
+        if (value == null) return null;
+        return (
+          <span key={key} className="flex items-center gap-1">
+            <span className="text-[10px] font-semibold text-[var(--color-muted)]">
+              {labels[key]}
+            </span>
+            <span className="h-1.5 w-12 overflow-hidden rounded-full bg-[var(--color-soft)]">
+              <span
+                className="block h-full rounded-full bg-[var(--color-primary)]"
+                style={{ width: `${Math.min(100, (value / max) * 100)}%` }}
+              />
+            </span>
+            <span className="text-[10px] font-bold">{value}</span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 export default async function StudentDetailPage({
   params,
 }: {
@@ -79,6 +131,36 @@ export default async function StudentDetailPage({
 
   const report = await buildStudentReport(id, orgId);
 
+  // 발음 진행 추이: 완료된 단계별 제출 + 발음 과제 집계 제출 (최신순 20개)
+  const pronTrend = (await sql`
+    select kind, title, step_no, step_type, total, accuracy, pronunciation, fluency, completion, d from (
+      select 'step' as kind, a.title, ss.step_no, st.step_type,
+             ss.total_score as total, ss.accuracy_score as accuracy,
+             ss.pronunciation_score as pronunciation, ss.fluency_score as fluency,
+             ss.completion_score as completion,
+             ss.submitted_at as ts,
+             to_char(ss.submitted_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as d
+      from assignment_step_submissions ss
+      join assignments a on a.id = ss.assignment_id
+      left join assignment_steps st
+        on st.assignment_id = ss.assignment_id and st.step_no = ss.step_no
+      where ss.student_id = ${id} and ss.organization_id = ${orgId} and ss.status = 'completed'
+      union all
+      select 'total' as kind, a.title, null, null,
+             sub.score, sub.accuracy_score, sub.pronunciation_score, sub.fluency_score,
+             sub.completion_score,
+             sub.submitted_at,
+             to_char(sub.submitted_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD')
+      from assignment_submissions sub
+      join assignments a on a.id = sub.assignment_id
+      where sub.student_id = ${id} and sub.organization_id = ${orgId}
+        and a.type = 'pronunciation' and sub.score is not null
+        and sub.status in ('completed', 'graded')
+    ) x
+    order by ts desc nulls last
+    limit 20
+  `) as PronTrendRow[];
+
   const session = await auth();
   const currentUserId = (session?.user as { id?: string } | undefined)?.id ?? "";
   const currentRole = (session?.user as { role?: string } | undefined)?.role ?? "teacher";
@@ -86,6 +168,15 @@ export default async function StudentDetailPage({
   const t = await getTranslations("admin.students.detail");
   const tList = await getTranslations("admin.students");
   const tLevel = await getTranslations("admin.students.level");
+  const tSteps = await getTranslations("admin.assignments.steps");
+  const tScores = await getTranslations("admin.assignments.scores");
+
+  const scoreLabels = {
+    accuracy: tScores("accuracy"),
+    pronunciation: tScores("pronunciation"),
+    fluency: tScores("fluency"),
+    completion: tScores("completion"),
+  };
 
   return (
     <div>
@@ -163,6 +254,38 @@ export default async function StudentDetailPage({
           <StudentReportView report={report} />
         </div>
       )}
+
+      <div className="mt-8">
+        <h2 className="mb-4 text-base font-bold">{t("pronTrendTitle")}</h2>
+        {pronTrend.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-[var(--color-line)] bg-white p-8 text-center text-sm text-[var(--color-muted)]">
+            {t("pronTrendEmpty")}
+          </div>
+        ) : (
+          <ul className="divide-y divide-[var(--color-line)] rounded-xl border border-[var(--color-line)] bg-white">
+            {pronTrend.map((r, i) => (
+              <li key={i} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+                <span className="w-20 shrink-0 text-[11px] text-[var(--color-muted)]">
+                  {r.d ?? "—"}
+                </span>
+                <div className="min-w-0 flex-1 basis-40">
+                  <p className="truncate text-xs font-semibold">{r.title}</p>
+                  <p className="text-[10px] text-[var(--color-muted)]">
+                    {r.kind === "step"
+                      ? `STEP ${r.step_no}${r.step_type ? ` · ${tSteps(r.step_type)}` : ""}`
+                      : t("pronTrendOverall")}
+                  </p>
+                </div>
+                <span className="text-sm font-black text-[var(--color-primary-deep)]">
+                  {r.total ?? "—"}
+                  <span className="text-[10px] font-semibold text-[var(--color-muted)]">/100</span>
+                </span>
+                <ScoreBars row={r} labels={scoreLabels} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <div className="mt-8">
         <NotesSection

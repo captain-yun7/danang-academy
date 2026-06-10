@@ -12,6 +12,8 @@ type Row = {
   target_count: number;
   due_date: string | null;
   tts_status: string | null;
+  step_count: number;
+  step_tts_status: string | null;
   active: boolean;
   created_at: string;
   submission_count: number;
@@ -21,6 +23,7 @@ type Row = {
 const TYPE_TONE: Record<string, string> = {
   pronunciation: "bg-indigo-100 text-indigo-700",
   writing: "bg-amber-100 text-amber-700",
+  listening: "bg-sky-100 text-sky-700",
 };
 
 export default async function AdminAssignmentsPage() {
@@ -33,7 +36,15 @@ export default async function AdminAssignmentsPage() {
            c.name as class_name,
            (select count(*)::int from assignment_targets t where t.assignment_id = a.id) as target_count,
            to_char(a.due_date, 'YYYY-MM-DD') as due_date,
-           a.tts_status, a.active,
+           a.tts_status,
+           (select count(*)::int from assignment_steps st where st.assignment_id = a.id) as step_count,
+           (select case
+              when bool_or(item->>'ttsStatus' = 'failed') then 'failed'
+              when bool_or(item->>'ttsStatus' = 'pending') then 'pending'
+              else 'ready' end
+            from assignment_steps st, jsonb_array_elements(st.items) item
+            where st.assignment_id = a.id) as step_tts_status,
+           a.active,
            to_char(a.created_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as created_at,
            (select count(*)::int from assignment_submissions s where s.assignment_id = a.id) as submission_count,
            (select count(*)::int from assignment_submissions s where s.assignment_id = a.id and s.status in ('completed','graded')) as done_count
@@ -84,7 +95,10 @@ export default async function AdminAssignmentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-line)]">
-              {rows.map((a) => (
+              {rows.map((a) => {
+                // 단계형은 항목 jsonb 집계 상태, 단일형은 과제 tts_status
+                const ttsStatus = a.step_count > 0 ? a.step_tts_status : a.tts_status;
+                return (
                 <tr key={a.id} className={`hover:bg-[var(--color-soft)]/40 ${a.active ? "" : "opacity-60"}`}>
                   <td className="px-4 py-3 font-semibold">
                     <Link
@@ -93,16 +107,23 @@ export default async function AdminAssignmentsPage() {
                     >
                       {a.title}
                     </Link>
-                    {a.type === "pronunciation" && a.tts_status && a.tts_status !== "ready" && (
-                      <span className="ml-2 align-middle text-[11px] text-[var(--color-muted)]">
-                        {a.tts_status === "pending" ? t("ttsPending") : t("ttsFailed")}
-                      </span>
-                    )}
+                    {(a.type === "pronunciation" || a.type === "listening") &&
+                      ttsStatus &&
+                      ttsStatus !== "ready" && (
+                        <span className="ml-2 align-middle text-[11px] text-[var(--color-muted)]">
+                          {ttsStatus === "pending" ? t("ttsPending") : t("ttsFailed")}
+                        </span>
+                      )}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${TYPE_TONE[a.type]}`}>
                       {tType(a.type)}
                     </span>
+                    {a.step_count > 0 && (
+                      <span className="ml-1.5 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700">
+                        {t("stepBadge")}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-[var(--color-muted)]">
                     {a.target_type === "class"
@@ -116,7 +137,8 @@ export default async function AdminAssignmentsPage() {
                     {a.done_count} / {a.submission_count}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

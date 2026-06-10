@@ -3,7 +3,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export type EvaluationResult = {
   transcript: string;
+  /** 하위 호환용 — totalScore와 동일 값 */
   score: number;
+  accuracyScore: number; // 정확도 0~40
+  pronunciationScore: number; // 발음 0~30
+  fluencyScore: number; // 유창성 0~20
+  completionScore: number; // 완성도 0~10
+  totalScore: number; // 합계 0~100
   strengths: string;
   improvements: string;
   recommendedLevel: "beginner" | "elementary" | "intermediate" | "advanced";
@@ -62,7 +68,11 @@ export async function transcribeKorean(
 const SCHEMA = {
   type: "object",
   properties: {
-    score: { type: "integer", minimum: 0, maximum: 100 },
+    accuracyScore: { type: "integer", minimum: 0, maximum: 40 },
+    pronunciationScore: { type: "integer", minimum: 0, maximum: 30 },
+    fluencyScore: { type: "integer", minimum: 0, maximum: 20 },
+    completionScore: { type: "integer", minimum: 0, maximum: 10 },
+    totalScore: { type: "integer", minimum: 0, maximum: 100 },
     strengths: { type: "string" },
     improvements: { type: "string" },
     recommendedLevel: {
@@ -70,7 +80,16 @@ const SCHEMA = {
       enum: ["beginner", "elementary", "intermediate", "advanced"],
     },
   },
-  required: ["score", "strengths", "improvements", "recommendedLevel"],
+  required: [
+    "accuracyScore",
+    "pronunciationScore",
+    "fluencyScore",
+    "completionScore",
+    "totalScore",
+    "strengths",
+    "improvements",
+    "recommendedLevel",
+  ],
 } as const;
 
 const FALLBACK_MODELS = [
@@ -79,7 +98,8 @@ const FALLBACK_MODELS = [
   "gemini-2.5-flash-lite",
 ] as const;
 
-async function generateWithRetry(prompt: string): Promise<string> {
+/** Gemini JSON 생성 공통 유틸 — 모델 폴백 + 일시 오류 재시도. 다른 AI 모듈에서도 재사용. */
+export async function generateJsonWithRetry(prompt: string, responseSchema: object): Promise<string> {
   let lastErr: unknown = null;
   for (const modelName of FALLBACK_MODELS) {
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -89,7 +109,7 @@ async function generateWithRetry(prompt: string): Promise<string> {
           generationConfig: {
             responseMimeType: "application/json",
             // @ts-expect-error responseSchema is supported but typings lag
-            responseSchema: SCHEMA,
+            responseSchema,
             temperature: 0.4,
           },
         });
@@ -143,29 +163,71 @@ export async function evaluateWithGemini({
     `STT 결과(학생이 실제로 읽은 것으로 추정): "${transcript}"`,
     declaredLevel ? `학생이 신고한 자가 평가 레벨: ${declaredLevel}` : "",
     "",
-    "평가 기준:",
-    "- 정확도(목표와 일치): 받침/모음/자음 누락·왜곡 여부",
-    "- 자연스러움: 띄어쓰기/억양/속도",
-    "- 베트남어권 학습자가 자주 틀리는 부분(받침 ㄱ/ㄴ/ㅇ, 모음 ㅓ/ㅗ, 격음/경음)",
+    "평가 루브릭 (총 100점):",
+    "- accuracyScore (정확도, 0~40): 음절·문법 발음 정확도 — 목표 텍스트 대비 일치 정도",
+    "- pronunciationScore (발음, 0~30): 개별 단어 발음 정확도 — 받침·모음·자음 명확도",
+    "- fluencyScore (유창성, 0~20): 자연스러운 리듬, 끊어 읽지 않기",
+    "- completionScore (완성도, 0~10): 전체를 누락 없이 읽었는가",
+    "- totalScore (0~100): 위 4개 항목의 합",
+    "",
+    "참고: 베트남어권 학습자가 자주 틀리는 부분(받침 ㄱ/ㄴ/ㅇ, 모음 ㅓ/ㅗ, 격음/경음)에 주목.",
     "",
     "출력 규칙:",
-    "- score: 0~100 정수. 80 이상은 발음이 매우 명확할 때만.",
+    "- 각 점수는 정수. totalScore 80 이상은 발음이 매우 명확할 때만.",
     ...langRules,
     "- recommendedLevel: beginner|elementary|intermediate|advanced 중 하나.",
     "- STT 결과가 목표와 거의 동일하면 점수 높게, 많이 다르면 낮게.",
-    '- STT 결과가 비어있거나 의미 없는 문자열이면 score 30 이하 + recommendedLevel "beginner".',
+    '- STT 결과가 비어있거나 의미 없는 문자열이면 totalScore 30 이하 + recommendedLevel "beginner".',
   ]
     .filter(Boolean)
     .join("\n");
 
-  const text = await generateWithRetry(prompt);
-  const parsed = JSON.parse(text) as {
+  const text = await generateJsonWithRetry(prompt, SCHEMA);
+  const parsed = JSON.parse(text) as Partial<{
+    accuracyScore: number;
+    pronunciationScore: number;
+    fluencyScore: number;
+    completionScore: number;
+    totalScore: number;
     score: number;
     strengths: string;
     improvements: string;
     recommendedLevel: EvaluationResult["recommendedLevel"];
+  }>;
+
+  // 방어적 파싱: 모델이 레거시 score만 반환하면 가중치 비율로 세부 점수 유도
+  const legacy = clampInt(parsed.totalScore ?? parsed.score, 0, 100) ?? 0;
+  const accuracyScore = clampInt(parsed.accuracyScore, 0, 40) ?? Math.round(legacy * 0.4);
+  const pronunciationScore = clampInt(parsed.pronunciationScore, 0, 30) ?? Math.round(legacy * 0.3);
+  const fluencyScore = clampInt(parsed.fluencyScore, 0, 20) ?? Math.round(legacy * 0.2);
+  const completionScore = clampInt(parsed.completionScore, 0, 10) ?? Math.round(legacy * 0.1);
+  const totalScore = Math.min(
+    Math.max(accuracyScore + pronunciationScore + fluencyScore + completionScore, 0),
+    100
+  );
+
+  const levels = ["beginner", "elementary", "intermediate", "advanced"] as const;
+  const recommendedLevel = levels.includes(parsed.recommendedLevel as (typeof levels)[number])
+    ? (parsed.recommendedLevel as EvaluationResult["recommendedLevel"])
+    : "beginner";
+
+  return {
+    score: totalScore,
+    accuracyScore,
+    pronunciationScore,
+    fluencyScore,
+    completionScore,
+    totalScore,
+    strengths: typeof parsed.strengths === "string" ? parsed.strengths : "",
+    improvements: typeof parsed.improvements === "string" ? parsed.improvements : "",
+    recommendedLevel,
   };
-  return parsed;
+}
+
+function clampInt(value: unknown, min: number, max: number): number | null {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(Math.max(Math.round(n), min), max);
 }
 
 export async function evaluatePronunciation({

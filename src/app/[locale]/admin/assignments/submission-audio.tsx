@@ -2,9 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { getSubmissionAudioUrl } from "./actions";
+import { getSubmissionAudioUrl, getStepSubmissionAudioUrl } from "./actions";
 
-export function SubmissionAudio({ submissionId }: { submissionId: string }) {
+export function SubmissionAudio({
+  submissionId,
+  kind = "aggregate",
+}: {
+  submissionId: string;
+  kind?: "aggregate" | "step";
+}) {
   const t = useTranslations("admin.assignments.detail");
   const [url, setUrl] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -19,7 +25,10 @@ export function SubmissionAudio({ submissionId }: { submissionId: string }) {
       disabled={pending}
       onClick={() =>
         startTransition(async () => {
-          const u = await getSubmissionAudioUrl(submissionId);
+          const u =
+            kind === "step"
+              ? await getStepSubmissionAudioUrl(submissionId)
+              : await getSubmissionAudioUrl(submissionId);
           if (u) setUrl(u);
         })
       }

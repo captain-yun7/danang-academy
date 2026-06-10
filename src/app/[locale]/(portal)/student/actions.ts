@@ -65,6 +65,32 @@ export async function getMyAssignments(): Promise<StudentAssignmentRow[]> {
   `) as StudentAssignmentRow[];
 }
 
+export type StudentStepItem = {
+  text: string;
+  ttsKey: string | null;
+  ttsStatus: "pending" | "ready" | "failed";
+};
+
+export type StudentStep = {
+  stepNo: number;
+  stepType: "word" | "phrase" | "sentence" | "passage";
+  title: string | null;
+  items: StudentStepItem[];
+};
+
+export type StudentStepSubmission = {
+  step_no: number;
+  status: string;
+  total_score: number | null;
+  accuracy_score: number | null;
+  pronunciation_score: number | null;
+  fluency_score: number | null;
+  completion_score: number | null;
+  transcript: string | null;
+  strengths: string | null;
+  improvements: string | null;
+};
+
 export type StudentAssignmentDetail = {
   id: string;
   type: string;
@@ -73,6 +99,8 @@ export type StudentAssignmentDetail = {
   target_text: string | null;
   ttsUrl: string | null;
   due_date: string | null;
+  steps: StudentStep[];
+  stepSubmissions: StudentStepSubmission[];
   submission: {
     id: string;
     status: string;
@@ -128,8 +156,37 @@ export async function getMyAssignmentDetail(
     limit 1
   `) as StudentAssignmentDetail["submission"][];
 
+  // 단계형 발음 과제 — 단계 목록 + 본인 단계별 제출
+  let steps: StudentStep[] = [];
+  let stepSubmissions: StudentStepSubmission[] = [];
+  if (a.type === "pronunciation") {
+    const stepRows = (await sql`
+      select step_no, step_type, title, items
+      from assignment_steps
+      where assignment_id = ${assignmentId}
+      order by step_no
+    `) as { step_no: number; step_type: StudentStep["stepType"]; title: string | null; items: StudentStepItem[] }[];
+    steps = stepRows.map((r) => ({
+      stepNo: r.step_no,
+      stepType: r.step_type,
+      title: r.title,
+      items: r.items ?? [],
+    }));
+    if (steps.length > 0) {
+      stepSubmissions = (await sql`
+        select step_no, status::text, total_score, accuracy_score, pronunciation_score,
+               fluency_score, completion_score, transcript, strengths, improvements
+        from assignment_step_submissions
+        where assignment_id = ${assignmentId} and student_id = ${studentId}
+        order by step_no
+      `) as StudentStepSubmission[];
+    }
+  }
+
   const ttsUrl =
-    a.type === "pronunciation" && a.tts_status === "ready" && a.tts_audio_key
+    (a.type === "pronunciation" || a.type === "listening") &&
+    a.tts_status === "ready" &&
+    a.tts_audio_key
       ? await presignGet(a.tts_audio_key, 60 * 30)
       : null;
 
@@ -141,6 +198,8 @@ export async function getMyAssignmentDetail(
     target_text: a.target_text,
     ttsUrl,
     due_date: a.due_date,
+    steps,
+    stepSubmissions,
     submission: subs[0] ?? null,
   };
 }
@@ -164,6 +223,98 @@ export async function getMySubmission(assignmentId: string): Promise<MySubmissio
     limit 1
   `) as NonNullable<MySubmissionResult>[];
   return rows[0] ?? null;
+}
+
+// 단계 제출 결과 폴링용 (가벼운 조회)
+export type MyStepSubmissionResult = {
+  status: string;
+  total_score: number | null;
+  accuracy_score: number | null;
+  pronunciation_score: number | null;
+  fluency_score: number | null;
+  completion_score: number | null;
+  transcript: string | null;
+  strengths: string | null;
+  improvements: string | null;
+} | null;
+
+export async function getMyStepSubmission(
+  assignmentId: string,
+  stepNo: number
+): Promise<MyStepSubmissionResult> {
+  const { studentId, organizationId } = await requireStudent();
+  if (!Number.isInteger(stepNo) || stepNo < 1 || stepNo > 4) return null;
+  const rows = (await sql`
+    select status::text, total_score, accuracy_score, pronunciation_score,
+           fluency_score, completion_score, transcript, strengths, improvements
+    from assignment_step_submissions
+    where assignment_id = ${assignmentId} and step_no = ${stepNo}
+      and student_id = ${studentId} and organization_id = ${organizationId}
+    limit 1
+  `) as NonNullable<MyStepSubmissionResult>[];
+  return rows[0] ?? null;
+}
+
+// 듣기 과제 완료 처리
+export async function markListened(assignmentId: string) {
+  const { studentId, organizationId } = await requireStudent();
+
+  const ok = (await sql`
+    select a.id from assignments a
+    left join students st on st.id = ${studentId}
+    where a.id = ${assignmentId} and a.organization_id = ${organizationId}
+      and a.type = 'listening' and a.active = true
+      and (
+        a.target_type = 'all'
+        or (a.target_type = 'class' and a.class_id = st.class_id)
+        or (a.target_type = 'students' and exists (
+          select 1 from assignment_targets tg
+          where tg.assignment_id = a.id and tg.student_id = ${studentId}))
+      )
+    limit 1
+  `) as { id: string }[];
+  if (!ok[0]) throw new Error("forbidden");
+
+  await sql`
+    insert into assignment_submissions
+      (assignment_id, student_id, organization_id, status, listened_at, submitted_at, updated_at)
+    values
+      (${assignmentId}, ${studentId}, ${organizationId}, 'completed', now(), now(), now())
+    on conflict (assignment_id, student_id) do update set
+      status = 'completed',
+      listened_at = now(),
+      submitted_at = now(),
+      updated_at = now()
+  `;
+  revalidatePath(`/student/assignments/${assignmentId}`);
+  revalidatePath("/student");
+}
+
+// 단계 항목별 모범음성 presigned URL — 학생이 접근 가능한 과제의 TTS 키만 허용
+export async function getStepItemTtsUrl(
+  assignmentId: string,
+  ttsKey: string
+): Promise<string | null> {
+  const { studentId, organizationId } = await requireStudent();
+  if (!ttsKey.startsWith(`assignment-tts/${assignmentId}/`)) return null;
+
+  const ok = (await sql`
+    select a.id from assignments a
+    left join students st on st.id = ${studentId}
+    where a.id = ${assignmentId} and a.organization_id = ${organizationId}
+      and a.active = true
+      and (
+        a.target_type = 'all'
+        or (a.target_type = 'class' and a.class_id = st.class_id)
+        or (a.target_type = 'students' and exists (
+          select 1 from assignment_targets tg
+          where tg.assignment_id = a.id and tg.student_id = ${studentId}))
+      )
+    limit 1
+  `) as { id: string }[];
+  if (!ok[0]) return null;
+
+  return presignGet(ttsKey, 60 * 30);
 }
 
 const writingSchema = z.object({

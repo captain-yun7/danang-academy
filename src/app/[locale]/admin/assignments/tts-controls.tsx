@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { regenerateTts, deleteAssignment } from "./actions";
+import { regenerateTts, regenerateStepTts, deleteAssignment } from "./actions";
 
 export function TtsControls({
   assignmentId,
@@ -39,6 +39,52 @@ export function TtsControls({
       >
         {pending ? t("ttsRegenerating") : t("ttsRegenerate")}
       </button>
+    </div>
+  );
+}
+
+// 단계형 과제: 항목별 TTS 집계 상태 + 실패 항목 재생성
+export function StepTtsControls({
+  assignmentId,
+  ready,
+  pending,
+  failed,
+}: {
+  assignmentId: string;
+  ready: number;
+  pending: number;
+  failed: number;
+}) {
+  const t = useTranslations("admin.assignments.detail");
+  const [busy, startTransition] = useTransition();
+
+  return (
+    <div className="rounded-xl border border-[var(--color-line)] bg-white p-5">
+      <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
+        {t("stepTtsTitle")}
+      </p>
+      <p className="mt-2 text-xs">
+        {failed > 0 ? (
+          <span className="font-semibold text-red-600">● {t("ttsFailed")}</span>
+        ) : pending > 0 ? (
+          <span className="font-semibold text-amber-600">● {t("ttsGenerating")}</span>
+        ) : (
+          <span className="font-semibold text-emerald-600">● {t("ttsReady")}</span>
+        )}
+      </p>
+      <p className="mt-1 text-[11px] text-[var(--color-muted)]">
+        {t("stepTtsSummary", { ready, pending, failed })}
+      </p>
+      {failed > 0 && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => startTransition(() => regenerateStepTts(assignmentId))}
+          className="mt-3 rounded-full border-2 border-[var(--color-line)] px-4 py-1.5 text-xs font-bold hover:border-[var(--color-primary)] disabled:opacity-50"
+        >
+          {busy ? t("ttsRegenerating") : t("stepTtsRetry")}
+        </button>
+      )}
     </div>
   );
 }

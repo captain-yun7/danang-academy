@@ -376,7 +376,8 @@
       "ttsFailed": "(모범음성 실패)",
       "types": {
         "pronunciation": "발음",
-        "writing": "쓰기"
+        "writing": "쓰기",
+        "listening": "듣기"
       },
       "status": {
         "pending": "대기",
@@ -424,8 +425,25 @@
           "invalidInput": "입력값을 확인해 주세요.",
           "generic": "오류가 발생했습니다.",
           "needClass": "배정할 반을 선택해 주세요.",
-          "needStudents": "배정할 학생을 한 명 이상 선택해 주세요."
-        }
+          "needStudents": "배정할 학생을 한 명 이상 선택해 주세요.",
+          "generateFailed": "AI 생성에 실패했어요. 다시 시도해주세요.",
+          "needSource": "수업 내용을 먼저 입력해주세요.",
+          "needStepItems": "각 단계에 항목을 1개 이상 입력해주세요."
+        },
+        "stepMode": "4단계 모드 (단어 → 구 → 문장 → 최종 발화)",
+        "stepModeHint": "수업 내용을 바탕으로 4단계 발음 연습을 만듭니다.",
+        "sourceText": "수업 내용 (어휘 · 문법 · 대화문)",
+        "sourceTextPlaceholder": "이번 수업에서 배운 어휘, 문법, 대화문을 붙여넣으세요",
+        "sourceHint": "입력한 내용을 바탕으로 AI가 단계별 연습 항목을 만들어요. 생성 후 자유롭게 수정할 수 있어요.",
+        "generateSteps": "AI로 4단계 생성",
+        "generatingSteps": "생성 중...",
+        "stepsEditorTitle": "단계별 연습 항목",
+        "addItem": "항목 추가",
+        "removeItem": "삭제",
+        "passagePlaceholder": "20~30초 분량의 최종 발화문 (5~8문장)",
+        "stepTtsHint": "저장하면 항목별 모범 음성이 자동 생성됩니다.",
+        "targetListening": "들을 내용 (다음 수업 미리듣기)",
+        "targetListeningPlaceholder": "다음 수업에서 배울 어휘와 문장을 입력하세요"
       },
       "detail": {
         "editTitle": "과제 정보",
@@ -452,7 +470,28 @@
         "grading": "저장 중...",
         "gradeError": "채점 실패",
         "deleteBtn": "과제 삭제",
-        "deleteConfirm": "이 과제를 삭제할까요? 제출물도 함께 삭제됩니다."
+        "deleteConfirm": "이 과제를 삭제할까요? 제출물도 함께 삭제됩니다.",
+        "stepResults": "단계별 결과",
+        "stepNotSubmitted": "미제출",
+        "durationSec": "녹음 {sec}초",
+        "listenedAt": "듣기 완료 · {time}",
+        "notListened": "아직 안 들음",
+        "stepTtsTitle": "단계별 모범 음성",
+        "stepTtsSummary": "준비 {ready} · 대기 {pending} · 실패 {failed}",
+        "stepTtsRetry": "실패 항목 재생성"
+      },
+      "stepBadge": "4단계",
+      "steps": {
+        "word": "단어",
+        "phrase": "구",
+        "sentence": "문장",
+        "passage": "최종 발화"
+      },
+      "scores": {
+        "accuracy": "정확도",
+        "pronunciation": "발음",
+        "fluency": "유창성",
+        "completion": "완성도"
       }
     },
     "common": {
@@ -580,7 +619,10 @@
         "noLogs": "아직 기록 없음",
         "checkIn": "입실",
         "checkOut": "퇴실",
-        "reportTitle": "학습 리포트"
+        "reportTitle": "학습 리포트",
+        "pronTrendTitle": "발음 진행 추이",
+        "pronTrendEmpty": "아직 발음 제출 기록이 없어요.",
+        "pronTrendOverall": "종합"
       },
       "login": {
         "title": "학생 로그인",
@@ -1245,6 +1287,38 @@
       "first": "처음",
       "latest": "최근",
       "back": "← 내 학습"
+    },
+    "listening": {
+      "script": "들을 내용",
+      "audio": "음성",
+      "audioPending": "음성을 준비 중이에요. 잠시 후 다시 확인해주세요.",
+      "prompt": "음성을 끝까지 듣고 아래 버튼을 눌러주세요.",
+      "markDone": "다 들었어요",
+      "marking": "저장 중...",
+      "done": "확인 완료! 듣기 과제를 마쳤어요.",
+      "error": "저장에 실패했어요. 다시 시도해주세요."
+    },
+    "steps": {
+      "types": {
+        "word": "단어",
+        "phrase": "구",
+        "sentence": "문장",
+        "passage": "최종 발화"
+      },
+      "listen": "듣기",
+      "ttsPending": "음성 준비 중",
+      "recordHint": "모범음성을 듣고 아래 항목을 순서대로 한 번에 녹음하세요.",
+      "next": "다음 단계 →",
+      "viewSummary": "최종 결과 보기 →",
+      "summaryTitle": "최종 결과",
+      "summaryDone": "제출 완료! 4단계를 모두 마쳤어요.",
+      "perStep": "단계별 점수",
+      "scores": {
+        "accuracy": "정확도",
+        "pronunciation": "발음",
+        "fluency": "유창성",
+        "completion": "완성도"
+      }
     }
   },
   "qr": {

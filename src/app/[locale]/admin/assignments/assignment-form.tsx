@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { createAssignment, updateAssignment } from "./actions";
+import { createAssignment, updateAssignment, generateAssignmentSteps } from "./actions";
 
 type Klass = { id: string; name: string };
 type Student = { id: string; name: string; studentCode: string | null; className: string | null };
 type TargetType = "all" | "class" | "students";
+type AssignmentType = "pronunciation" | "writing" | "listening";
+type ListStepType = "word" | "phrase" | "sentence";
+
+export type StepsInitial = {
+  word: string[];
+  phrase: string[];
+  sentence: string[];
+  passage: string;
+};
 
 type Initial = {
   id: string;
-  type: "pronunciation" | "writing";
+  type: AssignmentType;
   targetType: TargetType;
   classId: string | null;
   studentIds: string[];
@@ -18,7 +27,10 @@ type Initial = {
   instructions: string | null;
   targetText: string | null;
   dueDate: string | null;
+  steps?: StepsInitial | null;
 };
+
+const LIST_STEPS: ListStepType[] = ["word", "phrase", "sentence"];
 
 export function AssignmentForm({
   mode,
@@ -33,13 +45,23 @@ export function AssignmentForm({
 }) {
   const t = useTranslations("admin.assignments.form");
   const tType = useTranslations("admin.assignments.types");
+  const tSteps = useTranslations("admin.assignments.steps");
   const [pending, startTransition] = useTransition();
+  const [generating, startGenerating] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [type, setType] = useState<"pronunciation" | "writing">(initial?.type ?? "pronunciation");
+  const [type, setType] = useState<AssignmentType>(initial?.type ?? "pronunciation");
   const [targetType, setTargetType] = useState<TargetType>(initial?.targetType ?? "all");
   const [classId, setClassId] = useState(initial?.classId ?? "");
   const [picked, setPicked] = useState<Set<string>>(new Set(initial?.studentIds ?? []));
+  const [stepMode, setStepMode] = useState(!!initial?.steps);
+  const [lists, setLists] = useState<Record<ListStepType, string[]>>({
+    word: initial?.steps?.word.length ? initial.steps.word : [""],
+    phrase: initial?.steps?.phrase.length ? initial.steps.phrase : [""],
+    sentence: initial?.steps?.sentence.length ? initial.steps.sentence : [""],
+  });
+  const [passage, setPassage] = useState(initial?.steps?.passage ?? "");
+  const sourceRef = useRef<HTMLTextAreaElement>(null);
 
   function toggle(id: string) {
     setSaved(false);
@@ -51,6 +73,65 @@ export function AssignmentForm({
     });
   }
 
+  function setItem(st: ListStepType, i: number, value: string) {
+    setLists((prev) => ({ ...prev, [st]: prev[st].map((v, j) => (j === i ? value : v)) }));
+  }
+
+  function addItem(st: ListStepType) {
+    setLists((prev) =>
+      prev[st].length >= 15 ? prev : { ...prev, [st]: [...prev[st], ""] }
+    );
+  }
+
+  function removeItem(st: ListStepType, i: number) {
+    setLists((prev) => {
+      const next = prev[st].filter((_, j) => j !== i);
+      return { ...prev, [st]: next.length ? next : [""] };
+    });
+  }
+
+  function generateSteps() {
+    setError(null);
+    const src = sourceRef.current?.value.trim() ?? "";
+    if (src.length < 10) {
+      setError(t("errors.needSource"));
+      return;
+    }
+    startGenerating(async () => {
+      try {
+        const g = await generateAssignmentSteps(src);
+        // 서버 검증 한도(단계당 15개, 항목 200자, 발화문 600자)에 맞춰 절단
+        const clamp = (arr: string[]) => arr.slice(0, 15).map((v) => v.slice(0, 200));
+        setLists({
+          word: clamp(g.words),
+          phrase: clamp(g.phrases),
+          sentence: clamp(g.sentences),
+        });
+        setPassage(g.passage.slice(0, 600));
+      } catch {
+        setError(t("errors.generateFailed"));
+      }
+    });
+  }
+
+  const isStepPron = type === "pronunciation" && stepMode;
+  const targetLabel =
+    type === "writing"
+      ? t("targetWriting")
+      : type === "listening"
+        ? t("targetListening")
+        : isStepPron
+          ? t("sourceText")
+          : t("targetPronunciation");
+  const targetPlaceholder =
+    type === "writing"
+      ? t("targetWritingPlaceholder")
+      : type === "listening"
+        ? t("targetListeningPlaceholder")
+        : isStepPron
+          ? t("sourceTextPlaceholder")
+          : t("targetPronunciationPlaceholder");
+
   return (
     <form
       onChange={() => saved && setSaved(false)}
@@ -59,6 +140,26 @@ export function AssignmentForm({
         setError(null);
         setSaved(false);
         const fd = new FormData(e.currentTarget);
+
+        let steps:
+          | { stepType: ListStepType | "passage"; items: string[] }[]
+          | undefined;
+        if (isStepPron) {
+          const listSteps = LIST_STEPS.map((st) => ({
+            stepType: st,
+            items: lists[st].map((v) => v.trim()).filter(Boolean),
+          }));
+          const passageText = passage.trim();
+          steps = [
+            ...listSteps,
+            { stepType: "passage" as const, items: passageText ? [passageText] : [] },
+          ];
+          if (steps.some((s) => s.items.length === 0)) {
+            setError(t("errors.needStepItems"));
+            return;
+          }
+        }
+
         const payload = {
           type,
           targetType,
@@ -68,6 +169,7 @@ export function AssignmentForm({
           instructions: String(fd.get("instructions") ?? ""),
           targetText: String(fd.get("targetText") ?? ""),
           dueDate: String(fd.get("dueDate") ?? ""),
+          steps,
         };
         if (targetType === "class" && !classId) {
           setError(t("errors.needClass"));
@@ -96,12 +198,13 @@ export function AssignmentForm({
         <span className="mb-1 block text-xs font-semibold">{t("type")}</span>
         <select
           value={type}
-          onChange={(e) => setType(e.target.value as "pronunciation" | "writing")}
+          onChange={(e) => setType(e.target.value as AssignmentType)}
           disabled={mode === "edit"}
           className="w-full rounded-lg border border-[var(--color-line)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)] disabled:bg-[var(--color-soft)]"
         >
           <option value="pronunciation">{tType("pronunciation")}</option>
           <option value="writing">{tType("writing")}</option>
+          <option value="listening">{tType("listening")}</option>
         </select>
       </label>
 
@@ -199,26 +302,113 @@ export function AssignmentForm({
         />
       </label>
 
+      {type === "pronunciation" && (
+        <label className="flex flex-wrap items-center gap-2">
+          <input
+            type="checkbox"
+            checked={stepMode}
+            onChange={(e) => {
+              setStepMode(e.target.checked);
+              setSaved(false);
+            }}
+          />
+          <span className="text-xs font-semibold">{t("stepMode")}</span>
+          <span className="text-[11px] text-[var(--color-muted)]">{t("stepModeHint")}</span>
+        </label>
+      )}
+
       <label className="block">
         <span className="mb-1 block text-xs font-semibold">
-          {type === "pronunciation" ? t("targetPronunciation") : t("targetWriting")}{" "}
-          <span className="text-red-500">*</span>
+          {targetLabel} <span className="text-red-500">*</span>
         </span>
         <textarea
           name="targetText"
+          ref={sourceRef}
           required
           maxLength={2000}
-          rows={type === "pronunciation" ? 5 : 3}
+          rows={type === "writing" ? 3 : 5}
           defaultValue={initial?.targetText ?? ""}
-          placeholder={
-            type === "pronunciation" ? t("targetPronunciationPlaceholder") : t("targetWritingPlaceholder")
-          }
+          placeholder={targetPlaceholder}
           className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
         />
-        {type === "pronunciation" && (
+        {(type === "listening" || (type === "pronunciation" && !stepMode)) && (
           <span className="mt-1 block text-[11px] text-[var(--color-muted)]">{t("ttsHint")}</span>
         )}
+        {isStepPron && (
+          <span className="mt-1 block text-[11px] text-[var(--color-muted)]">
+            {t("sourceHint")}
+          </span>
+        )}
       </label>
+
+      {/* 4단계 편집기 */}
+      {isStepPron && (
+        <fieldset className="grid gap-5 rounded-lg border border-[var(--color-line)] p-4">
+          <legend className="px-2 text-xs font-semibold">{t("stepsEditorTitle")}</legend>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled={generating}
+              onClick={generateSteps}
+              className="rounded-full border-2 border-[var(--color-primary)] px-4 py-1.5 text-xs font-bold text-[var(--color-primary-deep)] hover:bg-[var(--color-soft)] disabled:opacity-50"
+            >
+              {generating ? t("generatingSteps") : t("generateSteps")}
+            </button>
+            <span className="text-[11px] text-[var(--color-muted)]">{t("stepTtsHint")}</span>
+          </div>
+
+          {LIST_STEPS.map((st, idx) => (
+            <div key={st}>
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
+                STEP {idx + 1} · {tSteps(st)}
+              </p>
+              <div className="mt-2 grid gap-2">
+                {lists[st].map((v, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input
+                      value={v}
+                      maxLength={200}
+                      onChange={(e) => setItem(st, i, e.target.value)}
+                      className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeItem(st, i)}
+                      aria-label={t("removeItem")}
+                      className="shrink-0 rounded-lg border border-[var(--color-line)] px-3 text-xs font-bold text-[var(--color-muted)] hover:border-red-300 hover:text-red-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {lists[st].length < 15 && (
+                <button
+                  type="button"
+                  onClick={() => addItem(st)}
+                  className="mt-2 text-[11px] font-bold text-[var(--color-primary-deep)] hover:underline"
+                >
+                  {t("addItem")}
+                </button>
+              )}
+            </div>
+          ))}
+
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
+              STEP 4 · {tSteps("passage")}
+            </p>
+            <textarea
+              value={passage}
+              maxLength={600}
+              rows={4}
+              onChange={(e) => setPassage(e.target.value)}
+              placeholder={t("passagePlaceholder")}
+              className="mt-2 w-full rounded-lg border border-[var(--color-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+            />
+          </div>
+        </fieldset>
+      )}
 
       <label className="block">
         <span className="mb-1 block text-xs font-semibold">{t("instructions")}</span>
