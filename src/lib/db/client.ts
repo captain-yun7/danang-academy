@@ -2,6 +2,12 @@ import { neon, neonConfig, Pool, type NeonQueryFunction } from "@neondatabase/se
 
 neonConfig.fetchConnectionCache = true;
 
+// 로컬 모의 테스트용: NEON_HTTP_PROXY 가 설정되면 로컬 neon-http-proxy 로 우회.
+// 프로덕션/프리뷰에선 설정하지 않으므로 영향 없음.
+if (process.env.NEON_HTTP_PROXY) {
+  neonConfig.fetchEndpoint = process.env.NEON_HTTP_PROXY;
+}
+
 type Sql = NeonQueryFunction<false, false>;
 
 let _sql: Sql | null = null;

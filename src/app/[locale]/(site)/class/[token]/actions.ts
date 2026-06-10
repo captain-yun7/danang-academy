@@ -209,7 +209,7 @@ export async function submitAttendance({
     from class_sessions
     where class_id = ${cls.class_id}::uuid
       and organization_id = ${cls.organization_id}::uuid
-      and session_date = (current_date at time zone 'Asia/Ho_Chi_Minh')::date
+      and session_date = (now() at time zone 'Asia/Ho_Chi_Minh')::date
       and (now() at time zone 'Asia/Ho_Chi_Minh') between
           (session_date + start_time - interval '30 minutes')
           and (session_date + end_time + interval '30 minutes')
