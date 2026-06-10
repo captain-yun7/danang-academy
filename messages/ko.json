@@ -478,7 +478,7 @@
         "notListened": "아직 안 들음",
         "stepTtsTitle": "단계별 모범 음성",
         "stepTtsSummary": "준비 {ready} · 대기 {pending} · 실패 {failed}",
-        "stepTtsRetry": "실패 항목 재생성"
+        "stepTtsRetry": "남은 항목 이어서 생성"
       },
       "stepBadge": "4단계",
       "steps": {

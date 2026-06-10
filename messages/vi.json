@@ -478,7 +478,7 @@
         "notListened": "Chưa nghe",
         "stepTtsTitle": "Giọng mẫu theo bước",
         "stepTtsSummary": "Sẵn sàng {ready} · Đang chờ {pending} · Lỗi {failed}",
-        "stepTtsRetry": "Tạo lại mục lỗi"
+        "stepTtsRetry": "Tạo tiếp các mục còn lại"
       },
       "stepBadge": "4 bước",
       "steps": {

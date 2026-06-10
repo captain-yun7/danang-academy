@@ -75,7 +75,7 @@ export function StepTtsControls({
       <p className="mt-1 text-[11px] text-[var(--color-muted)]">
         {t("stepTtsSummary", { ready, pending, failed })}
       </p>
-      {failed > 0 && (
+      {(failed > 0 || pending > 0) && (
         <button
           type="button"
           disabled={busy}

@@ -153,29 +153,39 @@ async function generateStepTts(assignmentId: string, organizationId: string) {
     order by step_no
   `) as { id: string; step_no: number; items: StepItem[] }[];
 
+  // 함수 실행 시간 한도 안에 끝나도록 병렬 배치로 생성.
+  // 배치마다 진행 상태를 저장해 중간에 끊겨도 재생성으로 이어갈 수 있다.
+  const BATCH = 5;
   for (const row of stepRows) {
     const items = [...row.items];
-    for (let idx = 0; idx < items.length; idx++) {
-      if (items[idx].ttsStatus === "ready" && items[idx].ttsKey) continue;
-      try {
-        if (!isTtsConfigured()) throw new Error("tts_not_configured");
-        const audio = await synthesizeKorean(items[idx].text, 0.75);
-        const key = `assignment-tts/${assignmentId}/step${row.step_no}-${idx}.mp3`;
-        if (!process.env.MOCK_R2_UPLOAD && process.env.R2_BUCKET) {
-          await getR2().send(
-            new PutObjectCommand({
-              Bucket: r2Bucket(),
-              Key: key,
-              Body: new Uint8Array(audio),
-              ContentType: "audio/mpeg",
-            })
-          );
-        }
-        items[idx] = { ...items[idx], ttsKey: key, ttsStatus: "ready" };
-      } catch (e) {
-        console.error("Step TTS generation failed:", e);
-        items[idx] = { ...items[idx], ttsStatus: "failed" };
-      }
+    const todo = items
+      .map((_, idx) => idx)
+      .filter((idx) => !(items[idx].ttsStatus === "ready" && items[idx].ttsKey));
+
+    for (let i = 0; i < todo.length; i += BATCH) {
+      await Promise.all(
+        todo.slice(i, i + BATCH).map(async (idx) => {
+          try {
+            if (!isTtsConfigured()) throw new Error("tts_not_configured");
+            const audio = await synthesizeKorean(items[idx].text, 0.75);
+            const key = `assignment-tts/${assignmentId}/step${row.step_no}-${idx}.mp3`;
+            if (!process.env.MOCK_R2_UPLOAD && process.env.R2_BUCKET) {
+              await getR2().send(
+                new PutObjectCommand({
+                  Bucket: r2Bucket(),
+                  Key: key,
+                  Body: new Uint8Array(audio),
+                  ContentType: "audio/mpeg",
+                })
+              );
+            }
+            items[idx] = { ...items[idx], ttsKey: key, ttsStatus: "ready" };
+          } catch (e) {
+            console.error("Step TTS generation failed:", e);
+            items[idx] = { ...items[idx], ttsStatus: "failed" };
+          }
+        })
+      );
       await sql`
         update assignment_steps set items = ${JSON.stringify(items)}::jsonb
         where id = ${row.id}
