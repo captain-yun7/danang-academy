@@ -98,11 +98,14 @@ const FALLBACK_MODELS = [
   "gemini-2.5-flash-lite",
 ] as const;
 
-/** Gemini JSON 생성 공통 유틸 — 모델 폴백 + 일시 오류 재시도. 다른 AI 모듈에서도 재사용. */
+/** Gemini JSON 생성 공통 유틸 — 모델 폴백 + 일시 오류 재시도, 전부 실패하면 OpenAI 폴백.
+ *  (Gemini 무료 쿼터 소진 시에도 평가가 멈추지 않도록 — Gemini + OpenAI 병행 원칙) */
 export async function generateJsonWithRetry(prompt: string, responseSchema: object): Promise<string> {
   let lastErr: unknown = null;
   for (const modelName of FALLBACK_MODELS) {
-    for (let attempt = 0; attempt < 3; attempt++) {
+    // 쿼터 소진(429)이면 같은 키의 다른 모델도 곧장 소진일 가능성이 높아 1회만 시도
+    const attempts = (lastErr as { status?: number } | null)?.status === 429 ? 1 : 3;
+    for (let attempt = 0; attempt < attempts; attempt++) {
       try {
         const model = gemini().getGenerativeModel({
           model: modelName,
@@ -124,7 +127,24 @@ export async function generateJsonWithRetry(prompt: string, responseSchema: obje
       }
     }
   }
-  throw lastErr;
+  return generateJsonWithOpenAI(prompt, responseSchema);
+}
+
+/** OpenAI 폴백 — json_object 모드는 스키마 강제가 없어 프롬프트에 스키마를 명시.
+ *  형태가 어긋나도 호출부의 방어적 파싱/zod 검증이 처리한다. */
+async function generateJsonWithOpenAI(prompt: string, responseSchema: object): Promise<string> {
+  const res = await openai().chat.completions.create({
+    model: "gpt-4o-mini",
+    response_format: { type: "json_object" },
+    temperature: 0.4,
+    messages: [
+      {
+        role: "user",
+        content: `${prompt}\n\n다음 JSON 스키마를 정확히 따르는 JSON 객체로만 응답하세요:\n${JSON.stringify(responseSchema)}`,
+      },
+    ],
+  });
+  return res.choices[0]?.message?.content ?? "{}";
 }
 
 export type FeedbackLocale = "vi" | "ko";
