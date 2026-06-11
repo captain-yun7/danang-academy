@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { useTranslations } from "next-intl";
 import {
   getMyStepSubmission,
@@ -24,6 +24,7 @@ const SUB_SCORES = [
 export function StepRunner({ detail }: { detail: StudentAssignmentDetail }) {
   const t = useTranslations("studentPortal.steps");
   const tRun = useTranslations("studentPortal.run");
+  const { mutate: mutateGlobal } = useSWRConfig();
   const steps = detail.steps;
 
   const [subs, setSubs] = useState<Record<number, StepSub | undefined>>(() =>
@@ -109,21 +110,21 @@ export function StepRunner({ detail }: { detail: StudentAssignmentDetail }) {
       const j = await res.json().catch(() => ({}));
       throw new Error(j.error || `${res.status}`);
     }
+    const placeholder: StepSub = {
+      status: "processing",
+      total_score: null,
+      accuracy_score: null,
+      pronunciation_score: null,
+      fluency_score: null,
+      completion_score: null,
+      transcript: null,
+      strengths: null,
+      improvements: null,
+    };
     setRerecording(null);
-    setSubs((m) => ({
-      ...m,
-      [stepNo]: {
-        status: "processing",
-        total_score: null,
-        accuracy_score: null,
-        pronunciation_score: null,
-        fluency_score: null,
-        completion_score: null,
-        transcript: null,
-        strengths: null,
-        improvements: null,
-      },
-    }));
+    setSubs((m) => ({ ...m, [stepNo]: placeholder }));
+    // 재제출 시 SWR 캐시에 남은 이전 완료 결과를 비워야 폴링이 다시 돈다
+    void mutateGlobal(`stepsub:${detail.id}:${stepNo}`, placeholder, { revalidate: false });
   }
 
   function goNext(fromStepNo: number) {
@@ -183,7 +184,14 @@ export function StepRunner({ detail }: { detail: StudentAssignmentDetail }) {
       </ol>
 
       {view.kind === "summary" ? (
-        <StepSummary steps={steps} subs={subs} />
+        <StepSummary
+          steps={steps}
+          subs={subs}
+          onGoStep={(stepNo) => {
+            setRerecording(null);
+            setView({ kind: "step", stepNo });
+          }}
+        />
       ) : curStep ? (
         <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
           <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted)]">
@@ -369,9 +377,11 @@ function StepResult({
 function StepSummary({
   steps,
   subs,
+  onGoStep,
 }: {
   steps: StudentStep[];
   subs: Record<number, StepSub | undefined>;
+  onGoStep: (stepNo: number) => void;
 }) {
   const t = useTranslations("studentPortal.steps");
   const completed = steps
@@ -410,16 +420,25 @@ function StepSummary({
       </p>
       <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {steps.map((s) => (
-          <div key={s.stepNo} className="rounded-lg bg-[var(--color-soft)] p-3 text-center">
+          <button
+            key={s.stepNo}
+            type="button"
+            onClick={() => onGoStep(s.stepNo)}
+            className="group rounded-lg bg-[var(--color-soft)] p-3 text-center transition hover:ring-2 hover:ring-[var(--color-primary)]"
+          >
             <p className="text-[11px] font-bold text-[var(--color-muted)]">
               STEP {s.stepNo} · {t(`types.${s.stepType}`)}
             </p>
             <p className="mt-1 text-xl font-black text-[var(--color-primary-deep)]">
               {subs[s.stepNo]?.total_score ?? "-"}
             </p>
-          </div>
+            <p className="mt-1 text-[11px] font-semibold text-[var(--color-primary)] opacity-70 group-hover:opacity-100">
+              ↻ {t("retryStep")}
+            </p>
+          </button>
         ))}
       </div>
+      <p className="mt-4 text-xs text-[var(--color-muted)]">{t("summaryRetryHint")}</p>
     </section>
   );
 }

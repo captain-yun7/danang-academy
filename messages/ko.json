@@ -1318,7 +1318,9 @@
         "pronunciation": "발음",
         "fluency": "유창성",
         "completion": "완성도"
-      }
+      },
+      "retryStep": "다시 연습",
+      "summaryRetryHint": "점수를 올리고 싶으면 단계 카드를 눌러 몇 번이든 다시 연습하고 제출할 수 있어요. 마지막 제출 점수가 기록돼요."
     }
   },
   "qr": {

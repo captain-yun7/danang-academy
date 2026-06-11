@@ -1302,7 +1302,9 @@
         "pronunciation": "Phát âm",
         "fluency": "Độ trôi chảy",
         "completion": "Độ hoàn chỉnh"
-      }
+      },
+      "retryStep": "Luyện lại",
+      "summaryRetryHint": "Muốn cải thiện điểm? Bấm vào thẻ từng bước để luyện và nộp lại bao nhiêu lần cũng được. Điểm của lần nộp cuối sẽ được ghi nhận."
     }
   },
   "loginPage": {
