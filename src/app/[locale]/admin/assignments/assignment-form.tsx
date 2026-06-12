@@ -365,11 +365,12 @@ export function AssignmentForm({
               <div className="mt-2 grid gap-2">
                 {lists[st].map((v, i) => (
                   <div key={i} className="flex gap-2">
-                    <input
+                    <textarea
                       value={v}
                       maxLength={200}
+                      rows={1}
                       onChange={(e) => setItem(st, i, e.target.value)}
-                      className="w-full rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+                      className="field-sizing-content min-h-9 w-full resize-y rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm leading-relaxed outline-none focus:border-[var(--color-primary)]"
                     />
                     <button
                       type="button"
