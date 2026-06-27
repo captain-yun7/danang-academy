@@ -339,6 +339,10 @@
         "label": "Bài kiểm tra",
         "desc": "Phát âm · xếp lớp"
       },
+      "assessments": {
+        "label": "Đánh giá cuối tuần",
+        "desc": "Đợt · điểm · báo cáo"
+      },
       "leads": {
         "label": "Khách tư vấn",
         "desc": "Pipeline chuyển đổi"
