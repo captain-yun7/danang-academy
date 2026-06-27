@@ -192,6 +192,16 @@ export async function saveComment(input: z.infer<typeof commentSchema>) {
   return { ok: true };
 }
 
+export async function deleteRound(roundId: string) {
+  const { organizationId } = await requireAdmin();
+  z.string().uuid().parse(roundId);
+  await assertRoundOrg(roundId, organizationId);
+  // assessment_scores는 FK on delete cascade로 함께 삭제됨
+  await sql`delete from assessment_rounds where id = ${roundId}::uuid and organization_id = ${organizationId}`;
+  revalidatePath("/admin/assessments");
+  redirect("/admin/assessments");
+}
+
 async function assertRoundOrg(roundId: string, organizationId: string) {
   const rows = (await sql`
     select id::text, class_id::text as class_id from assessment_rounds
