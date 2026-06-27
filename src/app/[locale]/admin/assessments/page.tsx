@@ -27,7 +27,8 @@ export default async function AssessmentsPage() {
     select r.id::text, r.title,
            c.name as class_name,
            to_char(r.assessment_date, 'YYYY-MM-DD') as date,
-           (select count(*)::int from students s where s.class_id = r.class_id) as roster
+           (select count(*)::int from students s
+             where s.class_id = r.class_id and s.organization_id = r.organization_id) as roster
     from assessment_rounds r
     join classes c on c.id = r.class_id
     where r.organization_id = ${orgId}
