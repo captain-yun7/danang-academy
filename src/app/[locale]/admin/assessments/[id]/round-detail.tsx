@@ -14,7 +14,7 @@ import {
   type AreaScores,
   type GradeCuts,
 } from "@/lib/assessments/scoring";
-import { generateComments, pullPronunciation, saveScores } from "../actions";
+import { deleteRound, generateComments, pullPronunciation, saveScores } from "../actions";
 
 export type RoundStudent = {
   id: string;
@@ -48,6 +48,7 @@ export function RoundDetail({
   const [saving, startSave] = useTransition();
   const [pulling, startPull] = useTransition();
   const [genning, startGen] = useTransition();
+  const [deleting, startDelete] = useTransition();
 
   function setScore(sid: string, key: AreaKey, raw: string) {
     const v = raw === "" ? null : Math.max(0, Math.min(100, Math.round(Number(raw))));
@@ -105,6 +106,18 @@ export function RoundDetail({
     });
   }
 
+  function remove() {
+    if (!window.confirm("이 평가 회차와 입력된 점수를 모두 삭제합니다. 계속할까요?")) return;
+    startDelete(async () => {
+      try {
+        await deleteRound(roundId);
+      } catch (e) {
+        if (e instanceof Error && e.message === "NEXT_REDIRECT") return;
+        setMsg("삭제에 실패했습니다.");
+      }
+    });
+  }
+
   const ranked = [...students]
     .map((s) => ({ s, avg: average(s.scores) }))
     .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
@@ -112,12 +125,21 @@ export function RoundDetail({
 
   return (
     <div>
-      <Link
-        href="/admin/assessments"
-        className="text-sm text-[var(--color-muted)] hover:text-[var(--color-primary)]"
-      >
-        ← 주말 평가 목록
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          href="/admin/assessments"
+          className="text-sm text-[var(--color-muted)] hover:text-[var(--color-primary)]"
+        >
+          ← 주말 평가 목록
+        </Link>
+        <button
+          onClick={remove}
+          disabled={deleting}
+          className="text-xs font-semibold text-red-500 hover:text-red-700 disabled:opacity-50"
+        >
+          {deleting ? "삭제 중…" : "회차 삭제"}
+        </button>
+      </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{title}</h1>
