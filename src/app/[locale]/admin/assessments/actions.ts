@@ -25,11 +25,30 @@ async function getCuts(organizationId: string): Promise<GradeCuts> {
   return rows[0] ?? { excellent: 90, good: 75, normal: 60 };
 }
 
+const optUuid = z.string().uuid().optional().or(z.literal(""));
 const createSchema = z.object({
   classId: z.string().uuid(),
   title: z.string().trim().min(1).max(80),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  pronunciationAssignmentId: optUuid,
+  writingAssignmentId: optUuid,
 });
+
+// 연결할 과제가 본 org + 기대 type 인지 검증. 미선택('')이면 null 반환.
+async function validateLinkedAssignment(
+  assignmentId: string | undefined,
+  type: "pronunciation" | "writing",
+  organizationId: string
+): Promise<string | null> {
+  if (!assignmentId) return null;
+  const rows = (await sql`
+    select id::text from assignments
+    where id = ${assignmentId}::uuid and organization_id = ${organizationId} and type = ${type}
+    limit 1
+  `) as { id: string }[];
+  if (!rows[0]) throw new Error("invalid_assignment");
+  return rows[0].id;
+}
 
 export async function createRound(input: z.infer<typeof createSchema>) {
   const { organizationId, userId } = await requireAdmin();
@@ -41,11 +60,22 @@ export async function createRound(input: z.infer<typeof createSchema>) {
   `) as { id: string }[];
   if (!cls[0]) throw new Error("invalid_class");
 
+  const pronId = await validateLinkedAssignment(d.pronunciationAssignmentId || undefined, "pronunciation", organizationId);
+  const writingId = await validateLinkedAssignment(d.writingAssignmentId || undefined, "writing", organizationId);
+
   const inserted = (await sql`
-    insert into assessment_rounds (organization_id, class_id, title, assessment_date, created_by)
-    values (${organizationId}, ${d.classId}::uuid, ${d.title}, ${d.date}::date, ${userId}::uuid)
+    insert into assessment_rounds
+      (organization_id, class_id, title, assessment_date, created_by, pronunciation_assignment_id, writing_assignment_id)
+    values
+      (${organizationId}, ${d.classId}::uuid, ${d.title}, ${d.date}::date, ${userId}::uuid,
+       ${pronId}::uuid, ${writingId}::uuid)
     returning id::text
   `) as { id: string }[];
+
+  // 연결 과제가 있으면 생성 직후 1회 동기화
+  if (pronId || writingId) {
+    await syncRound(inserted[0].id, d.classId, organizationId, pronId, writingId);
+  }
 
   revalidatePath("/admin/assessments");
   redirect(`/admin/assessments/${inserted[0].id}`);
@@ -92,43 +122,77 @@ export async function saveScores(input: z.infer<typeof saveSchema>) {
   return { ok: true };
 }
 
-// 회차 대상 반 학생들의 최근 발음 과제 점수를 가져와 pronunciation_score에 채운다.
-export async function pullPronunciation(roundId: string) {
+// 회차에 연결된 발음/쓰기 과제 점수를 학생별로 동기화한다 (내부 — revalidate 안 함).
+async function syncRound(
+  roundId: string,
+  classId: string,
+  organizationId: string,
+  pronId: string | null,
+  writingId: string | null
+): Promise<{ pronFilled: number; writingFilled: number }> {
+  let pronFilled = 0;
+  let writingFilled = 0;
+
+  if (pronId) {
+    const rows = (await sql`
+      select s.id::text as student_id, sub.score
+      from students s
+      join assignment_submissions sub
+        on sub.student_id = s.id and sub.assignment_id = ${pronId}::uuid
+       and sub.status = 'completed' and sub.score is not null
+      where s.class_id = ${classId}::uuid and s.organization_id = ${organizationId}
+    `) as { student_id: string; score: number }[];
+    for (const r of rows) {
+      await sql`
+        insert into assessment_scores (round_id, student_id, organization_id, pronunciation_score)
+        values (${roundId}::uuid, ${r.student_id}::uuid, ${organizationId}, ${r.score})
+        on conflict (round_id, student_id) do update set
+          pronunciation_score = excluded.pronunciation_score, updated_at = now()
+      `;
+      pronFilled++;
+    }
+  }
+
+  if (writingId) {
+    const rows = (await sql`
+      select s.id::text as student_id, sub.teacher_score
+      from students s
+      join assignment_submissions sub
+        on sub.student_id = s.id and sub.assignment_id = ${writingId}::uuid
+       and sub.status = 'graded' and sub.teacher_score is not null
+      where s.class_id = ${classId}::uuid and s.organization_id = ${organizationId}
+    `) as { student_id: string; teacher_score: number }[];
+    for (const r of rows) {
+      await sql`
+        insert into assessment_scores (round_id, student_id, organization_id, writing_score)
+        values (${roundId}::uuid, ${r.student_id}::uuid, ${organizationId}, ${r.teacher_score})
+        on conflict (round_id, student_id) do update set
+          writing_score = excluded.writing_score, updated_at = now()
+      `;
+      writingFilled++;
+    }
+  }
+
+  return { pronFilled, writingFilled };
+}
+
+// 연결된 발음/쓰기 과제에서 점수를 다시 동기화한다.
+export async function syncLinkedScores(roundId: string) {
   const { organizationId } = await requireAdmin();
   z.string().uuid().parse(roundId);
   const round = await assertRoundOrg(roundId, organizationId);
-
-  const rows = (await sql`
-    select s.id::text as student_id, latest.score
-    from students s
-    left join lateral (
-      select sub.score
-      from assignment_submissions sub
-      join assignments a on a.id = sub.assignment_id
-      where sub.student_id = s.id
-        and sub.organization_id = ${organizationId}
-        and a.type = 'pronunciation'
-        and sub.status = 'completed'
-        and sub.score is not null
-      order by coalesce(sub.graded_at, sub.submitted_at, sub.updated_at) desc
-      limit 1
-    ) latest on true
-    where s.class_id = ${round.class_id}::uuid and s.organization_id = ${organizationId}
-  `) as { student_id: string; score: number | null }[];
-
-  let filled = 0;
-  for (const r of rows) {
-    if (r.score === null) continue;
-    await sql`
-      insert into assessment_scores (round_id, student_id, organization_id, pronunciation_score)
-      values (${roundId}::uuid, ${r.student_id}::uuid, ${organizationId}, ${r.score})
-      on conflict (round_id, student_id) do update set
-        pronunciation_score = excluded.pronunciation_score, updated_at = now()
-    `;
-    filled++;
+  if (!round.pronunciation_assignment_id && !round.writing_assignment_id) {
+    return { ok: true, pronFilled: 0, writingFilled: 0, linked: false };
   }
+  const res = await syncRound(
+    roundId,
+    round.class_id,
+    organizationId,
+    round.pronunciation_assignment_id,
+    round.writing_assignment_id
+  );
   revalidatePath(`/admin/assessments/${roundId}`);
-  return { ok: true, filled };
+  return { ok: true, ...res, linked: true };
 }
 
 // 회차 전체 학생 코멘트 AI 일괄 생성
@@ -204,9 +268,17 @@ export async function deleteRound(roundId: string) {
 
 async function assertRoundOrg(roundId: string, organizationId: string) {
   const rows = (await sql`
-    select id::text, class_id::text as class_id from assessment_rounds
+    select id::text, class_id::text as class_id,
+           pronunciation_assignment_id::text as pronunciation_assignment_id,
+           writing_assignment_id::text as writing_assignment_id
+    from assessment_rounds
     where id = ${roundId}::uuid and organization_id = ${organizationId} limit 1
-  `) as { id: string; class_id: string }[];
+  `) as {
+    id: string;
+    class_id: string;
+    pronunciation_assignment_id: string | null;
+    writing_assignment_id: string | null;
+  }[];
   if (!rows[0]) throw new Error("not_found");
   return rows[0];
 }
