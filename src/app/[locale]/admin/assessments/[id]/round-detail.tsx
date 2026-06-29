@@ -14,7 +14,7 @@ import {
   type AreaScores,
   type GradeCuts,
 } from "@/lib/assessments/scoring";
-import { deleteRound, generateComments, pullPronunciation, saveScores } from "../actions";
+import { deleteRound, generateComments, syncLinkedScores, saveScores } from "../actions";
 
 export type RoundStudent = {
   id: string;
@@ -23,6 +23,10 @@ export type RoundStudent = {
   scores: AreaScores;
   hasComment: boolean;
 };
+
+export type LinkedInfo = { title: string; done: number; total: number; href: string } | null;
+export type Linked = { pronunciation: LinkedInfo; writing: LinkedInfo };
+export type Attendance = { students: number; studentDays: number; roster: number };
 
 type Tab = "grid" | "result";
 
@@ -33,6 +37,8 @@ export function RoundDetail({
   date,
   students: initial,
   cuts,
+  linked,
+  attendance,
 }: {
   roundId: string;
   title: string;
@@ -40,15 +46,19 @@ export function RoundDetail({
   date: string;
   students: RoundStudent[];
   cuts: GradeCuts;
+  linked: Linked;
+  attendance: Attendance;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("grid");
   const [students, setStudents] = useState<RoundStudent[]>(initial);
   const [msg, setMsg] = useState<string | null>(null);
   const [saving, startSave] = useTransition();
-  const [pulling, startPull] = useTransition();
+  const [syncing, startSync] = useTransition();
   const [genning, startGen] = useTransition();
   const [deleting, startDelete] = useTransition();
+
+  const anyLinked = !!(linked.pronunciation || linked.writing);
 
   function setScore(sid: string, key: AreaKey, raw: string) {
     const v = raw === "" ? null : Math.max(0, Math.min(100, Math.round(Number(raw))));
@@ -80,15 +90,19 @@ export function RoundDetail({
     });
   }
 
-  function pull() {
+  function sync() {
     setMsg(null);
-    startPull(async () => {
+    startSync(async () => {
       try {
-        const res = await pullPronunciation(roundId);
-        setMsg(`발음 점수 ${res.filled}명 불러옴. (저장 버튼으로 확정)`);
+        const res = await syncLinkedScores(roundId);
+        if (!res.linked) {
+          setMsg("연결된 과제가 없습니다. 회차 생성 시 발음·쓰기 과제를 연결하세요.");
+        } else {
+          setMsg(`동기화 완료 — 발음 ${res.pronFilled}명 · 쓰기 ${res.writingFilled}명.`);
+        }
         router.refresh();
       } catch {
-        setMsg("발음 점수 불러오기에 실패했습니다.");
+        setMsg("과제 점수 동기화에 실패했습니다.");
       }
     });
   }
@@ -148,13 +162,15 @@ export function RoundDetail({
           </p>
         </div>
         {tab === "grid" ? (
-          <button
-            onClick={pull}
-            disabled={pulling}
-            className="rounded-full border border-[var(--color-line)] px-4 py-2 text-sm font-semibold hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-60"
-          >
-            {pulling ? "불러오는 중…" : "발음 일괄 불러오기"}
-          </button>
+          anyLinked && (
+            <button
+              onClick={sync}
+              disabled={syncing}
+              className="rounded-full border border-[var(--color-line)] px-4 py-2 text-sm font-semibold hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-60"
+            >
+              {syncing ? "동기화 중…" : "과제 점수 동기화"}
+            </button>
+          )
         ) : (
           <button
             onClick={genComments}
@@ -188,12 +204,21 @@ export function RoundDetail({
         ))}
       </div>
 
+      {tab === "grid" && <HubPanel linked={linked} attendance={attendance} />}
+
       {students.length === 0 ? (
         <p className="mt-6 rounded-xl border border-dashed border-[var(--color-line)] p-8 text-center text-sm text-[var(--color-muted)]">
           이 반에 학생이 없습니다.
         </p>
       ) : tab === "grid" ? (
-        <GridTab students={students} cuts={cuts} onScore={setScore} onSave={save} saving={saving} />
+        <GridTab
+          students={students}
+          cuts={cuts}
+          linked={linked}
+          onScore={setScore}
+          onSave={save}
+          saving={saving}
+        />
       ) : (
         <ResultTab roundId={roundId} ranked={ranked} rankMap={rankMap} cuts={cuts} />
       )}
@@ -201,19 +226,74 @@ export function RoundDetail({
   );
 }
 
+function HubPanel({ linked, attendance }: { linked: Linked; attendance: Attendance }) {
+  const items = [
+    { key: "pronunciation", label: "발음 과제", info: linked.pronunciation },
+    { key: "writing", label: "쓰기 과제", info: linked.writing },
+  ] as const;
+  return (
+    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      {items.map(({ key, label, info }) => (
+        <div key={key} className="rounded-xl border border-[var(--color-line)] bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">{label}</p>
+          {info ? (
+            <>
+              <Link
+                href={info.href}
+                className="mt-1 block truncate text-sm font-bold hover:text-[var(--color-primary)]"
+                title={info.title}
+              >
+                {info.title}
+              </Link>
+              <p className="mt-1 text-xs text-[var(--color-muted)]">
+                채점 완료 <span className="font-semibold text-[var(--color-ink)]">{info.done}</span>/
+                {info.total}명
+              </p>
+            </>
+          ) : (
+            <p className="mt-1 text-sm text-[var(--color-muted)]">연동 안 함 (수동 입력)</p>
+          )}
+        </div>
+      ))}
+      <div className="rounded-xl border border-[var(--color-line)] bg-white p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">그 주 출석</p>
+        <p className="mt-1 text-sm">
+          <span className="font-bold">{attendance.students}</span>
+          <span className="text-[var(--color-muted)]">/{attendance.roster}명 출석</span>
+        </p>
+        <p className="mt-1 text-xs text-[var(--color-muted)]">
+          연인원 {attendance.studentDays}회 ·{" "}
+          <Link href="/admin/attendance" className="underline hover:text-[var(--color-primary)]">
+            출석 보기
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function GridTab({
   students,
   cuts,
+  linked,
   onScore,
   onSave,
   saving,
 }: {
   students: RoundStudent[];
   cuts: GradeCuts;
+  linked: Linked;
   onScore: (sid: string, key: AreaKey, raw: string) => void;
   onSave: () => void;
   saving: boolean;
 }) {
+  const isLinked: Record<AreaKey, boolean> = {
+    listening: false,
+    speaking: false,
+    reading: false,
+    writing: !!linked.writing,
+    pronunciation: !!linked.pronunciation,
+  };
   return (
     <>
       <div className="mt-4 overflow-x-auto rounded-lg border border-[var(--color-line)] bg-white">
@@ -224,8 +304,8 @@ function GridTab({
               {AREA_LABELS.map((a) => (
                 <th key={a.key} className="px-2 py-3 text-center font-bold">
                   {a.label}
-                  {a.key === "pronunciation" && (
-                    <span className="ml-0.5 text-[var(--color-primary)]" title="시스템 자동">
+                  {isLinked[a.key] && (
+                    <span className="ml-0.5 text-[var(--color-primary)]" title="연결 과제에서 동기화">
                       ▸
                     </span>
                   )}
@@ -254,7 +334,7 @@ function GridTab({
                         value={s.scores[a.key] ?? ""}
                         onChange={(e) => onScore(s.id, a.key, e.target.value)}
                         className={`w-14 rounded-md border px-1.5 py-1 text-center text-sm tabular-nums outline-none focus:border-[var(--color-primary)] ${
-                          a.key === "pronunciation"
+                          isLinked[a.key]
                             ? "border-[var(--color-primary)]/40 bg-[var(--color-soft)]"
                             : "border-[var(--color-line)]"
                         }`}
@@ -278,7 +358,7 @@ function GridTab({
         </table>
       </div>
       <p className="mt-2 text-xs text-[var(--color-muted)]">
-        ▸ 발음은 시스템 자동 채점값(수정 가능) · 빈칸은 평균 계산에서 제외 · 평균·등급은 입력 즉시 갱신
+        ▸ = 연결 과제에서 동기화된 값(수정 가능) · 듣기·말하기·읽기는 수동 입력 · 빈칸은 평균 제외 · 평균·등급은 즉시 갱신
       </p>
       <div className="mt-4 flex justify-end">
         <button
