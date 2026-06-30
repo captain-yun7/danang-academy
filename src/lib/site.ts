@@ -98,7 +98,7 @@ export const adminMenuKeys = [
 export const adminMenuGroups = [
   { group: "overview", items: ["dashboard"] },
   { group: "people", items: ["students", "classes", "attendance"] },
-  { group: "learning", items: ["assignments", "tests", "assessments", "mcq"] },
+  { group: "learning", items: ["assignments", "tests", "assessments", "exams", "mcq"] },
   { group: "growth", items: ["leads", "courses", "reports"] },
   { group: "org", items: ["teachers", "settings"] },
 ] as const;

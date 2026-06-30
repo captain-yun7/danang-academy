@@ -35,7 +35,13 @@ export default async function StudentDashboard() {
         <Kpi label={t("kpiAvg")} value={avg !== null ? avg.toString() : "—"} />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 flex flex-wrap items-center gap-4">
+        <Link
+          href="/student/exams"
+          className="brand-gradient inline-block rounded-full px-4 py-2 text-sm font-bold text-white"
+        >
+          {t("viewExams")}
+        </Link>
         <Link
           href="/student/report"
           className="inline-block text-sm font-bold text-[var(--color-primary-deep)] hover:underline"
