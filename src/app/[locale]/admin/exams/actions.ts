@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { sql } from "@/lib/db/client";
 import { auth } from "@/auth";
 import { SECTIONS, type Section } from "@/lib/exams/scoring";
+import { recomputeAttempt } from "@/lib/exams/grade";
+import { generateExamComment } from "@/lib/exams/comment";
 
 async function requireAdmin() {
   const session = await auth();
@@ -194,5 +196,96 @@ export async function deleteQuestion(examId: string, questionId: string) {
   await assertExamOrg(examId, organizationId);
   await sql`delete from exam_questions where id = ${questionId}::uuid and exam_id = ${examId}::uuid`;
   revalidatePath(`/admin/exams/${examId}`);
+  return { ok: true };
+}
+
+// ---- 교사 채점/보고서 ----
+const confirmWritingSchema = z.object({
+  examId: z.string().uuid(),
+  answerId: z.string().uuid(),
+  score: z.coerce.number().int().min(0).max(100),
+  comment: z.string().trim().max(1000).optional(),
+});
+
+export async function confirmWriting(input: z.infer<typeof confirmWritingSchema>) {
+  const { organizationId } = await requireAdmin();
+  const d = confirmWritingSchema.parse(input);
+  await assertExamOrg(d.examId, organizationId);
+  const rows = (await sql`
+    update exam_answers set teacher_score = ${d.score}, teacher_comment = ${d.comment || null},
+      awarded_points = ${d.score}, status = 'graded', updated_at = now()
+    where id = ${d.answerId}::uuid and organization_id = ${organizationId}
+    returning attempt_id::text
+  `) as { attempt_id: string }[];
+  if (rows[0]) await recomputeAttempt(rows[0].attempt_id);
+  revalidatePath(`/admin/exams/${d.examId}/results`);
+  return { ok: true };
+}
+
+async function getCuts(organizationId: string) {
+  const rows = (await sql`
+    select grade_cut_excellent as excellent, grade_cut_good as good, grade_cut_normal as normal
+    from organizations where id = ${organizationId} limit 1
+  `) as { excellent: number; good: number; normal: number }[];
+  return rows[0] ?? { excellent: 90, good: 75, normal: 60 };
+}
+
+export async function generateExamComments(examId: string) {
+  const { organizationId } = await requireAdmin();
+  z.string().uuid().parse(examId);
+  const exam = (await sql`
+    select w_listening, w_reading, w_grammar, w_writing, w_speaking
+    from exams where id = ${examId}::uuid and organization_id = ${organizationId} limit 1
+  `) as Array<Record<string, number>>;
+  if (!exam[0]) throw new Error("not_found");
+  const weights = {
+    listening: exam[0].w_listening, reading: exam[0].w_reading, grammar_vocab: exam[0].w_grammar,
+    writing: exam[0].w_writing, speaking: exam[0].w_speaking,
+  };
+  const cuts = await getCuts(organizationId);
+
+  const attempts = (await sql`
+    select a.id::text, st.name, a.total_score,
+           a.listening_score, a.reading_score, a.grammar_vocab_score, a.writing_score, a.speaking_score
+    from exam_attempts a join students st on st.id = a.student_id
+    where a.exam_id = ${examId}::uuid and a.organization_id = ${organizationId}
+  `) as Array<Record<string, number | string | null>>;
+
+  let count = 0;
+  for (const a of attempts) {
+    const comment = await generateExamComment({
+      studentName: a.name as string,
+      sectionScores: {
+        listening: a.listening_score as number | null,
+        reading: a.reading_score as number | null,
+        grammar_vocab: a.grammar_vocab_score as number | null,
+        writing: a.writing_score as number | null,
+        speaking: a.speaking_score as number | null,
+      },
+      weights,
+      total: (a.total_score as number) ?? 0,
+      cuts,
+    });
+    await sql`update exam_attempts set parent_comment = ${comment}, updated_at = now()
+              where id = ${(a.id as string)}::uuid and organization_id = ${organizationId}`;
+    count++;
+  }
+  revalidatePath(`/admin/exams/${examId}/results`);
+  return { ok: true, count };
+}
+
+const examCommentSchema = z.object({
+  examId: z.string().uuid(),
+  attemptId: z.string().uuid(),
+  comment: z.string().trim().max(2000),
+});
+
+export async function saveExamComment(input: z.infer<typeof examCommentSchema>) {
+  const { organizationId } = await requireAdmin();
+  const d = examCommentSchema.parse(input);
+  await assertExamOrg(d.examId, organizationId);
+  await sql`update exam_attempts set parent_comment = ${d.comment}, updated_at = now()
+            where id = ${d.attemptId}::uuid and organization_id = ${organizationId}`;
+  revalidatePath(`/admin/exams/${d.examId}/results`);
   return { ok: true };
 }
