@@ -64,6 +64,12 @@ const icons: Record<string, React.ReactNode> = {
       <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
     </>
   ),
+  exams: (
+    <>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </>
+  ),
   leads: (
     <>
       <path d="M22 12h-6l-2 3h-4l-2-3H2" />

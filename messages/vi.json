@@ -343,6 +343,10 @@
         "label": "Đánh giá cuối tuần",
         "desc": "Đợt · điểm · báo cáo"
       },
+      "exams": {
+        "label": "Bài thi online",
+        "desc": "Ra đề · làm bài · tự chấm"
+      },
       "leads": {
         "label": "Khách tư vấn",
         "desc": "Pipeline chuyển đổi"
@@ -1213,6 +1217,7 @@
       "kpiPending": "Cần làm",
       "kpiDone": "Hoàn thành",
       "kpiAvg": "Điểm TB",
+      "viewExams": "Làm bài thi ôn tập",
       "viewReport": "Xem báo cáo học tập",
       "myAssignments": "Bài tập của tôi",
       "empty": "Chưa có bài tập nào.",
