@@ -1,13 +1,17 @@
 "use server";
 
 import { z } from "zod";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { sql } from "@/lib/db/client";
 import { auth } from "@/auth";
-import { SECTIONS, type Section } from "@/lib/exams/scoring";
-import { recomputeAttempt } from "@/lib/exams/grade";
-import { generateExamComment } from "@/lib/exams/comment";
+import { getR2, r2Bucket } from "@/lib/r2/client";
+import { synthesizeKorean, isTtsConfigured } from "@/lib/ai/tts";
+import { recomputeResult } from "@/lib/exams/grade";
+import { generateWeeklyComment } from "@/lib/exams/comment";
+import { SKILLS, TYPES_FOR_SKILL, type QuestionType, type Skill } from "@/lib/exams/scoring";
 
 async function requireAdmin() {
   const session = await auth();
@@ -18,207 +22,248 @@ async function requireAdmin() {
   return { userId: u.id ?? null, organizationId: u.organizationId };
 }
 
-async function assertExamOrg(examId: string, organizationId: string) {
+async function assertTestOrg(testId: string, organizationId: string) {
   const rows = (await sql`
-    select id::text, class_id::text as class_id, status from exams
-    where id = ${examId}::uuid and organization_id = ${organizationId} limit 1
+    select id::text, class_id::text as class_id, status from weekly_tests
+    where id = ${testId}::uuid and organization_id = ${organizationId} limit 1
   `) as { id: string; class_id: string; status: string }[];
   if (!rows[0]) throw new Error("not_found");
   return rows[0];
 }
 
-const SECTION_KEYS = SECTIONS.map((s) => s.key) as [Section, ...Section[]];
+const SKILL_KEYS = SKILLS.map((s) => s.key) as [Skill, ...Skill[]];
+const TYPE_KEYS = TYPES_FOR_SKILL.listening.concat(
+  TYPES_FOR_SKILL.reading, TYPES_FOR_SKILL.writing, TYPES_FOR_SKILL.speaking
+) as QuestionType[];
 
 // ---- 시험 ----
 const createSchema = z.object({
   classId: z.string().uuid(),
-  title: z.string().trim().min(1).max(80),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  title: z.string().trim().min(1).max(100),
+  lessonRange: z.string().trim().max(40).optional(),
 });
-
-export async function createExam(input: z.infer<typeof createSchema>) {
+export async function createTest(input: z.infer<typeof createSchema>) {
   const { organizationId, userId } = await requireAdmin();
   const d = createSchema.parse(input);
   const cls = (await sql`
     select id::text from classes where id = ${d.classId}::uuid and organization_id = ${organizationId} limit 1
   `) as { id: string }[];
   if (!cls[0]) throw new Error("invalid_class");
-
-  const inserted = (await sql`
-    insert into exams (organization_id, class_id, title, exam_date, created_by)
-    values (${organizationId}, ${d.classId}::uuid, ${d.title}, ${d.date}::date, ${userId}::uuid)
+  const ins = (await sql`
+    insert into weekly_tests (organization_id, class_id, title, lesson_range, created_by)
+    values (${organizationId}, ${d.classId}::uuid, ${d.title}, ${d.lessonRange || null}, ${userId}::uuid)
     returning id::text
   `) as { id: string }[];
   revalidatePath("/admin/exams");
-  redirect(`/admin/exams/${inserted[0].id}`);
+  redirect(`/admin/exams/${ins[0].id}`);
 }
 
-const weightsSchema = z.object({
-  examId: z.string().uuid(),
-  w_listening: z.coerce.number().int().min(0).max(100),
-  w_reading: z.coerce.number().int().min(0).max(100),
-  w_grammar: z.coerce.number().int().min(0).max(100),
-  w_writing: z.coerce.number().int().min(0).max(100),
-  w_speaking: z.coerce.number().int().min(0).max(100),
-});
-
-export async function updateWeights(input: z.infer<typeof weightsSchema>) {
+export async function deleteTest(testId: string) {
   const { organizationId } = await requireAdmin();
-  const d = weightsSchema.parse(input);
-  await assertExamOrg(d.examId, organizationId);
-  await sql`
-    update exams set
-      w_listening = ${d.w_listening}, w_reading = ${d.w_reading}, w_grammar = ${d.w_grammar},
-      w_writing = ${d.w_writing}, w_speaking = ${d.w_speaking}
-    where id = ${d.examId}::uuid and organization_id = ${organizationId}
-  `;
-  revalidatePath(`/admin/exams/${d.examId}`);
-  return { ok: true };
-}
-
-const passageSchema = z.object({
-  examId: z.string().uuid(),
-  ko: z.string().trim().max(4000),
-  vi: z.string().trim().max(4000),
-});
-
-export async function updatePassage(input: z.infer<typeof passageSchema>) {
-  const { organizationId } = await requireAdmin();
-  const d = passageSchema.parse(input);
-  await assertExamOrg(d.examId, organizationId);
-  await sql`
-    update exams set reading_passage_ko = ${d.ko || null}, reading_passage_vi = ${d.vi || null}
-    where id = ${d.examId}::uuid and organization_id = ${organizationId}
-  `;
-  revalidatePath(`/admin/exams/${d.examId}`);
-  return { ok: true };
-}
-
-export async function deleteExam(examId: string) {
-  const { organizationId } = await requireAdmin();
-  z.string().uuid().parse(examId);
-  await assertExamOrg(examId, organizationId);
-  await sql`delete from exams where id = ${examId}::uuid and organization_id = ${organizationId}`;
+  z.string().uuid().parse(testId);
+  await assertTestOrg(testId, organizationId);
+  await sql`delete from weekly_tests where id = ${testId}::uuid and organization_id = ${organizationId}`;
   revalidatePath("/admin/exams");
   redirect("/admin/exams");
 }
 
-export async function setPublished(examId: string, published: boolean) {
+export async function setPublished(testId: string, published: boolean) {
   const { organizationId } = await requireAdmin();
-  z.string().uuid().parse(examId);
-  await assertExamOrg(examId, organizationId);
+  z.string().uuid().parse(testId);
+  await assertTestOrg(testId, organizationId);
   if (published) {
-    // 게시 전 검증: 각 섹션에 문항 1개 이상
-    const counts = (await sql`
-      select section, count(*)::int as cnt from exam_questions
-      where exam_id = ${examId}::uuid group by section
-    `) as { section: string; cnt: number }[];
-    const have = new Set(counts.map((c) => c.section));
-    const missing = SECTIONS.filter((s) => !have.has(s.key)).map((s) => s.label);
-    if (missing.length) return { ok: false as const, error: `문항 없는 섹션: ${missing.join(", ")}` };
+    const rows = (await sql`
+      select distinct skill from weekly_questions where test_id = ${testId}::uuid
+    `) as { skill: string }[];
+    const have = new Set(rows.map((r) => r.skill));
+    const missing = SKILLS.filter((s) => !have.has(s.key)).map((s) => s.label);
+    if (missing.length) return { ok: false as const, error: `문항 없는 영역: ${missing.join(", ")}` };
   }
-  await sql`update exams set status = ${published ? "published" : "draft"}
-            where id = ${examId}::uuid and organization_id = ${organizationId}`;
-  revalidatePath(`/admin/exams/${examId}`);
+  await sql`update weekly_tests set status = ${published ? "published" : "draft"}
+            where id = ${testId}::uuid and organization_id = ${organizationId}`;
+  revalidatePath(`/admin/exams/${testId}`);
   revalidatePath("/admin/exams");
   return { ok: true as const };
 }
 
-// ---- 문항 ----
-const choiceSchema = z.object({ ko: z.string().trim().max(300), vi: z.string().trim().max(300) });
-const questionSchema = z.object({
-  examId: z.string().uuid(),
-  section: z.enum(SECTION_KEYS),
-  promptKo: z.string().trim().max(1000),
-  promptVi: z.string().trim().max(1000),
-  choices: z.array(choiceSchema).max(4).optional(),
-  answerIndex: z.coerce.number().int().min(0).max(3).nullable().optional(),
-  points: z.coerce.number().int().min(0).max(100),
-  audioKey: z.string().trim().max(300).optional(),
+// ---- 섹션 ----
+const sectionSchema = z.object({
+  testId: z.string().uuid(),
+  skill: z.enum(SKILL_KEYS),
+  title: z.string().trim().min(1).max(120),
+  maxScore: z.coerce.number().int().min(0).max(100),
 });
-
-function isMcq(section: Section) {
-  return SECTIONS.find((s) => s.key === section)?.mcq ?? false;
+export async function addSection(input: z.infer<typeof sectionSchema>) {
+  const { organizationId } = await requireAdmin();
+  const d = sectionSchema.parse(input);
+  await assertTestOrg(d.testId, organizationId);
+  const ord = (await sql`
+    select coalesce(max(order_index),0)+1 as n from weekly_sections where test_id = ${d.testId}::uuid and skill = ${d.skill}
+  `) as { n: number }[];
+  await sql`
+    insert into weekly_sections (test_id, skill, section_title, max_score, order_index)
+    values (${d.testId}::uuid, ${d.skill}, ${d.title}, ${d.maxScore}, ${ord[0].n})
+  `;
+  revalidatePath(`/admin/exams/${d.testId}`);
+  return { ok: true };
+}
+export async function deleteSection(testId: string, sectionId: string) {
+  const { organizationId } = await requireAdmin();
+  z.string().uuid().parse(sectionId);
+  await assertTestOrg(testId, organizationId);
+  await sql`delete from weekly_sections where id = ${sectionId}::uuid and test_id = ${testId}::uuid`;
+  revalidatePath(`/admin/exams/${testId}`);
+  return { ok: true };
 }
 
+// ---- 문항 ----
+const choice = z.object({ ko: z.string().trim().max(400), vi: z.string().trim().max(400) });
+const questionSchema = z.object({
+  testId: z.string().uuid(),
+  sectionId: z.string().uuid(),
+  skill: z.enum(SKILL_KEYS),
+  questionType: z.enum(TYPE_KEYS as [QuestionType, ...QuestionType[]]),
+  questionText: z.string().trim().max(2000),
+  passageText: z.string().trim().max(4000).optional(),
+  listeningScript: z.string().trim().max(2000).optional(),
+  options: z.array(choice).max(6).optional(),
+  correctAnswer: z.any().optional(),   // index | "O"/"X" | number[] | string | string[]
+  points: z.coerce.number().int().min(0).max(100),
+  maxPlayCount: z.coerce.number().int().min(1).max(9).optional(),
+});
 export async function addQuestion(input: z.infer<typeof questionSchema>) {
   const { organizationId } = await requireAdmin();
   const d = questionSchema.parse(input);
-  await assertExamOrg(d.examId, organizationId);
-
-  const mcq = isMcq(d.section);
-  const choices = mcq ? d.choices ?? [] : null;
-  if (mcq && (!choices || choices.length < 2)) throw new Error("need_choices");
-  const answer = mcq ? d.answerIndex ?? 0 : null;
-  if (mcq && choices && (answer === null || answer >= choices.length)) throw new Error("bad_answer");
-
+  await assertTestOrg(d.testId, organizationId);
   const ord = (await sql`
-    select coalesce(max(order_no), 0) + 1 as next from exam_questions
-    where exam_id = ${d.examId}::uuid and section = ${d.section}
-  `) as { next: number }[];
-
-  await sql`
-    insert into exam_questions
-      (exam_id, section, order_no, prompt_ko, prompt_vi, choices, answer_index, points, audio_key)
+    select coalesce(max(order_index),0)+1 as n from weekly_questions where section_id = ${d.sectionId}::uuid
+  `) as { n: number }[];
+  const needsTts = d.skill === "listening" && !!d.listeningScript;
+  const rows = (await sql`
+    insert into weekly_questions
+      (test_id, section_id, skill, question_type, question_text, passage_text, listening_script,
+       tts_status, options, correct_answer, points, max_play_count, order_index)
     values
-      (${d.examId}::uuid, ${d.section}, ${ord[0].next}, ${d.promptKo || null}, ${d.promptVi || null},
-       ${choices ? JSON.stringify(choices) : null}::jsonb, ${answer}, ${d.points}, ${d.audioKey || null})
-  `;
-  revalidatePath(`/admin/exams/${d.examId}`);
-  return { ok: true };
+      (${d.testId}::uuid, ${d.sectionId}::uuid, ${d.skill}, ${d.questionType},
+       ${d.questionText || null}, ${d.passageText || null}, ${d.listeningScript || null},
+       ${needsTts ? "pending" : null},
+       ${d.options ? JSON.stringify(d.options) : null}::jsonb,
+       ${d.correctAnswer !== undefined ? JSON.stringify(d.correctAnswer) : null}::jsonb,
+       ${d.points}, ${d.maxPlayCount ?? 2}, ${ord[0].n})
+    returning id::text
+  `) as { id: string }[];
+  if (needsTts) after(() => generateTtsFor(d.testId, organizationId));
+  revalidatePath(`/admin/exams/${d.testId}`);
+  return { ok: true, id: rows[0].id };
 }
 
 const updateQSchema = questionSchema.extend({ questionId: z.string().uuid() });
 export async function updateQuestion(input: z.infer<typeof updateQSchema>) {
   const { organizationId } = await requireAdmin();
   const d = updateQSchema.parse(input);
-  await assertExamOrg(d.examId, organizationId);
-  const mcq = isMcq(d.section);
-  const choices = mcq ? d.choices ?? [] : null;
-  if (mcq && (!choices || choices.length < 2)) throw new Error("need_choices");
-  const answer = mcq ? d.answerIndex ?? 0 : null;
-
+  await assertTestOrg(d.testId, organizationId);
+  // 듣기 script 변경 시 재생성
+  const prev = (await sql`
+    select listening_script, tts_status from weekly_questions
+    where id = ${d.questionId}::uuid and test_id = ${d.testId}::uuid limit 1
+  `) as { listening_script: string | null; tts_status: string | null }[];
+  const scriptChanged = d.skill === "listening" && (prev[0]?.listening_script ?? "") !== (d.listeningScript ?? "");
+  const nextTts = scriptChanged && d.listeningScript ? "pending" : (prev[0]?.tts_status ?? null);
   await sql`
-    update exam_questions set
-      prompt_ko = ${d.promptKo || null}, prompt_vi = ${d.promptVi || null},
-      choices = ${choices ? JSON.stringify(choices) : null}::jsonb,
-      answer_index = ${answer}, points = ${d.points}, audio_key = ${d.audioKey || null}
-    where id = ${d.questionId}::uuid and exam_id = ${d.examId}::uuid
+    update weekly_questions set
+      question_text = ${d.questionText || null}, passage_text = ${d.passageText || null},
+      listening_script = ${d.listeningScript || null},
+      options = ${d.options ? JSON.stringify(d.options) : null}::jsonb,
+      correct_answer = ${d.correctAnswer !== undefined ? JSON.stringify(d.correctAnswer) : null}::jsonb,
+      points = ${d.points}, max_play_count = ${d.maxPlayCount ?? 2},
+      tts_status = ${nextTts}
+    where id = ${d.questionId}::uuid and test_id = ${d.testId}::uuid
   `;
-  revalidatePath(`/admin/exams/${d.examId}`);
+  if (scriptChanged && d.listeningScript) after(() => generateTtsFor(d.testId, organizationId));
+  revalidatePath(`/admin/exams/${d.testId}`);
+  return { ok: true };
+}
+export async function deleteQuestion(testId: string, questionId: string) {
+  const { organizationId } = await requireAdmin();
+  z.string().uuid().parse(questionId);
+  await assertTestOrg(testId, organizationId);
+  await sql`delete from weekly_questions where id = ${questionId}::uuid and test_id = ${testId}::uuid`;
+  revalidatePath(`/admin/exams/${testId}`);
   return { ok: true };
 }
 
-export async function deleteQuestion(examId: string, questionId: string) {
+// ---- 듣기 TTS 일괄 생성 ----
+export async function regenerateTts(testId: string) {
   const { organizationId } = await requireAdmin();
-  z.string().uuid().parse(examId);
-  z.string().uuid().parse(questionId);
-  await assertExamOrg(examId, organizationId);
-  await sql`delete from exam_questions where id = ${questionId}::uuid and exam_id = ${examId}::uuid`;
-  revalidatePath(`/admin/exams/${examId}`);
+  z.string().uuid().parse(testId);
+  await assertTestOrg(testId, organizationId);
+  await sql`update weekly_questions set tts_status = 'pending'
+            where test_id = ${testId}::uuid and skill = 'listening' and listening_script is not null
+              and (audio_key is null or tts_status = 'failed')`;
+  after(() => generateTtsFor(testId, organizationId));
+  revalidatePath(`/admin/exams/${testId}`);
   return { ok: true };
+}
+
+async function generateTtsFor(testId: string, organizationId: string) {
+  if (!isTtsConfigured()) return;
+  const todo = (await sql`
+    select id::text, listening_script from weekly_questions
+    where test_id = ${testId}::uuid and skill = 'listening' and listening_script is not null
+      and (audio_key is null or tts_status in ('pending','failed'))
+  `) as { id: string; listening_script: string }[];
+  const useMock = process.env.MOCK_R2_UPLOAD === "true" || !process.env.R2_BUCKET;
+  const BATCH = 5;
+  for (let i = 0; i < todo.length; i += BATCH) {
+    await Promise.all(
+      todo.slice(i, i + BATCH).map(async (q) => {
+        try {
+          const key = `exam-tts/${testId}/${q.id}.mp3`;
+          if (!useMock) {
+            const audio = await synthesizeKorean(q.listening_script, 0.9);
+            await getR2().send(new PutObjectCommand({ Bucket: r2Bucket(), Key: key, Body: new Uint8Array(audio), ContentType: "audio/mpeg" }));
+          }
+          await sql`update weekly_questions set audio_key = ${key}, tts_status = 'ready' where id = ${q.id}::uuid`;
+        } catch {
+          await sql`update weekly_questions set tts_status = 'failed' where id = ${q.id}::uuid`;
+        }
+      })
+    );
+  }
+  void organizationId;
 }
 
 // ---- 교사 채점/보고서 ----
 const confirmWritingSchema = z.object({
-  examId: z.string().uuid(),
+  testId: z.string().uuid(),
   answerId: z.string().uuid(),
   score: z.coerce.number().int().min(0).max(100),
   comment: z.string().trim().max(1000).optional(),
 });
-
 export async function confirmWriting(input: z.infer<typeof confirmWritingSchema>) {
   const { organizationId } = await requireAdmin();
   const d = confirmWritingSchema.parse(input);
-  await assertExamOrg(d.examId, organizationId);
+  await assertTestOrg(d.testId, organizationId);
   const rows = (await sql`
-    update exam_answers set teacher_score = ${d.score}, teacher_comment = ${d.comment || null},
-      awarded_points = ${d.score}, status = 'graded', updated_at = now()
+    update weekly_answers set teacher_score = ${d.score}, teacher_comment = ${d.comment || null},
+      final_score = ${d.score}, status = 'graded', updated_at = now()
     where id = ${d.answerId}::uuid and organization_id = ${organizationId}
-    returning attempt_id::text
-  `) as { attempt_id: string }[];
-  if (rows[0]) await recomputeAttempt(rows[0].attempt_id);
-  revalidatePath(`/admin/exams/${d.examId}/results`);
+    returning student_id::text
+  `) as { student_id: string }[];
+  if (rows[0]) await recomputeResult(d.testId, rows[0].student_id, organizationId);
+  revalidatePath(`/admin/exams/${d.testId}/results`);
+  return { ok: true };
+}
+
+export async function finalizeResult(testId: string, studentId: string) {
+  const { organizationId } = await requireAdmin();
+  z.string().uuid().parse(testId);
+  z.string().uuid().parse(studentId);
+  await assertTestOrg(testId, organizationId);
+  await recomputeResult(testId, studentId, organizationId);
+  await sql`update weekly_results set status = 'finalized', finalized_at = now(), updated_at = now()
+            where test_id = ${testId}::uuid and student_id = ${studentId}::uuid and organization_id = ${organizationId}`;
+  revalidatePath(`/admin/exams/${testId}/results`);
   return { ok: true };
 }
 
@@ -230,62 +275,46 @@ async function getCuts(organizationId: string) {
   return rows[0] ?? { excellent: 90, good: 75, normal: 60 };
 }
 
-export async function generateExamComments(examId: string) {
+export async function generateComments(testId: string) {
   const { organizationId } = await requireAdmin();
-  z.string().uuid().parse(examId);
-  const exam = (await sql`
-    select w_listening, w_reading, w_grammar, w_writing, w_speaking
-    from exams where id = ${examId}::uuid and organization_id = ${organizationId} limit 1
-  `) as Array<Record<string, number>>;
-  if (!exam[0]) throw new Error("not_found");
-  const weights = {
-    listening: exam[0].w_listening, reading: exam[0].w_reading, grammar_vocab: exam[0].w_grammar,
-    writing: exam[0].w_writing, speaking: exam[0].w_speaking,
-  };
+  z.string().uuid().parse(testId);
+  await assertTestOrg(testId, organizationId);
   const cuts = await getCuts(organizationId);
-
-  const attempts = (await sql`
-    select a.id::text, st.name, a.total_score,
-           a.listening_score, a.reading_score, a.grammar_vocab_score, a.writing_score, a.speaking_score
-    from exam_attempts a join students st on st.id = a.student_id
-    where a.exam_id = ${examId}::uuid and a.organization_id = ${organizationId}
+  const rows = (await sql`
+    select r.id::text, st.name, r.listening_score, r.reading_score, r.writing_final_score, r.speaking_score,
+           r.total_score, r.average_score
+    from weekly_results r join students st on st.id = r.student_id
+    where r.test_id = ${testId}::uuid and r.organization_id = ${organizationId}
   `) as Array<Record<string, number | string | null>>;
-
   let count = 0;
-  for (const a of attempts) {
-    const comment = await generateExamComment({
-      studentName: a.name as string,
-      sectionScores: {
-        listening: a.listening_score as number | null,
-        reading: a.reading_score as number | null,
-        grammar_vocab: a.grammar_vocab_score as number | null,
-        writing: a.writing_score as number | null,
-        speaking: a.speaking_score as number | null,
+  for (const r of rows) {
+    const comment = await generateWeeklyComment({
+      studentName: r.name as string,
+      skillScores: {
+        listening: r.listening_score as number | null,
+        reading: r.reading_score as number | null,
+        writing: r.writing_final_score as number | null,
+        speaking: r.speaking_score as number | null,
       },
-      weights,
-      total: (a.total_score as number) ?? 0,
+      total: (r.total_score as number) ?? 0,
+      average: Number(r.average_score ?? 0),
       cuts,
     });
-    await sql`update exam_attempts set parent_comment = ${comment}, updated_at = now()
-              where id = ${(a.id as string)}::uuid and organization_id = ${organizationId}`;
+    await sql`update weekly_results set teacher_comment = ${comment}, updated_at = now()
+              where id = ${(r.id as string)}::uuid and organization_id = ${organizationId}`;
     count++;
   }
-  revalidatePath(`/admin/exams/${examId}/results`);
+  revalidatePath(`/admin/exams/${testId}/results`);
   return { ok: true, count };
 }
 
-const examCommentSchema = z.object({
-  examId: z.string().uuid(),
-  attemptId: z.string().uuid(),
-  comment: z.string().trim().max(2000),
-});
-
-export async function saveExamComment(input: z.infer<typeof examCommentSchema>) {
+const commentSchema = z.object({ testId: z.string().uuid(), studentId: z.string().uuid(), comment: z.string().trim().max(2000) });
+export async function saveComment(input: z.infer<typeof commentSchema>) {
   const { organizationId } = await requireAdmin();
-  const d = examCommentSchema.parse(input);
-  await assertExamOrg(d.examId, organizationId);
-  await sql`update exam_attempts set parent_comment = ${d.comment}, updated_at = now()
-            where id = ${d.attemptId}::uuid and organization_id = ${organizationId}`;
-  revalidatePath(`/admin/exams/${d.examId}/results`);
+  const d = commentSchema.parse(input);
+  await assertTestOrg(d.testId, organizationId);
+  await sql`update weekly_results set teacher_comment = ${d.comment}, updated_at = now()
+            where test_id = ${d.testId}::uuid and student_id = ${d.studentId}::uuid and organization_id = ${organizationId}`;
+  revalidatePath(`/admin/exams/${d.testId}/results`);
   return { ok: true };
 }

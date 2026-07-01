@@ -344,8 +344,8 @@
         "desc": "회차 · 점수 · 보고서"
       },
       "exams": {
-        "label": "온라인 시험",
-        "desc": "출제 · 응시 · 자동채점"
+        "label": "주간 시험",
+        "desc": "출제·응시·자동채점"
       },
       "leads": {
         "label": "상담 리드",
@@ -1233,7 +1233,7 @@
       "kpiPending": "할 과제",
       "kpiDone": "완료",
       "kpiAvg": "평균 점수",
-      "viewExams": "복습 시험 응시하기",
+      "viewExams": "주간 시험 응시하기",
       "viewReport": "학습 리포트 보기",
       "myAssignments": "내 과제",
       "empty": "아직 받은 과제가 없어요.",

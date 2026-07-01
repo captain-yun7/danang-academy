@@ -2,20 +2,15 @@
 
 import { useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { startExam } from "../actions";
-import { SECTION_ORDER } from "@/lib/exams/scoring";
+import { startTest } from "../actions";
+import { SKILL_ORDER } from "@/lib/exams/scoring";
 
-export function StartButton({ examId, resume }: { examId: string; resume: boolean }) {
+export function StartButton({ testId, resume }: { testId: string; resume: boolean }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
     <button
-      onClick={() =>
-        start(async () => {
-          await startExam(examId);
-          router.push(`/student/exams/${examId}/${SECTION_ORDER[0]}`);
-        })
-      }
+      onClick={() => start(async () => { await startTest(testId); router.push(`/student/exams/${testId}/${SKILL_ORDER[0]}`); })}
       disabled={pending}
       className="brand-gradient w-full rounded-full px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
     >

@@ -1,112 +1,134 @@
 import { sql } from "@/lib/db/client";
 import { generateJsonWithRetry, isAIConfigured } from "@/lib/ai/evaluate-pronunciation";
-import { SECTIONS, type Section } from "./scoring";
+import { normalizeSkill, normText, type QuestionType, type Skill } from "./scoring";
 
-// 쓰기 AI 채점 — 점수(0~만점)와 피드백 초안. AI 미설정 시 만점의 70% mock.
+// ---- 객관식류 자동 채점 (순수) ----
+export function gradeObjective(
+  q: { question_type: QuestionType; correct_answer: unknown; points: number },
+  ans: { selected_option: unknown; answer_text: string | null }
+): { isCorrect: boolean; awarded: number } {
+  const pts = q.points ?? 0;
+  switch (q.question_type) {
+    case "multiple_choice":
+    case "true_false": {
+      const ok =
+        ans.selected_option !== null &&
+        ans.selected_option !== undefined &&
+        String(ans.selected_option) === String(q.correct_answer);
+      return { isCorrect: ok, awarded: ok ? pts : 0 };
+    }
+    case "matching": {
+      const correct = Array.isArray(q.correct_answer) ? q.correct_answer : [];
+      const sel = Array.isArray(ans.selected_option) ? ans.selected_option : [];
+      if (!correct.length) return { isCorrect: false, awarded: 0 };
+      let c = 0;
+      for (let i = 0; i < correct.length; i++) if (String(sel[i]) === String(correct[i])) c++;
+      return { isCorrect: c === correct.length, awarded: Math.round((pts * c) / correct.length) };
+    }
+    case "fill_blank": {
+      const acc = Array.isArray(q.correct_answer) ? q.correct_answer : [q.correct_answer];
+      const a = normText(ans.answer_text ?? "");
+      const ok = a.length > 0 && acc.some((x) => normText(String(x)) === a);
+      return { isCorrect: ok, awarded: ok ? pts : 0 };
+    }
+    case "arrange_sentence": {
+      const correct = normText(String(q.correct_answer ?? ""));
+      const a = normText(ans.answer_text ?? "");
+      return { isCorrect: correct.length > 0 && a === correct, awarded: correct.length > 0 && a === correct ? pts : 0 };
+    }
+    default:
+      return { isCorrect: false, awarded: 0 };
+  }
+}
+
+// ---- 쓰기 서술형 AI 1차 채점 ----
 const WRITING_SCHEMA = {
   type: "object",
-  properties: {
-    score: { type: "integer" },
-    feedback: { type: "string" },
-  },
+  properties: { score: { type: "integer" }, feedback: { type: "string" } },
   required: ["score", "feedback"],
 } as const;
 
-export async function gradeWritingText(input: {
-  prompt: string;
+export async function gradeWritingAI(input: {
+  questionText: string;
+  reference: string;
   text: string;
   maxPoints: number;
 }): Promise<{ score: number; feedback: string }> {
-  const { prompt, text, maxPoints } = input;
+  const { questionText, reference, text, maxPoints } = input;
   if (!isAIConfigured() || !text.trim()) {
     return { score: text.trim() ? Math.round(maxPoints * 0.7) : 0, feedback: "" };
   }
-  const p = `당신은 한국어 학원 교사입니다. 학생의 쓰기 답안을 ${maxPoints}점 만점으로 채점하세요.
-문제: ${prompt}
+  const prompt = `당신은 한국어 학원 교사입니다. 학생의 쓰기 답안을 ${maxPoints}점 만점으로 채점하세요.
+문제: ${questionText}
+${reference ? `참고 정답/예시: ${reference}` : ""}
 학생 답안: ${text}
-
-평가 기준: 과제 적합성, 문법 정확성, 어휘 사용, 완성도.
-- score: 0~${maxPoints} 사이 정수
-- feedback: 한국어로 1~2문장, 잘한 점과 보완점`;
+평가 기준: 문법 정확성, 어휘 정확성, 문항 요구 충족, 자연스러움, 맞춤법·종결어미.
+- score: 0~${maxPoints} 정수
+- feedback: 한국어 1~2문장`;
   try {
-    const raw = await generateJsonWithRetry(p, WRITING_SCHEMA);
-    const parsed = JSON.parse(raw) as { score?: number; feedback?: string };
-    const score = Math.max(0, Math.min(maxPoints, Math.round(Number(parsed.score) || 0)));
-    return { score, feedback: (parsed.feedback ?? "").toString().slice(0, 1000) };
+    const raw = await generateJsonWithRetry(prompt, WRITING_SCHEMA);
+    const p = JSON.parse(raw) as { score?: number; feedback?: string };
+    return {
+      score: Math.max(0, Math.min(maxPoints, Math.round(Number(p.score) || 0))),
+      feedback: (p.feedback ?? "").toString().slice(0, 1000),
+    };
   } catch {
     return { score: Math.round(maxPoints * 0.7), feedback: "" };
   }
 }
 
-// 응시의 섹션별 점수·총점을 graded 답안에서 재집계하고 status를 갱신한다.
-export async function recomputeAttempt(attemptId: string): Promise<void> {
-  const attempts = (await sql`
-    select id::text, exam_id::text, status from exam_attempts where id = ${attemptId}::uuid limit 1
-  `) as { id: string; exam_id: string; status: string }[];
-  if (!attempts[0]) return;
-  const att = attempts[0];
-
-  // 시험 섹션 배점(가중치)
-  const exRows = (await sql`
-    select w_listening, w_reading, w_grammar, w_writing, w_speaking
-    from exams where id = ${att.exam_id}::uuid limit 1
-  `) as Array<Record<string, number>>;
-  const weight: Record<Section, number> = {
-    listening: exRows[0]?.w_listening ?? 20,
-    reading: exRows[0]?.w_reading ?? 20,
-    grammar_vocab: exRows[0]?.w_grammar ?? 30,
-    writing: exRows[0]?.w_writing ?? 15,
-    speaking: exRows[0]?.w_speaking ?? 15,
-  };
-
-  // 문항: 섹션 매핑 + 섹션별 만점(배점 합)
+// ---- 결과 집계 (영역별 /100 정규화 → 총 400 → 평균) ----
+export async function recomputeResult(testId: string, studentId: string, organizationId: string): Promise<void> {
   const qs = (await sql`
-    select id::text, section, points from exam_questions where exam_id = ${att.exam_id}::uuid
-  `) as { id: string; section: string; points: number }[];
-  const sectionOf = new Map(qs.map((q) => [q.id, q.section as Section]));
-  const possible: Record<Section, number> = {
-    listening: 0, reading: 0, grammar_vocab: 0, writing: 0, speaking: 0,
-  };
-  for (const q of qs) possible[q.section as Section] += q.points ?? 0;
+    select id::text, skill, points from weekly_questions where test_id = ${testId}::uuid
+  `) as { id: string; skill: Skill; points: number }[];
+  const possible: Record<Skill, number> = { listening: 0, reading: 0, writing: 0, speaking: 0 };
+  const skillOf = new Map<string, Skill>();
+  for (const q of qs) {
+    possible[q.skill] += q.points ?? 0;
+    skillOf.set(q.id, q.skill);
+  }
 
   const ans = (await sql`
-    select question_id::text, awarded_points, status from exam_answers where attempt_id = ${attemptId}::uuid
-  `) as { question_id: string; awarded_points: number | null; status: string }[];
+    select question_id::text, auto_score, ai_score, teacher_score, final_score
+    from weekly_answers where test_id = ${testId}::uuid and student_id = ${studentId}::uuid
+  `) as {
+    question_id: string;
+    auto_score: number | null;
+    ai_score: number | null;
+    teacher_score: number | null;
+    final_score: number | null;
+  }[];
 
-  const rawAwarded: Record<Section, number> = {
-    listening: 0, reading: 0, grammar_vocab: 0, writing: 0, speaking: 0,
-  };
-  let pending = 0;
+  const finalAward: Record<Skill, number> = { listening: 0, reading: 0, writing: 0, speaking: 0 };
+  let writingAiRaw = 0;
   for (const a of ans) {
-    const sec = sectionOf.get(a.question_id);
-    if (!sec) continue;
-    if (a.status === "pending" || a.status === "processing") pending++;
-    if (a.awarded_points !== null) rawAwarded[sec] += a.awarded_points;
+    const sk = skillOf.get(a.question_id);
+    if (!sk) continue;
+    const fin = a.final_score ?? a.teacher_score ?? a.auto_score ?? a.ai_score ?? 0;
+    finalAward[sk] += fin;
+    if (sk === "writing") writingAiRaw += a.ai_score ?? a.auto_score ?? 0;
   }
 
-  // 섹션 원점수를 배점(weight)으로 환산 → 총점 100 스케일
-  const secScore: Record<Section, number> = {
-    listening: 0, reading: 0, grammar_vocab: 0, writing: 0, speaking: 0,
-  };
-  for (const s of SECTIONS) {
-    const poss = possible[s.key];
-    secScore[s.key] = poss > 0 ? Math.round((rawAwarded[s.key] / poss) * weight[s.key]) : 0;
-  }
-  const total = SECTIONS.reduce((acc, s) => acc + secScore[s.key], 0);
-
-  // 제출된 응시이고 미채점 답안이 없으면 완료
-  const nextStatus = att.status === "submitted" && pending === 0 ? "completed" : att.status;
+  const listening = normalizeSkill(finalAward.listening, possible.listening);
+  const reading = normalizeSkill(finalAward.reading, possible.reading);
+  const speaking = normalizeSkill(finalAward.speaking, possible.speaking);
+  const writingFinal = normalizeSkill(finalAward.writing, possible.writing);
+  const writingAi = normalizeSkill(writingAiRaw, possible.writing);
+  const total = listening + reading + writingFinal + speaking;
+  const average = Math.round((total / 4) * 100) / 100;
 
   await sql`
-    update exam_attempts set
-      listening_score = ${secScore.listening},
-      reading_score = ${secScore.reading},
-      grammar_vocab_score = ${secScore.grammar_vocab},
-      writing_score = ${secScore.writing},
-      speaking_score = ${secScore.speaking},
-      total_score = ${total},
-      status = ${nextStatus},
-      updated_at = now()
-    where id = ${attemptId}::uuid
+    insert into weekly_results
+      (test_id, student_id, organization_id, listening_score, reading_score,
+       writing_ai_score, writing_final_score, speaking_score, total_score, average_score)
+    values
+      (${testId}::uuid, ${studentId}::uuid, ${organizationId}, ${listening}, ${reading},
+       ${writingAi}, ${writingFinal}, ${speaking}, ${total}, ${average})
+    on conflict (test_id, student_id) do update set
+      listening_score = excluded.listening_score, reading_score = excluded.reading_score,
+      writing_ai_score = excluded.writing_ai_score, writing_final_score = excluded.writing_final_score,
+      speaking_score = excluded.speaking_score, total_score = excluded.total_score,
+      average_score = excluded.average_score, updated_at = now()
   `;
 }
