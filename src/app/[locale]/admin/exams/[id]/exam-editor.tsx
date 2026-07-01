@@ -118,6 +118,7 @@ export function ExamEditor({ exam, questions }: { exam: EditorExam; questions: E
             section={s.key}
             label={s.label}
             mcq={s.mcq}
+            weight={exam.weights[s.weightKey]}
             questions={questions.filter((q) => q.section === s.key)}
           />
         ))}
@@ -174,22 +175,23 @@ function SectionPanel({
   section,
   label,
   mcq,
+  weight,
   questions,
 }: {
   exam: EditorExam;
   section: Section;
   label: string;
   mcq: boolean;
+  weight: number;
   questions: EditorQuestion[];
 }) {
   const [adding, setAdding] = useState(false);
-  const pts = questions.reduce((a, q) => a + q.points, 0);
 
   return (
     <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold">
-          {label} <span className="text-xs font-normal text-[var(--color-muted)]">· {questions.length}문항 · {pts}점</span>
+          {label} <span className="text-xs font-normal text-[var(--color-muted)]">· {questions.length}문항 · 배점 {weight}점</span>
         </h2>
         <button
           onClick={() => setAdding((v) => !v)}
@@ -447,6 +449,7 @@ function QuestionForm({
         <label className="text-xs font-semibold text-[var(--color-muted)]">
           배점
           <input type="number" min={0} max={100} value={points} onChange={(e) => setPoints(e.target.value)} className="ml-1 w-16 rounded-md border border-[var(--color-line)] px-2 py-1 text-center text-sm tabular-nums outline-none focus:border-[var(--color-primary)]" />
+          <span className="ml-1 font-normal">(섹션 내 상대 비중 — 최종은 섹션 배점으로 환산)</span>
         </label>
         {err && <span className="text-xs text-red-600">{err}</span>}
         <div className="ml-auto flex gap-2">

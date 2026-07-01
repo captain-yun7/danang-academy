@@ -46,29 +46,51 @@ export async function recomputeAttempt(attemptId: string): Promise<void> {
   if (!attempts[0]) return;
   const att = attempts[0];
 
-  // 문항 섹션 매핑
+  // 시험 섹션 배점(가중치)
+  const exRows = (await sql`
+    select w_listening, w_reading, w_grammar, w_writing, w_speaking
+    from exams where id = ${att.exam_id}::uuid limit 1
+  `) as Array<Record<string, number>>;
+  const weight: Record<Section, number> = {
+    listening: exRows[0]?.w_listening ?? 20,
+    reading: exRows[0]?.w_reading ?? 20,
+    grammar_vocab: exRows[0]?.w_grammar ?? 30,
+    writing: exRows[0]?.w_writing ?? 15,
+    speaking: exRows[0]?.w_speaking ?? 15,
+  };
+
+  // 문항: 섹션 매핑 + 섹션별 만점(배점 합)
   const qs = (await sql`
-    select id::text, section from exam_questions where exam_id = ${att.exam_id}::uuid
-  `) as { id: string; section: string }[];
+    select id::text, section, points from exam_questions where exam_id = ${att.exam_id}::uuid
+  `) as { id: string; section: string; points: number }[];
   const sectionOf = new Map(qs.map((q) => [q.id, q.section as Section]));
+  const possible: Record<Section, number> = {
+    listening: 0, reading: 0, grammar_vocab: 0, writing: 0, speaking: 0,
+  };
+  for (const q of qs) possible[q.section as Section] += q.points ?? 0;
 
   const ans = (await sql`
     select question_id::text, awarded_points, status from exam_answers where attempt_id = ${attemptId}::uuid
   `) as { question_id: string; awarded_points: number | null; status: string }[];
 
-  const secScore: Record<Section, number> = {
-    listening: 0,
-    reading: 0,
-    grammar_vocab: 0,
-    writing: 0,
-    speaking: 0,
+  const rawAwarded: Record<Section, number> = {
+    listening: 0, reading: 0, grammar_vocab: 0, writing: 0, speaking: 0,
   };
   let pending = 0;
   for (const a of ans) {
     const sec = sectionOf.get(a.question_id);
     if (!sec) continue;
     if (a.status === "pending" || a.status === "processing") pending++;
-    if (a.awarded_points !== null) secScore[sec] += a.awarded_points;
+    if (a.awarded_points !== null) rawAwarded[sec] += a.awarded_points;
+  }
+
+  // 섹션 원점수를 배점(weight)으로 환산 → 총점 100 스케일
+  const secScore: Record<Section, number> = {
+    listening: 0, reading: 0, grammar_vocab: 0, writing: 0, speaking: 0,
+  };
+  for (const s of SECTIONS) {
+    const poss = possible[s.key];
+    secScore[s.key] = poss > 0 ? Math.round((rawAwarded[s.key] / poss) * weight[s.key]) : 0;
   }
   const total = SECTIONS.reduce((acc, s) => acc + secScore[s.key], 0);
 
