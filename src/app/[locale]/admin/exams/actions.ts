@@ -58,6 +58,22 @@ export async function createTest(input: z.infer<typeof createSchema>) {
   redirect(`/admin/exams/${ins[0].id}`);
 }
 
+const updateTestSchema = z.object({
+  testId: z.string().uuid(),
+  title: z.string().trim().min(1).max(100),
+  lessonRange: z.string().trim().max(40).optional(),
+});
+export async function updateTest(input: z.infer<typeof updateTestSchema>) {
+  const { organizationId } = await requireAdmin();
+  const d = updateTestSchema.parse(input);
+  await assertTestOrg(d.testId, organizationId);
+  await sql`update weekly_tests set title = ${d.title}, lesson_range = ${d.lessonRange || null}
+            where id = ${d.testId}::uuid and organization_id = ${organizationId}`;
+  revalidatePath(`/admin/exams/${d.testId}`);
+  revalidatePath("/admin/exams");
+  return { ok: true };
+}
+
 export async function deleteTest(testId: string) {
   const { organizationId } = await requireAdmin();
   z.string().uuid().parse(testId);
@@ -130,6 +146,7 @@ const questionSchema = z.object({
   correctAnswer: z.any().optional(),   // index | "O"/"X" | number[] | string | string[]
   points: z.coerce.number().int().min(0).max(100),
   maxPlayCount: z.coerce.number().int().min(1).max(9).optional(),
+  ttsSpeed: z.coerce.number().min(0.25).max(2).optional(),
 });
 export async function addQuestion(input: z.infer<typeof questionSchema>) {
   const { organizationId } = await requireAdmin();
@@ -142,11 +159,11 @@ export async function addQuestion(input: z.infer<typeof questionSchema>) {
   const rows = (await sql`
     insert into weekly_questions
       (test_id, section_id, skill, question_type, question_text, passage_text, listening_script,
-       tts_status, options, correct_answer, points, max_play_count, order_index)
+       tts_status, tts_speed, options, correct_answer, points, max_play_count, order_index)
     values
       (${d.testId}::uuid, ${d.sectionId}::uuid, ${d.skill}, ${d.questionType},
        ${d.questionText || null}, ${d.passageText || null}, ${d.listeningScript || null},
-       ${needsTts ? "pending" : null},
+       ${needsTts ? "pending" : null}, ${d.ttsSpeed ?? 0.5},
        ${d.options ? JSON.stringify(d.options) : null}::jsonb,
        ${d.correctAnswer !== undefined ? JSON.stringify(d.correctAnswer) : null}::jsonb,
        ${d.points}, ${d.maxPlayCount ?? 2}, ${ord[0].n})
@@ -164,11 +181,13 @@ export async function updateQuestion(input: z.infer<typeof updateQSchema>) {
   await assertTestOrg(d.testId, organizationId);
   // 듣기 script 변경 시 재생성
   const prev = (await sql`
-    select listening_script, tts_status from weekly_questions
+    select listening_script, tts_status, tts_speed from weekly_questions
     where id = ${d.questionId}::uuid and test_id = ${d.testId}::uuid limit 1
-  `) as { listening_script: string | null; tts_status: string | null }[];
-  const scriptChanged = d.skill === "listening" && (prev[0]?.listening_script ?? "") !== (d.listeningScript ?? "");
-  const nextTts = scriptChanged && d.listeningScript ? "pending" : (prev[0]?.tts_status ?? null);
+  `) as { listening_script: string | null; tts_status: string | null; tts_speed: number | null }[];
+  const speed = d.ttsSpeed ?? Number(prev[0]?.tts_speed ?? 0.5);
+  const regen = d.skill === "listening" && !!d.listeningScript &&
+    ((prev[0]?.listening_script ?? "") !== (d.listeningScript ?? "") || Number(prev[0]?.tts_speed ?? 0.5) !== speed);
+  const nextTts = regen ? "pending" : (prev[0]?.tts_status ?? null);
   await sql`
     update weekly_questions set
       question_text = ${d.questionText || null}, passage_text = ${d.passageText || null},
@@ -176,10 +195,10 @@ export async function updateQuestion(input: z.infer<typeof updateQSchema>) {
       options = ${d.options ? JSON.stringify(d.options) : null}::jsonb,
       correct_answer = ${d.correctAnswer !== undefined ? JSON.stringify(d.correctAnswer) : null}::jsonb,
       points = ${d.points}, max_play_count = ${d.maxPlayCount ?? 2},
-      tts_status = ${nextTts}
+      tts_status = ${nextTts}, tts_speed = ${speed}
     where id = ${d.questionId}::uuid and test_id = ${d.testId}::uuid
   `;
-  if (scriptChanged && d.listeningScript) after(() => generateTtsFor(d.testId, organizationId));
+  if (regen) after(() => generateTtsFor(d.testId, organizationId));
   revalidatePath(`/admin/exams/${d.testId}`);
   return { ok: true };
 }
@@ -208,10 +227,10 @@ export async function regenerateTts(testId: string) {
 async function generateTtsFor(testId: string, organizationId: string) {
   if (!isTtsConfigured()) return;
   const todo = (await sql`
-    select id::text, listening_script from weekly_questions
+    select id::text, listening_script, tts_speed from weekly_questions
     where test_id = ${testId}::uuid and skill = 'listening' and listening_script is not null
       and (audio_key is null or tts_status in ('pending','failed'))
-  `) as { id: string; listening_script: string }[];
+  `) as { id: string; listening_script: string; tts_speed: number | null }[];
   const useMock = process.env.MOCK_R2_UPLOAD === "true" || !process.env.R2_BUCKET;
   const BATCH = 5;
   for (let i = 0; i < todo.length; i += BATCH) {
@@ -220,7 +239,7 @@ async function generateTtsFor(testId: string, organizationId: string) {
         try {
           const key = `exam-tts/${testId}/${q.id}.mp3`;
           if (!useMock) {
-            const audio = await synthesizeKorean(q.listening_script, 0.9);
+            const audio = await synthesizeKorean(q.listening_script, Number(q.tts_speed ?? 0.5));
             await getR2().send(new PutObjectCommand({ Bucket: r2Bucket(), Key: key, Body: new Uint8Array(audio), ContentType: "audio/mpeg" }));
           }
           await sql`update weekly_questions set audio_key = ${key}, tts_status = 'ready' where id = ${q.id}::uuid`;

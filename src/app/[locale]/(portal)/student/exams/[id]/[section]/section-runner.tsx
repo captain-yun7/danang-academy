@@ -113,7 +113,7 @@ function QuestionCard({ q, index, sel, text, recorded, onSel, onText, onRecord }
   return (
     <div className="rounded-xl border border-[var(--color-line)] bg-white p-4">
       {q.passageText && <p className="mb-2 whitespace-pre-wrap rounded-lg bg-[var(--color-soft)] p-3 text-sm leading-relaxed">{q.passageText}</p>}
-      <p className="text-sm font-semibold">{index}. {q.questionText}<span className="ml-1 text-xs font-normal text-[var(--color-muted)]">({q.points}점)</span></p>
+      <p className="whitespace-pre-wrap text-sm font-semibold leading-relaxed">{index}. {q.questionText}<span className="ml-1 text-xs font-normal text-[var(--color-muted)]">({q.points}점)</span></p>
 
       {q.audioUrl && <AudioPlayer url={q.audioUrl} max={q.maxPlayCount} />}
 

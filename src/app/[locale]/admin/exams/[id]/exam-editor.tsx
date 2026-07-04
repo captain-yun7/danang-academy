@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { SKILLS, TYPES_FOR_SKILL, typeMeta, type QuestionType, type Skill } from "@/lib/exams/scoring";
 import {
-  addQuestion, addSection, deleteQuestion, deleteSection, deleteTest, regenerateTts, setPublished, updateQuestion,
+  addQuestion, addSection, deleteQuestion, deleteSection, deleteTest, regenerateTts, setPublished, updateQuestion, updateTest,
 } from "../actions";
 
 export type EditorTest = { id: string; title: string; lessonRange: string | null; className: string; status: string };
@@ -13,7 +13,7 @@ export type EditorSection = { id: string; skill: Skill; title: string; maxScore:
 export type EditorQuestion = {
   id: string; sectionId: string; skill: Skill; questionType: QuestionType;
   questionText: string; passageText: string; listeningScript: string;
-  ttsStatus: string | null; audioUrl: string | null;
+  ttsStatus: string | null; ttsSpeed: number; audioUrl: string | null;
   options: { ko: string; vi: string }[]; correctAnswer: unknown; points: number; maxPlayCount: number;
 };
 
@@ -23,8 +23,15 @@ export function TestEditor({ test, sections, questions }: { test: EditorTest; se
   const router = useRouter();
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const [editTitle, setEditTitle] = useState(false);
+  const [title, setTitle] = useState(test.title);
+  const [lesson, setLesson] = useState(test.lessonRange ?? "");
   const published = test.status === "published";
   const hasListening = questions.some((q) => q.skill === "listening" && q.listeningScript);
+
+  function saveTitle() {
+    start(async () => { await updateTest({ testId: test.id, title: title.trim() || test.title, lessonRange: lesson.trim() || undefined }); setEditTitle(false); router.refresh(); });
+  }
 
   function togglePublish() {
     setMsg(null);
@@ -53,7 +60,18 @@ export function TestEditor({ test, sections, questions }: { test: EditorTest; se
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{test.title}</h1>
+          {editTitle ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-md border border-[var(--color-line)] px-2 py-1 text-lg font-bold outline-none focus:border-[var(--color-primary)]" />
+              <input value={lesson} onChange={(e) => setLesson(e.target.value)} placeholder="과범위(예:1~2)" className="w-28 rounded-md border border-[var(--color-line)] px-2 py-1 text-sm outline-none focus:border-[var(--color-primary)]" />
+              <button onClick={saveTitle} disabled={pending} className="brand-gradient rounded-full px-3 py-1 text-xs font-bold text-white disabled:opacity-60">저장</button>
+              <button onClick={() => { setEditTitle(false); setTitle(test.title); setLesson(test.lessonRange ?? ""); }} className="rounded-full border border-[var(--color-line)] px-3 py-1 text-xs font-semibold">취소</button>
+            </div>
+          ) : (
+            <h1 className="text-2xl font-bold">{test.title}
+              <button onClick={() => setEditTitle(true)} className="ml-2 align-middle text-xs font-semibold text-[var(--color-primary)] hover:underline">제목 수정</button>
+            </h1>
+          )}
           <p className="mt-1 text-sm text-[var(--color-muted)]">
             {test.className}{test.lessonRange ? ` · ${test.lessonRange}과` : ""} ·{" "}
             <span className={published ? "font-semibold text-emerald-600" : "font-semibold text-amber-600"}>{published ? "게시됨" : "작성중"}</span>
@@ -160,6 +178,7 @@ function QuestionForm({ test, skill, section, initial, onDone }: { test: EditorT
   const [questionText, setQuestionText] = useState(initial?.questionText ?? "");
   const [passageText, setPassageText] = useState(initial?.passageText ?? "");
   const [listeningScript, setListeningScript] = useState(initial?.listeningScript ?? "");
+  const [ttsSpeed, setTtsSpeed] = useState(String(initial?.ttsSpeed ?? 0.5));
   const [points, setPoints] = useState(String(initial?.points ?? 4));
   const [options, setOptions] = useState<{ ko: string; vi: string }[]>(
     initial?.options?.length ? initial.options : [{ ko: "", vi: "" }, { ko: "", vi: "" }]
@@ -199,6 +218,7 @@ function QuestionForm({ test, skill, section, initial, onDone }: { test: EditorT
       testId: test.id, sectionId: section.id, skill, questionType: qType,
       questionText, passageText: passageText || undefined,
       listeningScript: skill === "listening" ? listeningScript || undefined : undefined,
+      ttsSpeed: skill === "listening" ? Number(ttsSpeed) || 0.5 : undefined,
       options: opts, correctAnswer: buildCorrect(), points: Number(points) || 0,
     };
     start(async () => {
@@ -217,12 +237,26 @@ function QuestionForm({ test, skill, section, initial, onDone }: { test: EditorT
           {types.map((t) => <option key={t} value={t}>{typeMeta(t).label}</option>)}
         </select>
       )}
-      <input value={questionText} onChange={(e) => setQuestionText(e.target.value)} placeholder={isOx ? "문장(O/X 판단 대상)" : isArrange ? "제시 단어(예: 사람이에요 / 저는 / 베트남)" : isTranslation ? "베트남어 문장" : "문제/지시문"} className={inp} />
+      {skill === "speaking" ? (
+        <textarea value={questionText} onChange={(e) => setQuestionText(e.target.value)} rows={3} placeholder="학생이 읽을 내용/지시문 (줄바꿈 그대로 표시됩니다)" className={inp} />
+      ) : (
+        <input value={questionText} onChange={(e) => setQuestionText(e.target.value)} placeholder={isOx ? "문장(O/X 판단 대상)" : isArrange ? "제시 단어(예: 사람이에요 / 저는 / 베트남)" : isTranslation ? "베트남어 문장" : "문제/지시문"} className={inp} />
+      )}
 
       {skill === "reading" && <textarea value={passageText} onChange={(e) => setPassageText(e.target.value)} rows={2} placeholder="지문(선택)" className={inp} />}
 
       {skill === "listening" && (
-        <textarea value={listeningScript} onChange={(e) => setListeningScript(e.target.value)} rows={2} placeholder="듣기 원문(AI 음성 생성용, 학생 비표시)" className={inp} />
+        <>
+          <textarea value={listeningScript} onChange={(e) => setListeningScript(e.target.value)} rows={2} placeholder="듣기 원문(AI 음성 생성용, 학생 비표시)" className={inp} />
+          <label className="text-xs font-semibold text-[var(--color-muted)]">읽기 속도
+            <select value={ttsSpeed} onChange={(e) => setTtsSpeed(e.target.value)} className={`${inp} ml-1 inline-block w-28`}>
+              <option value="0.5">0.5배 (느리게)</option>
+              <option value="0.75">0.75배</option>
+              <option value="1">1배 (보통)</option>
+            </select>
+            <span className="ml-1 font-normal">· 변경 시 오디오 재생성</span>
+          </label>
+        </>
       )}
 
       {showChoices && (
