@@ -1,6 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { sql } from "@/lib/db/client";
+import { requireStudent } from "@/lib/auth/student";
 import { getMyAssignments } from "./actions";
+
+const EXAM_ATT: Record<string, string> = { doing: "응시 중", submitted: "채점 중", waiting_writing_review: "채점 중", finalized: "완료" };
 
 const STATUS_TONE: Record<string, string> = {
   pending: "bg-blue-100 text-blue-700",
@@ -16,6 +20,16 @@ export default async function StudentDashboard() {
   const tType = await getTranslations("admin.assignments.types");
   const tStatus = await getTranslations("studentPortal.status");
   const assignments = await getMyAssignments();
+
+  const student = await requireStudent();
+  const weeklyTests = (await sql`
+    select t.id::text, t.title, t.lesson_range, r.status
+    from weekly_tests t
+    join students s on s.id = ${student.studentId}::uuid
+    left join weekly_results r on r.test_id = t.id and r.student_id = ${student.studentId}::uuid
+    where t.organization_id = ${student.organizationId} and t.status = 'published' and t.class_id = s.class_id
+    order by t.created_at desc
+  `) as { id: string; title: string; lesson_range: string | null; status: string | null }[];
 
   const pending = assignments.filter((a) => !a.status || a.status === "pending" || a.status === "processing");
   const done = assignments.filter((a) => a.status === "completed" || a.status === "graded");
@@ -49,6 +63,28 @@ export default async function StudentDashboard() {
           {t("viewReport")} →
         </Link>
       </div>
+
+      {weeklyTests.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mb-3 text-base font-bold">주간 시험</h2>
+          <ul className="space-y-3">
+            {weeklyTests.map((e) => {
+              const done = e.status === "finalized";
+              return (
+                <li key={e.id} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--color-line)] bg-white p-4">
+                  <div>
+                    <p className="font-bold">{e.title}</p>
+                    <p className="mt-0.5 text-xs text-[var(--color-muted)]">{e.lesson_range ? `${e.lesson_range}과` : "듣기·읽기·쓰기·말하기"}{e.status ? ` · ${EXAM_ATT[e.status] ?? e.status}` : ""}</p>
+                  </div>
+                  <Link href={done ? `/student/exams/${e.id}/result` : `/student/exams/${e.id}`} className={done ? "rounded-full border border-[var(--color-line)] px-4 py-2 text-sm font-semibold hover:border-[var(--color-primary)]" : "brand-gradient rounded-full px-4 py-2 text-sm font-bold text-white"}>
+                    {done ? "결과 보기" : e.status ? "이어서 응시" : "응시하기"}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <h2 className="mt-8 mb-3 text-base font-bold">{t("myAssignments")}</h2>
       {assignments.length === 0 ? (

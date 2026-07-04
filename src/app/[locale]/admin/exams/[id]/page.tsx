@@ -29,12 +29,12 @@ export default async function TestDetailPage({ params }: { params: Promise<{ id:
 
   const qRows = (await sql`
     select id::text, section_id::text, skill, question_type, question_text, passage_text, listening_script,
-           audio_key, tts_status, options, correct_answer, points, max_play_count, order_index
+           audio_key, tts_status, tts_speed, options, correct_answer, points, max_play_count, order_index
     from weekly_questions where test_id = ${id}::uuid order by order_index
   `) as Array<{
     id: string; section_id: string; skill: string; question_type: string;
     question_text: string | null; passage_text: string | null; listening_script: string | null;
-    audio_key: string | null; tts_status: string | null; options: unknown; correct_answer: unknown;
+    audio_key: string | null; tts_status: string | null; tts_speed: number | null; options: unknown; correct_answer: unknown;
     points: number; max_play_count: number; order_index: number;
   }>;
 
@@ -47,6 +47,7 @@ export default async function TestDetailPage({ params }: { params: Promise<{ id:
     passageText: q.passage_text ?? "",
     listeningScript: q.listening_script ?? "",
     ttsStatus: q.tts_status,
+    ttsSpeed: Number(q.tts_speed ?? 0.5),
     audioUrl: await safePresign(q.audio_key),
     options: (q.options as { ko: string; vi: string }[] | null) ?? [],
     correctAnswer: q.correct_answer ?? null,
